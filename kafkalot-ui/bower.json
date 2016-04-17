@@ -1,0 +1,26 @@
+{
+  "name": "kafkalot",
+  "description": "dashboard for kafka-connect",
+  "main": "",
+  "authors": [
+    "1ambda@gmail.com"
+  ],
+  "license": "Apache-2.0",
+  "keywords": [
+    "kafka", "connect", "dashboard", "kafkalot"
+  ],
+  "homepage": "https://github.com/1ambda/kafka-connect-dashboard",
+  "moduleType": [],
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "Materialize": "materialize#^0.97.5",
+    "jquery": "^2.2.2",
+    "font-awesome": "fontawesome#^4.5.0"
+  }
+}
