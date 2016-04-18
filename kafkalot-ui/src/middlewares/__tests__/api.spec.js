@@ -5,53 +5,18 @@ import * as API from '../api'
 import * as Converter from '../converter'
 
 describe('api', () => {
-  // TODO, how to test `getContainerConnectorConfigUrl`?
-
   describe('High-level APIs', () => {
 
-    describe(`${API.start.name}`, () => {
-      it(`should call ${API.patchState.name} passing ${Converter.SERVER_JOB_PROPERTY.active} field only`, () => {
-        const container = 'container01'
-        const connectorName = 'job01'
-        const gen = API.start(container, connectorName)
-        expect(gen.next().value).to.deep.equal(
-          call(API.patchState, container, connectorName, Converter.createStateToStartJob())
-        )
-      })
-    })
-
-    describe(`${API.stop.name}`, () => {
-      it(`should call ${API.patchState.name} passing ${Converter.SERVER_JOB_PROPERTY.active} field only`, () => {
-        const container = 'container01'
-        const connectorName = 'job01'
-        const gen = API.stop(container, connectorName)
-        expect(gen.next().value).to.deep.equal(
-          call(API.patchState, container, connectorName, Converter.createStateToStopJob())
-        )
-      })
-    })
-
-    describe(`${API.setReadonly.name}`, () => {
-      it(`should call ${API.patchConfig.name} passing ${Converter.SERVER_JOB_PROPERTY.enabled} field only`, () => {
-        const container = 'container01'
-        const connectorName = 'job01'
-        const gen = API.setReadonly(container, connectorName)
-        expect(gen.next().value).to.deep.equal(
-          call(API.patchConfig, container, connectorName, Converter.createConfigToSetReadonly())
-        )
-      })
-    })
-
-    describe(`${API.unsetReadonly.name}`, () => {
-      it(`should call ${API.patchConfig.name} passing ${Converter.SERVER_JOB_PROPERTY.enabled} field only`, () => {
-        const container = 'container01'
-        const connectorName = 'job01'
-        const gen = API.unsetReadonly(container, connectorName)
-        expect(gen.next().value).to.deep.equal(
-          call(API.patchConfig, container, connectorName, Converter.createConfigToUnsetReadonly())
-        )
-      })
-    })
+    //describe(`${API.start.name}`, () => {
+    //  it(`should call ${API.patchState.name} passing ${Converter.SERVER_JOB_PROPERTY.active} field only`, () => {
+    //    const container = 'container01'
+    //    const connectorName = 'job01'
+    //    const gen = API.start(container, connectorName)
+    //    expect(gen.next().value).to.deep.equal(
+    //      call(API.patchState, container, connectorName, Converter.createStateToStartJob())
+    //    )
+    //  })
+    //})
 
   })
 })

@@ -1,11 +1,13 @@
 import express from 'express'
 import cors from 'cors'
 import bodyParser from 'body-parser'
-import db, * as Res from './db'
+import * as Res from './resource'
+
+const db = Res.REST_DB
 
 const app = express()
 
-app.set('port', process.env.PORT || 3002);
+app.set('port', process.env.KAFKA_REST_PORT || 3002);
 
 /** add CORS support */
 app.use(cors({

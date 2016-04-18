@@ -16,6 +16,7 @@ export const GLOBAL_VARIABLES = { /** used by Webpack.DefinePlugin */
 
   /** variables defined in `CONFIG` file ares already stringified */
   'process.env.CONTAINERS': CONFIG.CONTAINERS,
+  'process.env.STORAGE': CONFIG.STORAGE,
   'process.env.TITLE': CONFIG.TITLE,
   'process.env.PAGINATOR_ITEM_COUNT': CONFIG.PAGINATOR_ITEM_COUNT,
 }

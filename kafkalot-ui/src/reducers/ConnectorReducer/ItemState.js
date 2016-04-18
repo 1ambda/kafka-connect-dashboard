@@ -14,10 +14,11 @@ export const ITEM_PROPERTY = {
   switching: 'switching', /** boolean */
   name: 'name', /** string */
   tags: 'tags', /** array */
+  config: 'config', /** array */
 }
 
 export const INITIAL_ITEM_STATE = {
-  name: '', tags: [], state: STATE.WAITING, switching: false,
+  name: '', tags: [], state: STATE.WAITING, switching: false, config: {},
 }
 
 export const isRunning = (connector) => connector[ITEM_PROPERTY.state] === STATE.RUNNING

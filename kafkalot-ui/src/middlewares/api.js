@@ -1,8 +1,8 @@
 import Fetch from 'isomorphic-fetch'
 import { take, put, call, fork, select, } from 'redux-saga/effects'
 
-import * as Converter from './converter'
 import URL from './url'
+import * as Converter from './converter'
 
 /**
  * low-level APIs
@@ -97,8 +97,6 @@ function deleteJSON(url) {
   }))
 }
 
-/** job related functions */
-
 export function delay(millis) {
   return new Promise(resolve => setTimeout(() => { resolve() }, millis))
 }
@@ -110,96 +108,18 @@ export function delay(millis) {
  */
 
 export function* fetchAll(containerName) {
-  const connectorsUrl = URL.getContainerConnectorUrl(containerName)
-  const connectorNames = yield call(getJSON, connectorsUrl)
+  const storageConnectorsUrl = URL.getStorageConnectorUrl()
+  const storageConnectors = yield call(getJSON, storageConnectorsUrl)
 
-  if (!Array.isArray(connectorNames))
-    throw new Error(`GET ${connectorsUrl} didn't return an array, got ${connectorNames}`)
+  if (!Array.isArray(storageConnectors))
+    throw new Error(`GET ${storageConnectorsUrl} didn't return an array, got ${storageConnectors}`)
 
-  const connectorUrls = connectorNames.map(connectorName => {
-    return URL.getContainerConnectorUrl(containerName, connectorName)
-  })
+  const containerConnectorsUrl = URL.getContainerConnectorUrl(containerName)
+  const containerConnectorNames = yield call(getJSON, containerConnectorsUrl)
 
-  const connectors = yield call(getJSONs, connectorUrls)
+  if (!Array.isArray(containerConnectorNames))
+    throw new Error(`GET LIST ${containerConnectorsUrl} didn't return an array, got ${containerName}`)
 
-  if (!Array.isArray(connectors))
-    throw new Error(`GET LIST ${connectorUrls} didn't return an array, got ${connectors}`)
-
-  return connectors
+  return Converter.createClientConnectors(storageConnectors, containerConnectorNames)
 }
-
-export function* fetch(containerName, connectorName) {
-  const url = URL.getContainerConnectorUrl(containerName, connectorName)
-
-  const serverJob = yield call(getJSON, url)
-  return Converter.convertServerJobToClientJob(serverJob)
-}
-
-export function* create(containerName, job) {
-  const url = URL.getContainerConnectorUrl(containerName)
-  yield call(postJSON, url, Converter.removeClientProps(job)) /** return nothing */
-}
-
-export function* remove(containerName, connectorName) {
-  const url = URL.getContainerConnectorUrl(containerName, connectorName)
-  yield call(deleteJSON, url) /** return nothing */
-}
-
-export function* fetchConfig(container, connectorName) {
-  const url = URL.getContainerConnectorConfigUrl(container, connectorName)
-
-  const serverJob = yield call(getJSON, url)
-
-  /** remove state fields */
-  return Converter.removeStateProps(serverJob)
-}
-
-export function* updateConfig(containerName, connectorName, property) {
-  const url = URL.getContainerConnectorConfigUrl(containerName, connectorName)
-
-  /** replace whole job config */
-  yield call(putJSON, url, Converter.removeStateProps(property))
-
-  /** since `patch` doesn't return job state, we need to fetch job */
-  return yield call(fetch, containerName, connectorName)
-}
-
-export function* patchConfig(containerName, connectorName, property) {
-  const url = URL.getContainerConnectorConfigUrl(containerName, connectorName)
-
-  yield call(patchJSON, url, Converter.removeStateProps(property))
-
-  /** since `patch` doesn't return job state, we need to fetch job */
-  return yield call(fetch, containerName, connectorName)
-}
-
-export function* setReadonly(containerName, connectorName) {
-  return yield call(patchConfig, containerName, connectorName, Converter.createConfigToSetReadonly())
-}
-
-export function* unsetReadonly(containerName, connectorName) {
-  return yield call(patchConfig, containerName, connectorName, Converter.createConfigToUnsetReadonly())
-}
-
-export function* patchState(containerName, connectorName, state) {
-  const url = URL.getContainerConnectorStateUrl(containerName, connectorName)
-
-  yield call(patchJSON, url, state)
-}
-
-export function* start(containerName, connectorName) {
-  yield call(patchState, containerName, connectorName, Converter.createStateToStartJob())
-
-  /** since `patch` METHOD doesn't return all job props (state + config), we need to fetch job */
-  return yield call(fetch, containerName, connectorName)
-}
-
-export function* stop(containerName, connectorName) {
-  yield call(patchState, containerName, connectorName, Converter.createStateToStopJob())
-
-  /** since `patch` METHOD doesn't return all job props (state + config), we need to fetch job */
-  return yield call(fetch, containerName, connectorName)
-}
-
-
 

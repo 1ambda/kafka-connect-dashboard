@@ -1,21 +1,34 @@
 import {
-  INITIAL_ITEM_STATE, ITEM_PROPERTY, STATE,
+  INITIAL_ITEM_STATE as INITIAL_CONNECTOR_ITEM_STATE,
+  ITEM_PROPERTY as CONNECTOR_PROPERTY,
+  STATE as CONNECTOR_STATE,
 } from '../reducers/ConnectorReducer/ItemState'
 
-export const SERVER_JOB_PROPERTY = {
-  active: 'active',
-  enabled: 'enabled',
+import * as Logger from '../util/logger'
+
+export const STORAGE_PROPERTY = {
+  META: '_storage_meta',
+  ENABLED: 'enabled',
+  TAGS: 'tags',
 }
 
-export const IGNORED_SERVER_JOB_PROPS = [
-  SERVER_JOB_PROPERTY.enabled,
-  SERVER_JOB_PROPERTY.active,
-]
 
-export const IGNORED_CLIENT_JOB_PROPS = [
-  ITEM_PROPERTY.switching,
-  ITEM_PROPERTY.state,
-]
+export function getStorageMeta(storageConnector) {
+  return storageConnector[STORAGE_PROPERTY.META]
+}
+
+export function getStroageEnabled(storageConnector) {
+  return getStorageMeta(storageConnector)[STORAGE_PROPERTY.ENABLED]
+}
+
+export function getStorageTags(storageConnector) {
+  return getStorageMeta(storageConnector)[STORAGE_PROPERTY.TAGS]
+}
+
+export function getConnectorConfig(connector) {
+  return connector[CONNECTOR_PROPERTY.config]
+}
+
 
 /**
  * @param props Object
@@ -31,67 +44,46 @@ export function removeProps(props, propsToIgnore) {
   }, copied)
 }
 
-export function removeServerSpecificProps(props) {
-  return removeProps(props, IGNORED_SERVER_JOB_PROPS)
+export function createConnectorState(connectorName, isRunning, isEnabled) {
+  if (isRunning && isEnabled) return CONNECTOR_STATE.RUNNING
+  else if (!isRunning && isEnabled) return CONNECTOR_STATE.WAITING
+  else if (!isRunning && !isEnabled) return CONNECTOR_STATE.STOPPED
+  else throw new Error(`Invalid connector ${connectorName} state isRunning: ${isRunning}, isEnabled: ${isEnabled}`)
 }
 
+export const EMPTY_CONNECTOR = undefined
+export function isEmptyConnector(connector) {
+  return connector === void 0
+}
 
-/**
- * jobs returned from server contain
- *
- * - `active`, indicates job is running
- * - `enabled`, indicates job is enabled (= not readonly)
- */
+export function createClientConnector(storageConnector, containerConnectorNames) {
+  try {
+    const connectorName = storageConnector[CONNECTOR_PROPERTY.name]
+    const isRunning = (containerConnectorNames.includes(connectorName))
+    const isEnabled = getStroageEnabled(storageConnector)
 
-export function interpretServerJobState(serverJob) {
-  let { active, enabled, } = serverJob
+    // TODO comparison config between storage connector and container connector using `deep-equal`
 
-  if (enabled === void 0) {
-    /*eslint-disable no-console */
-    console.error(`${serverJob[ITEM_PROPERTY.id]} has no '${SERVER_JOB_PROPERTY.enabled}' prop`)
-    /*eslint-enable no-console */
-    enabled = false
+    const state = createConnectorState(name, isRunning, isEnabled)
+    const tags = getStorageTags(storageConnector)
+    const config = getConnectorConfig(storageConnector)
+
+    return Object.assign({}, INITIAL_CONNECTOR_ITEM_STATE, {
+      [CONNECTOR_PROPERTY.name]: connectorName,
+      [CONNECTOR_PROPERTY.state]: state,
+      [CONNECTOR_PROPERTY.tags]: tags,
+      [CONNECTOR_PROPERTY.config]: config,
+    })
+  } catch (error) {
+    Logger.error(`Failed to create connector due to ${error.message}}`)
+
+    return EMPTY_CONNECTOR
   }
-
-  if (active === void 0) {
-    /*eslint-disable no-console */
-    console.error(`${serverJob[ITEM_PROPERTY.id]} has no '${SERVER_JOB_PROPERTY.active}' prop`)
-    /*eslint-enable no-console */
-    active = false
-  }
-
-  if (active) return STATE.RUNNING
-  else if (!active && enabled) return STATE.WAITING
-  else if (!active && !enabled) return STATE.STOPPED
-  else throw new Error(`Invalid server job: ${JSON.stringify(serverJob)}`)
 }
 
-/** responsible for converting server jobs to client jobs, used to fetch all jobs */
-export function convertServerJobToClientJob (job) {
-  const state = interpretServerJobState(job)
-  const filtered = removeServerSpecificProps(job)
-
-  return Object.assign({}, INITIAL_ITEM_STATE, {
-    [ITEM_PROPERTY.id]: job[ITEM_PROPERTY.id],
-    [ITEM_PROPERTY.tags]: job[ITEM_PROPERTY.tags],
-    [ITEM_PROPERTY.state]: state,
-    ...filtered,
-  })
-}
-
-export function createEnabledConfig(readonly) { return { [SERVER_JOB_PROPERTY.enabled]: !readonly, } }
-export function createConfigToSetReadonly() { return createEnabledConfig(true) }
-export function createConfigToUnsetReadonly() { return createEnabledConfig(false) }
-
-export function createActiveState(active) { return { [SERVER_JOB_PROPERTY.active]: active, } }
-export function createStateToStartJob() { return createActiveState(true) }
-export function createStateToStopJob() { return createActiveState(false) }
-
-export function removeClientProps(props) {
-  return removeProps(props, IGNORED_CLIENT_JOB_PROPS)
-}
-
-export function removeStateProps(props) {
-  return removeProps(props, [SERVER_JOB_PROPERTY.active, ])
+export function createClientConnectors(storageConnectors, containerConnectorNames) {
+  return storageConnectors.map(storageConnector => {
+    return createClientConnector(storageConnector, containerConnectorNames)
+  }).filter(connector => !isEmptyConnector(connector))
 }
 
