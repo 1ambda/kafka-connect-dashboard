@@ -6,15 +6,14 @@ import { bindActionCreators, } from 'redux'
 import ConnectorList from '../../components/ConnectorPage/ConnectorList'
 import ConnectorHeader from '../../components/ConnectorPage/ConnectorHeader'
 import Paginator from '../../components/Common/Paginator'
-import EditorDialog, { EDITOR_DIALOG_MODE, } from '../../components/Common/EditorDialog'
-import ConfirmDialog, { CONFIRM_DIALOG_MODE, } from '../../components/Common/ConfirmDialog'
+import EditorDialog from '../../components/ConnectorPage/EditorDialog'
+import { EDITOR_DIALOG_MODE, } from '../../reducers/ConnectorReducer/EditorDialogState'
+import ConfirmDialog from '../../components/ConnectorPage/ConfirmDialog'
+import { CONFIRM_DIALOG_MODE, } from '../../reducers/ConnectorReducer/ConfirmDialogState'
 import Snackbar, { CLOSABLE_SNACKBAR_MODE, } from '../../components/Common/ClosableSnackbar'
 
-import { ITEM_PROPERTY, } from '../../reducers/ConnectorReducer/ItemState'
-import { REDUCER_STATE_PROPERTY, } from '../../constants/state'
-import { CONNECTOR_STATE_PROPERTY, } from '../../reducers/ConnectorReducer'
-
-import Actions, { ACTION_SELECTOR, } from '../../actions'
+import { ROOT, CONNECTOR, } from '../../constants/state'
+import Actions from '../../actions'
 import * as style from './style'
 
 class ConnectorPage extends React.Component {
@@ -55,10 +54,15 @@ class ConnectorPage extends React.Component {
 
     /** 3. draw dialogs, snackbar */
     const editorDialogDOM = (EDITOR_DIALOG_MODE.CLOSE !== editorDialog.dialogMode) ?
-      (<EditorDialog {...editorDialog} actions={actions} />) : null
+      (<EditorDialog closeEditorDialog={actions.closeEditorDialog}
+                     createConnector={actions.create}
+                     updateConnector={actions.update}
+                     {...editorDialog} />) : null
 
     const confirmDialogDOM = (CONFIRM_DIALOG_MODE.CLOSE !== confirmDialog.dialogMode) ?
-      (<ConfirmDialog {...confirmDialog} actions={actions} />) : null
+      (<ConfirmDialog removeConnector={actions.remove}
+                      closeConfirmDialog={actions.closeConfirmDialog}
+                      {...confirmDialog} />) : null
 
     const snackbarDOM = (CLOSABLE_SNACKBAR_MODE.CLOSE !== snackbar.snackbarMode) ?
       (<Snackbar {...snackbar} closeHandler={actions.closeSnackbar} />) : null
@@ -68,7 +72,11 @@ class ConnectorPage extends React.Component {
         <ConnectorHeader sortingStrategy={sortingStrategy}
                          containerSelector={containerSelector}
                          connectors={filtered}
-                         actions={actions} />
+                         openEditorDialogToCreate={actions.openEditorDialogToCreate}
+                         filterConnector={actions.filter}
+                         sortConnector={actions.sort}
+                         changeContainer={actions.changeContainer}
+          />
         <ConnectorList connectors={sliced} actions={actions} />
         <div className="center" style={style.paginator}>
           <Paginator itemCountPerPage={itemCountPerPage}
@@ -87,20 +95,20 @@ class ConnectorPage extends React.Component {
 
 function mapStateToProps(state) {
   return {
-    connectors: state[REDUCER_STATE_PROPERTY.CONNECTOR][CONNECTOR_STATE_PROPERTY.ITEMS],
-    paginator: state[REDUCER_STATE_PROPERTY.CONNECTOR][CONNECTOR_STATE_PROPERTY.PAGINATOR],
-    filterKeyword: state[REDUCER_STATE_PROPERTY.CONNECTOR][CONNECTOR_STATE_PROPERTY.FILTER],
-    editorDialog: state[REDUCER_STATE_PROPERTY.CONNECTOR][CONNECTOR_STATE_PROPERTY.EDITOR_DIALOG],
-    confirmDialog: state[REDUCER_STATE_PROPERTY.CONNECTOR][CONNECTOR_STATE_PROPERTY.CONFIRM_DIALOG],
-    snackbar: state[REDUCER_STATE_PROPERTY.CONNECTOR][CONNECTOR_STATE_PROPERTY.SNACKBAR],
-    sortingStrategy: state[REDUCER_STATE_PROPERTY.CONNECTOR][CONNECTOR_STATE_PROPERTY.SORTER],
-    containerSelector: state[REDUCER_STATE_PROPERTY.CONNECTOR][CONNECTOR_STATE_PROPERTY.CONTAINER_SELECTOR],
+    connectors: state[ROOT.CONNECTOR][CONNECTOR.ITEMS],
+    paginator: state[ROOT.CONNECTOR][CONNECTOR.PAGINATOR],
+    filterKeyword: state[ROOT.CONNECTOR][CONNECTOR.FILTER],
+    editorDialog: state[ROOT.CONNECTOR][CONNECTOR.EDITOR_DIALOG],
+    confirmDialog: state[ROOT.CONNECTOR][CONNECTOR.CONFIRM_DIALOG],
+    snackbar: state[ROOT.CONNECTOR][CONNECTOR.SNACKBAR],
+    sortingStrategy: state[ROOT.CONNECTOR][CONNECTOR.SORTER],
+    containerSelector: state[ROOT.CONNECTOR][CONNECTOR.CONTAINER_SELECTOR],
   }
 }
 
 function mapDispatchToProps(dispatch) {
   return {
-    actions: bindActionCreators(Actions[REDUCER_STATE_PROPERTY.CONNECTOR], dispatch),
+    actions: bindActionCreators(Actions[ROOT.CONNECTOR], dispatch),
   }
 }
 

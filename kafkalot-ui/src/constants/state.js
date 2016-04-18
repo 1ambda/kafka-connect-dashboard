@@ -1,4 +1,15 @@
-export const REDUCER_STATE_PROPERTY = {
+export const ROOT = {
   CONNECTOR: 'connector',
   ROUTING: 'routing',
+}
+
+export const CONNECTOR = {
+  ITEMS: 'items',
+  PAGINATOR: 'paginator',
+  FILTER: 'filterKeyword',
+  EDITOR_DIALOG: 'editorDialog',
+  CONFIRM_DIALOG: 'confirmDialog',
+  SORTER: 'sortingStrategy',
+  SNACKBAR: 'snackbar',
+  CONTAINER_SELECTOR: 'containerSelector',
 }

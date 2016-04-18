@@ -1,6 +1,10 @@
 import { createAction, handleActions, } from 'redux-actions'
 
-import { EDITOR_DIALOG_MODE, } from '../../components/Common/EditorDialog'
+export const EDITOR_DIALOG_MODE = {
+  EDIT: 'EDIT',
+  CREATE: 'CREATE',
+  CLOSE: 'CLOSE',
+}
 
 export const ActionType = {
   OPEN_EDITOR_DIALOG_TO_CREATE: 'OPEN_EDITOR_DIALOG_TO_CREATE',
@@ -14,31 +18,38 @@ export const Action = {
   closeEditorDialog: createAction(ActionType.CLOSE_EDITOR_DIALOG),
 }
 
-export const INITIAL_EDITOR_DIALOG_STATE = {
-  id: '',
-  job: {},
-  dialogMode: EDITOR_DIALOG_MODE.CLOSE,
-  readonly: true,
+export const Property = {
+  NAME: 'name',
+  CONNECTOR: 'connector',
+  DIALOG_MODE: 'dialogMode',
+  READONLY: 'readonly',
+}
+
+export const INITIAL_STATE = {
+  [Property.NAME]: '',
+  [Property.CONNECTOR]: {},
+  [Property.DIALOG_MODE]: EDITOR_DIALOG_MODE.CLOSE,
+  [Property.READONLY]: true,
 }
 
 export const handler = handleActions({
   /** open editor dialog to edit */
   [ActionType.UPDATE_EDITOR_DIALOG_CONFIG]: (state, { payload, }) =>
-    Object.assign({}, INITIAL_EDITOR_DIALOG_STATE, {
-      id: payload.id,
-      readonly: payload.readonly,
-      dialogMode: EDITOR_DIALOG_MODE.EDIT,
-      job: payload.job,
+    Object.assign({}, INITIAL_STATE, {
+      [Property.NAME]: payload[Property.NAME],
+      [Property.READONLY]: payload[Property.READONLY],
+      [Property.DIALOG_MODE]: EDITOR_DIALOG_MODE.EDIT,
+      [Property.CONNECTOR]: payload[Property.CONNECTOR],
     }),
 
   [ActionType.OPEN_EDITOR_DIALOG_TO_CREATE]: (state) =>
-    Object.assign({}, INITIAL_EDITOR_DIALOG_STATE, {
-      dialogMode: EDITOR_DIALOG_MODE.CREATE,
+    Object.assign({}, INITIAL_STATE, {
+      [Property.DIALOG_MODE]: EDITOR_DIALOG_MODE.CREATE,
     }),
 
   [ActionType.CLOSE_EDITOR_DIALOG]: (state) =>
-    Object.assign({}, INITIAL_EDITOR_DIALOG_STATE /** reset job */, {
-      dialogMode: EDITOR_DIALOG_MODE.CLOSE,
-      readonly: false,
+    Object.assign({}, INITIAL_STATE /** reset */, {
+      [Property.DIALOG_MODE]: EDITOR_DIALOG_MODE.CLOSE,
+      [Property.READONLY]: false,
     }),
-}, INITIAL_EDITOR_DIALOG_STATE)
+}, INITIAL_STATE)

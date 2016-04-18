@@ -10,24 +10,15 @@ import * as ConfirmDialogState from './ConfirmDialogState'
 import * as ClosableSnackbarState from './ClosableSnackbarState'
 import * as ContainerSelectorState from './ContainerSelectorState'
 
-export const CONNECTOR_STATE_PROPERTY = {
-  ITEMS: 'items',
-  PAGINATOR: 'paginator',
-  FILTER: 'filterKeyword',
-  EDITOR_DIALOG: 'editorDialog',
-  CONFIRM_DIALOG: 'confirmDialog',
-  SORTER: 'sortingStrategy',
-  SNACKBAR: 'snackbar',
-  CONTAINER_SELECTOR: 'containerSelector',
-}
+import { CONNECTOR, } from '../../constants/state'
 
 export default combineReducers({
-  [CONNECTOR_STATE_PROPERTY.CONTAINER_SELECTOR]: ContainerSelectorState.handler,
-  [CONNECTOR_STATE_PROPERTY.ITEMS]: ItemState.handler,
-  [CONNECTOR_STATE_PROPERTY.PAGINATOR]: PaginatorState.handler,
-  [CONNECTOR_STATE_PROPERTY.FILTER]: FilterState.handler,
-  [CONNECTOR_STATE_PROPERTY.SORTER]: SorterState.handler,
-  [CONNECTOR_STATE_PROPERTY.EDITOR_DIALOG]: EditorDialogState.handler,
-  [CONNECTOR_STATE_PROPERTY.CONFIRM_DIALOG]: ConfirmDialogState.handler,
-  [CONNECTOR_STATE_PROPERTY.SNACKBAR]: ClosableSnackbarState.handler,
+  [CONNECTOR.CONTAINER_SELECTOR]: ContainerSelectorState.handler,
+  [CONNECTOR.ITEMS]: ItemState.handler,
+  [CONNECTOR.PAGINATOR]: PaginatorState.handler,
+  [CONNECTOR.FILTER]: FilterState.handler,
+  [CONNECTOR.SORTER]: SorterState.handler,
+  [CONNECTOR.EDITOR_DIALOG]: EditorDialogState.handler,
+  [CONNECTOR.CONFIRM_DIALOG]: ConfirmDialogState.handler,
+  [CONNECTOR.SNACKBAR]: ClosableSnackbarState.handler,
 })

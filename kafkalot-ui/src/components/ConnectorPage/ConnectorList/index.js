@@ -5,7 +5,9 @@ import Divider from 'material-ui/lib/divider'
 
 import * as style from './style'
 import ConnectorItem from '../ConnectorItem'
-import { ITEM_PROPERTY as CONNECTOR_PROPERTY } from '../../../reducers/ConnectorReducer/ItemState'
+import {
+  ITEM_PROPERTY as CONNECTOR_PROPERTY,
+} from '../../../reducers/ConnectorReducer/ItemState'
 
 export default class ConnectorList extends React.Component {
   static propTypes = {
@@ -16,7 +18,13 @@ export default class ConnectorList extends React.Component {
   static createItem(connector, actions) {
     return (<ConnectorItem connector={connector}
                            key={connector[CONNECTOR_PROPERTY.name]}
-                           actions={actions} />)
+                           openConfirmDialogToRemove={actions.openConfirmDialogToRemove}
+                           openEditorDialogToEdit={actions.openEditorDialogToEdit}
+                           setReadonly={actions.setReadonly}
+                           unsetReadonly={actions.unsetReadonly}
+                           startConnector={actions.start}
+                           stopConnector={actions.stop}
+      />)
   }
 
   render() {

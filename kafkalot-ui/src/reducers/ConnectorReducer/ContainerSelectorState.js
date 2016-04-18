@@ -7,6 +7,10 @@ export const ActionType = {
   SELECT_CONTAINER: 'SELECT_CONTAINER',
 }
 
+export const Payload = {
+  CONTAINER: 'container',
+}
+
 export const Action = {
   selectContainer: createAction(ActionType.SELECT_CONTAINER),
 }
@@ -18,8 +22,7 @@ export const INITIAL_STATE = {
 
 export const handler = handleActions({
   [ActionType.SELECT_CONTAINER]: (state, { payload, }) => {
-    const { container, } = payload
-    return Object.assign({}, state, { selectedContainer: container, })
+    return Object.assign({}, state, { selectedContainer: payload[Payload.CONTAINER], })
   },
 
 }, INITIAL_STATE)

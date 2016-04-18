@@ -9,8 +9,10 @@ import Filter from '../../Common/Filter'
 import Selector from '../../Common/Selector'
 import * as style from './style'
 
-import * as JobSortingStrategies from '../../../reducers/ConnectorReducer/SorterState'
-import { ITEM_PROPERTY, isRunning, } from '../../../reducers/ConnectorReducer/ItemState'
+import { isRunning, } from '../../../reducers/ConnectorReducer/ItemState'
+import { Payload as SorterPayload, } from '../../../reducers/ConnectorReducer/SorterState'
+import { Payload as FilterPayload, } from '../../../reducers/ConnectorReducer/FilterState'
+import { Payload as ContainerSelectorPayload, } from '../../../reducers/ConnectorReducer/ContainerSelectorState'
 import * as URL from '../../../middlewares/url'
 import * as Page from '../../../constants/page'
 
@@ -19,7 +21,10 @@ export default class ConnectorHeader extends React.Component {
     sortingStrategy: PropTypes.object.isRequired,
     containerSelector: PropTypes.object.isRequired,
     connectors: PropTypes.array.isRequired,
-    actions: PropTypes.object.isRequired,
+    openEditorDialogToCreate: PropTypes.func.isRequired,
+    filterConnector: PropTypes.func.isRequired,
+    sortConnector: PropTypes.func.isRequired,
+    changeContainer: PropTypes.func.isRequired,
   }
 
   static createSummaryDOM(connectors, createButton) {
@@ -30,7 +35,7 @@ export default class ConnectorHeader extends React.Component {
       <div style={style.summaryContainer}>
         <span>Running</span>
         <span style={style.summaryRunningConnector}> {runningJobCount}</span>
-        <span> of {totalJobCount} Connectors</span>
+        <span> of {totalJobCount}</span>
         <span style={style.buttonContainer}> {createButton} </span>
       </div>
     )
@@ -41,30 +46,28 @@ export default class ConnectorHeader extends React.Component {
   }
 
   handleCreateJob() {
-    const { actions, } = this.props
-
-    actions.openEditorDialogToCreate()
+    const { openEditorDialogToCreate, } = this.props
+    openEditorDialogToCreate()
   }
 
   handleFilterChange(filterKeyword) {
-    const { actions, } = this.props
-    const payload = { filterKeyword, }
-
-    actions.filter(payload)
+    const { filterConnector, } = this.props
+    const payload = { [FilterPayload.FILTER_KEYWORD]: filterKeyword, }
+    filterConnector(payload)
   }
 
   handleSorterChange(strategy) {
-    const { actions, } = this.props
-    const payload = { strategy, }
+    const { sortConnector, } = this.props
+    const payload = { [SorterPayload.STRATEGY]: strategy, }
 
-    actions.sort(payload)
+    sortConnector(payload)
   }
 
   handleContainerSelectorChange(container) {
-    const { actions, } = this.props
-    const payload = { container, }
+    const { changeContainer, } = this.props
+    const payload = { [ContainerSelectorPayload.CONTAINER]: container, }
 
-     actions.changeContainer(payload)
+     changeContainer(payload)
   }
 
   render() {

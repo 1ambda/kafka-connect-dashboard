@@ -4,43 +4,39 @@ import FlatButton from 'material-ui/lib/flat-button'
 import Dialog from 'material-ui/lib/dialog'
 
 import { ITEM_PROPERTY, } from '../../../reducers/ConnectorReducer/ItemState'
+import { CONFIRM_DIALOG_MODE, Property as DialogProperty, } from '../../../reducers/ConnectorReducer/ConfirmDialogState'
 import * as dialogStyle from './style'
-
-export const CONFIRM_DIALOG_MODE = {
-  ACTION_ALL: 'ACTION_ALL',
-  REMOVE: 'REMOVE',
-  CLOSE: 'CLOSE',
-}
 
 export default class ConfirmDialog extends React.Component {
   static propTypes = {
-    job: PropTypes.object.isRequired,
-    actions: PropTypes.object.isRequired,
+    connector: PropTypes.object.isRequired,
     dialogMode: PropTypes.string.isRequired,
+    closeConfirmDialog: PropTypes.func.Required,
+    removeConnector: PropTypes.func.Required,
   }
 
   static createTitle(element) {
     return (
       <div className="center" style={dialogStyle.title}>
         <span>Remove</span>
-        <span style={dialogStyle.jobName}> {element}</span>
+        <span style={dialogStyle.name}> {element}</span>
       </div>
     )
   }
 
   handleClose() {
-    const { actions, } = this.props
-    actions.closeConfirmDialog()
+    const { closeConfirmDialog, } = this.props
+    closeConfirmDialog()
   }
 
   handleRemove() {
-    const { actions, job, } = this.props
-    actions.remove(job)
-    actions.closeConfirmDialog()
+    const { removeConnector, connector, closeConfirmDialog, } = this.props
+    removeConnector({ [DialogProperty.CONNECTOR]: connector, })
+    closeConfirmDialog()
   }
 
   render() {
-    const { job, dialogMode, } = this.props
+    const { connector, dialogMode, } = this.props
 
     const submitButton = (CONFIRM_DIALOG_MODE.REMOVE === dialogMode) ?
       (<FlatButton
@@ -57,7 +53,7 @@ export default class ConfirmDialog extends React.Component {
       submitButton,
     ]
 
-    const title = ConfirmDialog.createTitle(job[ITEM_PROPERTY.name])
+    const title = ConfirmDialog.createTitle(connector[ITEM_PROPERTY.name])
 
     return (
       <Dialog

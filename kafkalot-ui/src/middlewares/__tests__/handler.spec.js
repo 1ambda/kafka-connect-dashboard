@@ -53,7 +53,7 @@ describe('handler', () => {
       )
 
       expect(gen.next(jobs).value).to.deep.equal(
-        put(ItemState.Action.updateAll({ jobs, }))
+        put(ItemState.Action.updateAll({ connectors: jobs, }))
       )
 
       expect(gen.next().value).to.deep.equal(
@@ -499,7 +499,7 @@ describe('handler', () => {
         )
 
         expect(gen.next(updatedJob).value).to.deep.equal(
-          put(ItemState.Action.update({ [ITEM_PROPERTY.name]: name, job: updatedJob, }))
+          put(ItemState.Action.update({ [ITEM_PROPERTY.name]: name, connector: updatedJob, }))
         )
       })
 
@@ -544,13 +544,13 @@ describe('handler', () => {
       it(`should
         - select Selector.getSelectedContainer
         - call startJob with (name)
-        - put updateJobSucceeded with { name, job }
+        - put update with { name, connector, }
         `, () => {
 
         const name = 'job01'
         const payload = { [ITEM_PROPERTY.name]: name, }
         const action = { payload, }
-        const updatedJob = { [ITEM_PROPERTY.name]: name, [SERVER_JOB_PROPERTY.active]: true, }
+        const updated = { [ITEM_PROPERTY.name]: name, [SERVER_JOB_PROPERTY.active]: true, }
         const container = 'container01'
 
         const gen = handler(action)
@@ -567,12 +567,12 @@ describe('handler', () => {
           call(API.start, container, name) /** call API */
         )
 
-        expect(gen.next(updatedJob).value).to.deep.equal(
+        expect(gen.next(updated).value).to.deep.equal(
           call(API.delay, Handler.JOB_TRANSITION_DELAY) /** wait */
         )
 
         expect(gen.next().value).to.deep.equal(
-          put(ItemState.Action.update({ [ITEM_PROPERTY.name]: name, job: updatedJob, }))
+          put(ItemState.Action.update({ [ITEM_PROPERTY.name]: name, connector: updated, }))
         )
 
         expect(gen.next().value).to.deep.equal(
@@ -583,7 +583,7 @@ describe('handler', () => {
       it(`should
         - select Selector.getSelectedContainer
         - put startSwitching with { name, }
-        - call startJob with { container, name, }
+        - call start with { container, name, }
         - if exception is occurred while calling api,
           put openErrorSnackbar
         - put endSwitching with { name }
@@ -631,15 +631,15 @@ describe('handler', () => {
       it(`should
         - select Selector.getSelectedContainer
         - put startSwitching with { name, }
-        - call stopJob with (name)
-        - put updateJobSucceeded with { name, job }
+        - call stop with (name)
+        - put update with { name, connector, }
         - put endSwitching with { name, }
         `, () => {
 
         const name = 'job01'
         const payload = { [ITEM_PROPERTY.name]: name, }
         const action = { payload, }
-        const updatedJob = { [ITEM_PROPERTY.name]: name, [SERVER_JOB_PROPERTY.active]: false, }
+        const updated = { [ITEM_PROPERTY.name]: name, [SERVER_JOB_PROPERTY.active]: false, }
         const container = 'container01'
 
         const gen = handler(action)
@@ -656,12 +656,12 @@ describe('handler', () => {
           call(API.stop, container, name) /** call API */
         )
 
-        expect(gen.next(updatedJob).value).to.deep.equal(
+        expect(gen.next(updated).value).to.deep.equal(
           call(API.delay, Handler.JOB_TRANSITION_DELAY) /** wait */
         )
 
         expect(gen.next().value).to.deep.equal(
-          put(ItemState.Action.update({ [ITEM_PROPERTY.name]: name, job: updatedJob, }))
+          put(ItemState.Action.update({ [ITEM_PROPERTY.name]: name, connector: updated, }))
         )
 
         expect(gen.next().value).to.deep.equal(

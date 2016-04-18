@@ -41,35 +41,35 @@ export function* callFetchAll() {
 export function* handleOpenEditorDialogToEdit(action) {
   const { payload, } = action
   const container = yield select(Selector.getSelectedContainer)
-  const { id, readonly, } = payload
+  const { name, readonly, } = payload
 
   try {
-    const job = yield call(API.fetchConfig, container, id)
-    yield put(EditorDialogState.Action.updateEditorDialogConfig({ id, readonly, job, }))
+    const connector = yield call(API.fetchConfig, container, name)
+    yield put(EditorDialogState.Action.updateEditorDialogConfig({ name, readonly, connector, }))
   } catch (error) {
     yield put(SnackBarState.Action.openErrorSnackbar(
-      { message: `Failed to fetch job '${container}/${id}`, error, })
+      { message: `Failed to fetch '${container}/${name}`, error, })
     )
   }
 }
 
 export function* handleUpdate(action) {
   const { payload, } = action
-  const { id, job, } = payload
+  const { name, connector, } = payload
   const container = yield select(Selector.getSelectedContainer)
 
   try {
-    const updatedJob = yield call(API.updateConfig, container, id, job)
-    yield put(ItemState.Action.update({ id, job: updatedJob, }))
+    const updated = yield call(API.updateConfig, container, name, connector)
+    yield put(ItemState.Action.update({ name, connector: updated, }))
     yield put(
       SnackBarState.Action.openInfoSnackbar(
-        { message: `${container}/${id} was updated`, }
+        { message: `${container}/${name} was updated`, }
       )
     )
   } catch (error) {
     yield put(
       SnackBarState.Action.openErrorSnackbar(
-        { message: `Failed to update job '${container}/${id}`, error, }
+        { message: `Failed to update '${container}/${name}`, error, }
       )
     )
   }
@@ -77,27 +77,27 @@ export function* handleUpdate(action) {
 
 export function* handleCreate(action) {
   const { payload, } = action
-  const { job, } = payload
+  const { connector, } = payload
   const container = yield select(Selector.getSelectedContainer)
 
   try {
     /** validate */
-    const id = validateConnectorName(job)
+    const name = validateConnectorName(connector)
     const existingJobs = yield select(Selector.getConnectorItems)
-    checkDuplicated(job, existingJobs)
+    checkDuplicated(connector, existingJobs)
 
-    yield call(API.create, container, job) /** create job */
-    yield call(callFetchAll)      /** fetch all jobs again */
+    yield call(API.create, container, connector)
+    yield call(callFetchAll)
     yield put(EditorDialogState.Action.closeEditorDialog())
     yield put(
       SnackBarState.Action.openInfoSnackbar(
-        { message: `${container}/${id} was created`, }
+        { message: `${container}/${name} was created`, }
       )
     )
   } catch (error) {
     yield put(
       SnackBarState.Action.openErrorSnackbar(
-      { message: 'Failed to create job', error, }
+      { message: 'Failed to create ', error, }
       )
     )
   }
@@ -105,22 +105,22 @@ export function* handleCreate(action) {
 
 export function* handleRemove(action) {
   const { payload, } = action
-  const { id, } = payload
+  const { name, } = payload
   const container = yield select(Selector.getSelectedContainer)
 
   try {
-    validateName(id)
-    yield call(API.remove, container, id)
-    yield call(callFetchAll) /** fetch all job again */
+    validateName(name)
+    yield call(API.remove, container, name)
+    yield call(callFetchAll) /** fetch all again */
     yield put(
       SnackBarState.Action.openInfoSnackbar(
-        { message: `${container}/${id} was removed`, }
+        { message: `${container}/${name} was removed`, }
       )
     )
   } catch(error) {
     yield put(
       SnackBarState.Action.openErrorSnackbar(
-      { message: `Failed to remove job '${container}/${id}'`, error, }
+      { message: `Failed to remove '${container}/${name}'`, error, }
       )
     )
   }
@@ -128,17 +128,17 @@ export function* handleRemove(action) {
 
 export function* handleSetReadonly(action) {
   const { payload, } = action
-  const { id, } = payload
+  const { name, } = payload
   const container = yield select(Selector.getSelectedContainer)
 
   try {
-    validateName(id)
-    const updatedJob = yield call(API.setReadonly, container, id)
-    yield put(ItemState.Action.update({ id, job: updatedJob, }))
+    validateName(name)
+    const updated = yield call(API.setReadonly, container, name)
+    yield put(ItemState.Action.update({ name, connector: updated, }))
   } catch (error) {
     yield put(
       SnackBarState.Action.openErrorSnackbar(
-        { message: `Failed to set readonly '${container}/${id}'`, error, }
+        { message: `Failed to set readonly '${container}/${name}'`, error, }
       )
     )
   }
@@ -146,17 +146,17 @@ export function* handleSetReadonly(action) {
 
 export function* handleUnsetReadonly(action) {
   const { payload, } = action
-  const { id, } = payload
+  const { name, } = payload
   const container = yield select(Selector.getSelectedContainer)
 
   try {
-    validateName(id)
-    const updatedJob = yield call(API.unsetReadonly, container, id)
-    yield put(ItemState.Action.update({ id, job: updatedJob, }))
+    validateName(name)
+    const updated = yield call(API.unsetReadonly, container, name)
+    yield put(ItemState.Action.update({ name, connector: updated, }))
   } catch (error) {
     yield put(
       SnackBarState.Action.openErrorSnackbar(
-        { message: `Failed to unset readonly '${container}/${id}'`, error, }
+        { message: `Failed to unset readonly '${container}/${name}'`, error, }
       )
     )
   }
@@ -164,43 +164,43 @@ export function* handleUnsetReadonly(action) {
 
 export function* handleStart(action) {
   const { payload, } = action
-  const { id, } = payload
+  const { name, } = payload
   const container = yield select(Selector.getSelectedContainer)
 
-  yield put(ItemState.Action.startSwitching({ id, }))
+  yield put(ItemState.Action.startSwitching({ name, }))
 
   try {
-    validateName(id)
-    const updatedJob = yield call(API.start, container, id)
+    validateName(name)
+    const updatedJob = yield call(API.start, container, name)
     yield call(API.delay, JOB_TRANSITION_DELAY)
-    yield put(ItemState.Action.update({ id, job: updatedJob, }))
+    yield put(ItemState.Action.update({ name, connector: updatedJob, }))
   } catch (error) {
     yield put(
       SnackBarState.Action.openErrorSnackbar(
-        { message: `Failed to start job '${container}/${id}'`, error, }
+        { message: `Failed to start '${container}/${name}'`, error, }
       )
     )
   }
 
-  yield put(ItemState.Action.endSwitching({ id, }))
+  yield put(ItemState.Action.endSwitching({ name, }))
 }
 
 export function* handleStop(action) {
   const { payload, } = action
-  const { id, } = payload
+  const { name, } = payload
   const container = yield select(Selector.getSelectedContainer)
 
-  yield put(ItemState.Action.startSwitching({ id, }))
+  yield put(ItemState.Action.startSwitching({ name, }))
 
   try {
-    validateName(id)
-    const updatedJob = yield call(API.stop, container, id)
+    validateName(name)
+    const updatedJob = yield call(API.stop, container, name)
     yield call(API.delay, JOB_TRANSITION_DELAY)
-    yield put(ItemState.Action.update({ id, job: updatedJob, }))
+    yield put(ItemState.Action.update({ name, connector: updatedJob, }))
   } catch (error) {
     yield put(
       SnackBarState.Action.openErrorSnackbar(
-        { message: `Failed to stop job '${container}/${id}'`, error, }
+        { message: `Failed to stop '${container}/${name}'`, error, }
       )
     )
   }
@@ -217,14 +217,14 @@ export function* handleChangeContainerSelector(action) {
   try {
     container = payload.container /** payload might be undefined */
 
-    const jobs = yield call(API.fetchAll, container)
-    yield put(ItemState.Action.updateAll({ jobs, }))
+    const connectors = yield call(API.fetchAll, container)
+    yield put(ItemState.Action.updateAll({ connectors, }))
     yield put(SorterState.Action.sort({ strategy: currentSortStrategy, }))
     yield put(ContainerSelectorState.Action.selectContainer({ container, }))
   } catch (error) {
     yield put(
       SnackBarState.Action.openErrorSnackbar(
-        { message: `Failed to fetch jobs from '${container}'`, error, }
+        { message: `Failed to fetch all from '${container}'`, error, }
       )
     )
   }

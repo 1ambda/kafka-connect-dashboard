@@ -4,7 +4,7 @@ export const title = {
   padding: '50px 0px 0px 20px',
 }
 
-export const jobName = {
+export const name = {
   fontWeight: 500,
   color: '#1e88e5',
 }

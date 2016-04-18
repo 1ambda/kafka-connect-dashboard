@@ -1,6 +1,9 @@
 import { createAction, handleActions, } from 'redux-actions'
 
-import { CONFIRM_DIALOG_MODE, } from '../../components/Common/ConfirmDialog'
+export const CONFIRM_DIALOG_MODE = {
+  REMOVE: 'REMOVE',
+  CLOSE: 'CLOSE',
+}
 
 export const ActionType = {
   OPEN_CONFIRM_DIALOG_TO_REMOVE: 'OPEN_CONFIRM_DIALOG_TO_REMOVE',
@@ -12,16 +15,26 @@ export const Action = {
   closeConfirmDialog: createAction(ActionType.CLOSE_CONFIRM_DIALOG),
 }
 
-const INITIAL_CONFIRM_DIALOG_STATE = {
-  job: {},
+export const Property = {
+  CONNECTOR: 'connector',
+  DIALOG_MODE: 'dialogMode',
+}
+
+const INITIAL_STATE = {
+  connector: {},
   dialogMode: CONFIRM_DIALOG_MODE.CLOSE,
 }
 
 export const handler = handleActions({
   [ActionType.OPEN_CONFIRM_DIALOG_TO_REMOVE]: (state, { payload, }) =>
-    Object.assign({}, state, { job: payload, dialogMode: CONFIRM_DIALOG_MODE.REMOVE, }),
+    Object.assign({}, state, {
+      [Property.CONNECTOR]: payload[Property.CONNECTOR],
+      [Property.DIALOG_MODE]: CONFIRM_DIALOG_MODE.REMOVE,
+    }),
 
   [ActionType.CLOSE_CONFIRM_DIALOG]: (state, { payload, }) =>
-    Object.assign({}, state, { dialogMode: CONFIRM_DIALOG_MODE.CLOSE, }),
+    Object.assign({}, state, {
+      [Property.DIALOG_MODE]: CONFIRM_DIALOG_MODE.CLOSE,
+    }),
 
-}, INITIAL_CONFIRM_DIALOG_STATE)
+}, INITIAL_STATE)

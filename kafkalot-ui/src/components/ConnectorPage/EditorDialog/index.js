@@ -7,16 +7,11 @@ import RaisedButton from 'material-ui/lib/raised-button'
 import FlatButton from 'material-ui/lib/flat-button'
 import Dialog from 'material-ui/lib/dialog'
 
-import { ITEM_PROPERTY, modifyProp, } from '../../../reducers/ConnectorReducer/ItemState'
+import { ITEM_PROPERTY, } from '../../../reducers/ConnectorReducer/ItemState'
+import { EDITOR_DIALOG_MODE, } from '../../../reducers/ConnectorReducer/EditorDialogState'
 import * as dialogStyle from './style'
 
 const ELEM_ID_EDITOR_DIALOG = 'editor-dialog'
-
-export const EDITOR_DIALOG_MODE = {
-  EDIT: 'EDIT',
-  CREATE: 'CREATE',
-  CLOSE: 'CLOSE',
-}
 
 export const JSON_EDITOR_MODES = {
   TREE: 'tree', VIEW: 'view', CODE: 'code',
@@ -42,9 +37,11 @@ export default class EditorDialog extends React.Component {
   static propTypes = {
     name: PropTypes.string.isRequired,
     job: PropTypes.object.isRequired,
-    actions: PropTypes.object.isRequired,
     readonly: PropTypes.bool.isRequired,
     dialogMode: PropTypes.string.isRequired, /** EDITOR_DIALOG_MODE */
+    closeEditorDialog: PropTypes.func.isRequired,
+    updateConnector: PropTypes.func.isRequired,
+    createConnector: PropTypes.func.isRequired,
   }
 
   constructor(props) {
@@ -112,24 +109,24 @@ export default class EditorDialog extends React.Component {
   }
 
   handleClose() {
-    const { actions, } = this.props
-    actions.closeEditorDialog()
+    const { closeEditorDialog, } = this.props
+    closeEditorDialog()
   }
 
   handleUpdate() {
-    const { actions, name, } = this.props
+    const { updateConnector, name, } = this.props
     const { isJSONChanged, } = this.state
 
     if (isJSONChanged) {
-      actions.update({ name, job: this.getEditorJSONValue(), })
+      updateConnector({ name, job: this.getEditorJSONValue(), })
     }
   }
 
   handleCreate() {
-    const { actions, } = this.props
+    const { createConnector, } = this.props
     const job = this.getEditorJSONValue()
 
-    actions.create({ job, })
+    createConnector({ job, })
   }
 
   render() {

@@ -100,7 +100,7 @@ describe('sagas', () => {
 
       const error = new Error('error')
       expect(gen.throw(error).value).to.deep.equal(
-        put(ClosableSnackBarState.Action.openErrorSnackbar({ message: 'Failed to fetch jobs', error, }))
+        put(ClosableSnackBarState.Action.openErrorSnackbar({ message: 'Failed to fetch all connectors', error, }))
       )
     })
   })

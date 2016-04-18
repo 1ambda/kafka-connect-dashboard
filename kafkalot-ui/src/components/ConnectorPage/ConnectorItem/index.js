@@ -13,7 +13,6 @@ import { ConnectorItemColors, } from '../../../constants/theme'
 import {
   ITEM_PROPERTY as CONNECTOR_PROPERTY, isRunning, isStopped, isWaiting, isSwitching,
 } from '../../../reducers/ConnectorReducer/ItemState'
-
 /** extract getInactiveState functions for testability */
 export function isReadonly(connector) {
   return isSwitching(connector) || isStopped(connector) || isRunning(connector)
@@ -36,7 +35,12 @@ export function isRunningToggleDefaultToggled(connector) {
 export default class ConnectorItem extends React.Component {
   static propTypes = {
     connector: PropTypes.object.isRequired,
-    actions: PropTypes.object.isRequired,
+    openConfirmDialogToRemove: PropTypes.func.isRequired,
+    openEditorDialogToEdit: PropTypes.func.isRequired,
+    setReadonly: PropTypes.func.isRequired,
+    unsetReadonly: PropTypes.func.isRequired,
+    startConnector: PropTypes.func.isRequired,
+    stopConnector: PropTypes.func.isRequired,
   }
 
   static getCommandColor(inactive) {
@@ -108,37 +112,37 @@ export default class ConnectorItem extends React.Component {
   }
 
   handleReadonlyToggleChange() {
-    const { connector, actions, } = this.props
+    const { connector, setReadonly, unsetReadonly, } = this.props
 
     /**
      * since material-ui toggle doesn't property work, (0.14.4)
      * we rely on the redux state instead of passed params of this callback
      * to send actions
      */
-    if (isReadonly(connector)) actions.unsetReadonly(connector)
-    else actions.setReadonly(connector)
+    if (isReadonly(connector)) unsetReadonly(connector)
+    else setReadonly(connector)
   }
 
   handleRunningToggleChange() {
-    const { connector, actions, } = this.props
+    const { connector, stopConnector, startConnector, } = this.props
 
     /**
      * since material-ui toggle doesn't property work, (0.14.4)
      * we rely on the redux state instead of passed params of this callback
      * to send actions
      */
-    if (isRunning(connector)) actions.stop(connector)
-    else actions.start(connector)
+    if (isRunning(connector)) stopConnector(connector)
+    else startConnector(connector)
   }
 
   handleRemoveButtonClick(event) {
-    const { connector, actions, } = this.props
+    const { connector, openConfirmDialogToRemove, } = this.props
 
-    if (isWaiting(connector)) actions.openConfirmDialogToRemove(connector)
+    if (isWaiting(connector)) openConfirmDialogToRemove(connector)
   }
 
   handleItemClick(event) {
-    const { actions, connector, } = this.props
+    const { openEditorDialogToEdit, connector, } = this.props
 
     /** check current connector is readonly */
     const readonly = isReadonly(connector)
@@ -150,8 +154,7 @@ export default class ConnectorItem extends React.Component {
      * since we can't control nestedListToggle event in current material-ui version (0.14.4)
      * we have to avoid opening dialog when nestedListToggle is clicked
      */
-    if (event.dispatchMarker.includes('Text'))
-      actions.openEditorDialogToEdit(payload)
+    if (event.dispatchMarker.includes('Text')) openEditorDialogToEdit(payload)
   }
 
   render() {

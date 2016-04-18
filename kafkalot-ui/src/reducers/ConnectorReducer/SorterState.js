@@ -14,6 +14,10 @@ export const ActionType = {
   SORT: 'SORT',
 }
 
+export const Payload = {
+  STRATEGY: 'strategy',
+}
+
 export const Action = {
   sort: createAction(ActionType.SORT),
 }
@@ -24,6 +28,6 @@ const INITIAL_STATE = {
 }
 
 export const handler = handleActions({
-  [ActionType.SORT]: (state, { payload, }) => /** string is immutable */
-    Object.assign({}, state, { selectedStrategy: payload.strategy, }),
+  [ActionType.SORT]: (state, { payload, }) =>
+    Object.assign({}, state, { selectedStrategy: payload[Payload.STRATEGY], }),
 }, INITIAL_STATE)
