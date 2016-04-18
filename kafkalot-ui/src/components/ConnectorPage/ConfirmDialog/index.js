@@ -3,7 +3,7 @@ import React, { PropTypes, } from 'react'
 import FlatButton from 'material-ui/lib/flat-button'
 import Dialog from 'material-ui/lib/dialog'
 
-import { ITEM_PROPERTY, } from '../../../reducers/ConnectorReducer/ItemState'
+import { ItemProperty, } from '../../../reducers/ConnectorReducer/ItemState'
 import { CONFIRM_DIALOG_MODE, Property as DialogProperty, } from '../../../reducers/ConnectorReducer/ConfirmDialogState'
 import * as dialogStyle from './style'
 
@@ -53,7 +53,7 @@ export default class ConfirmDialog extends React.Component {
       submitButton,
     ]
 
-    const title = ConfirmDialog.createTitle(connector[ITEM_PROPERTY.name])
+    const title = ConfirmDialog.createTitle(connector[ItemProperty.name])
 
     return (
       <Dialog

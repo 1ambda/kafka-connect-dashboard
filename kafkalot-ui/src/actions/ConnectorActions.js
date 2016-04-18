@@ -28,7 +28,7 @@ export default Object.assign({},
 
     /** for dialogs, snackbar */
     openEditorDialogToCreate: EditorDialogState.Action.openEditorDialogToCreate,
-    updateEditorDialogConfig: EditorDialogState.Action.updateEditorDialogConfig,
+    openEditorDialogToEdit: EditorDialogState.Action.openEditorDialogToEdit,
     closeEditorDialog: EditorDialogState.Action.closeEditorDialog,
     openConfirmDialogToRemove: ConfirmDialogState.Action.openConfirmDialogToRemove,
     closeConfirmDialog: ConfirmDialogState.Action.closeConfirmDialog,

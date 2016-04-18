@@ -2,8 +2,8 @@ import { expect, } from 'chai'
 
 import {
   INITIAL_ITEM_STATE as INITIAL_CONNECTOR_ITEM_STATE,
-  ITEM_PROPERTY as CONNECTOR_PROPERTY,
-  STATE as CONNECTOR_STATE,
+  ItemProperty as CONNECTOR_PROPERTY,
+  State as CONNECTOR_STATE,
 } from '../../reducers/ConnectorReducer/ItemState'
 import * as Converter from '../converter'
 

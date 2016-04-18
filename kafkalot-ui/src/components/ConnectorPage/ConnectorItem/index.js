@@ -11,8 +11,10 @@ import * as style from './style'
 import { ConnectorItemColors, } from '../../../constants/theme'
 
 import {
-  ITEM_PROPERTY as CONNECTOR_PROPERTY, isRunning, isStopped, isWaiting, isSwitching,
+  ItemProperty as CONNECTOR_PROPERTY, isRunning, isStopped, isWaiting, isSwitching,
 } from '../../../reducers/ConnectorReducer/ItemState'
+import { Payload as EditorDialogPayload, } from '../../../reducers/ConnectorReducer/EditorDialogState'
+
 /** extract getInactiveState functions for testability */
 export function isReadonly(connector) {
   return isSwitching(connector) || isStopped(connector) || isRunning(connector)
@@ -146,7 +148,10 @@ export default class ConnectorItem extends React.Component {
 
     /** check current connector is readonly */
     const readonly = isReadonly(connector)
-    const payload = { id: connector[CONNECTOR_PROPERTY.id], readonly, }
+    const payload = {
+      [EditorDialogPayload.NAME]: connector[CONNECTOR_PROPERTY.name],
+      [EditorDialogPayload.READONLY]: readonly,
+    }
 
     /**
      * preventDefault hack
@@ -160,7 +165,7 @@ export default class ConnectorItem extends React.Component {
   render() {
     const { connector, } = this.props
     const tags = connector[CONNECTOR_PROPERTY.tags]
-    const id = connector[CONNECTOR_PROPERTY.name]
+    const name = connector[CONNECTOR_PROPERTY.name]
 
     /** 1. Remove Button */
     const readonly = isReadonly(connector)
@@ -191,7 +196,7 @@ export default class ConnectorItem extends React.Component {
 
     return (
       <ListItem onClick={this.handleItemClick.bind(this)}
-                primaryText={id}
+                primaryText={name}
                 secondaryText={tagString}
                 leftIcon={spinIcon}
                 nestedItems={[runningToggle, readonlyToggle, removeButton,]} />

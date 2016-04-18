@@ -8,6 +8,11 @@ export const ActionType = {
   CLOSE_SNACKBAR: 'CLOSE_SNACKBAR',
 }
 
+export const Payload = {
+  ERROR: 'error',
+  MESSAGE: 'message',
+}
+
 export const Action = {
   openInfoSnackbar: createAction(ActionType.OPEN_INFO_SNACKBAR),
   openErrorSnackbar: createAction(ActionType.OPEN_ERROR_SNACKBAR),
@@ -27,13 +32,13 @@ export const handler = handleActions({
   [ActionType.OPEN_ERROR_SNACKBAR]: (state, { payload, }) =>
     Object.assign({}, state, {
       snackbarMode: CLOSABLE_SNACKBAR_MODE.OPEN,
-      message: `[ERROR] ${payload.message} (${payload.error.message})`,
+      message: `[ERROR] ${payload[Payload.MESSAGE]} (${payload[Payload.ERROR].message})`,
     }),
 
   [ActionType.OPEN_INFO_SNACKBAR]: (state, { payload, }) =>
     Object.assign({}, state, {
       snackbarMode: CLOSABLE_SNACKBAR_MODE.OPEN,
-      message: `[INFO] ${payload.message}`,
+      message: `[INFO] ${payload[Payload.MESSAGE]}`,
     }),
 
 }, INITIAL_SNACKBAR_STATE)

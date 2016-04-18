@@ -1,7 +1,7 @@
 import { expect, } from 'chai'
 
 import {
-  ActionType, Action, STATE, ITEM_PROPERTY, INITIAL_ITEM_STATE,
+  ActionType, Action, State, ItemProperty, INITIAL_ITEM_STATE,
   isRunning, isStopped, isWaiting,
 } from '../ItemState'
 import * as SorterState from '../SorterState'

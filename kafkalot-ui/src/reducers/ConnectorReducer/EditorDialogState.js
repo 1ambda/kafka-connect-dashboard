@@ -8,13 +8,13 @@ export const EDITOR_DIALOG_MODE = {
 
 export const ActionType = {
   OPEN_EDITOR_DIALOG_TO_CREATE: 'OPEN_EDITOR_DIALOG_TO_CREATE',
-  UPDATE_EDITOR_DIALOG_CONFIG: 'UPDATE_EDITOR_DIALOG_CONFIG',
+  OPEN_EDITOR_DIALOG_TO_EDIT: 'OPEN_EDITOR_DIALOG_TO_EDIT',
   CLOSE_EDITOR_DIALOG: 'CLOSE_EDITOR_DIALOG',
 }
 
 export const Action = {
   openEditorDialogToCreate: createAction(ActionType.OPEN_EDITOR_DIALOG_TO_CREATE),
-  updateEditorDialogConfig: createAction(ActionType.UPDATE_EDITOR_DIALOG_CONFIG),
+  openEditorDialogToEdit: createAction(ActionType.OPEN_EDITOR_DIALOG_TO_EDIT),
   closeEditorDialog: createAction(ActionType.CLOSE_EDITOR_DIALOG),
 }
 
@@ -23,6 +23,12 @@ export const Property = {
   CONNECTOR: 'connector',
   DIALOG_MODE: 'dialogMode',
   READONLY: 'readonly',
+}
+
+export const Payload = {
+  NAME: Property.NAME,
+  CONNECTOR: Property.CONNECTOR,
+  READONLY: Property.READONLY,
 }
 
 export const INITIAL_STATE = {
@@ -34,12 +40,12 @@ export const INITIAL_STATE = {
 
 export const handler = handleActions({
   /** open editor dialog to edit */
-  [ActionType.UPDATE_EDITOR_DIALOG_CONFIG]: (state, { payload, }) =>
-    Object.assign({}, INITIAL_STATE, {
-      [Property.NAME]: payload[Property.NAME],
-      [Property.READONLY]: payload[Property.READONLY],
+  [ActionType.OPEN_EDITOR_DIALOG_TO_EDIT]: (state, { payload, }) =>
+    Object.assign({}, state, {
+      [Property.NAME]: payload[Payload.NAME],
+      [Property.READONLY]: payload[Payload.READONLY],
+      [Property.CONNECTOR]: payload[Payload.CONNECTOR],
       [Property.DIALOG_MODE]: EDITOR_DIALOG_MODE.EDIT,
-      [Property.CONNECTOR]: payload[Property.CONNECTOR],
     }),
 
   [ActionType.OPEN_EDITOR_DIALOG_TO_CREATE]: (state) =>

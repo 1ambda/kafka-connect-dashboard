@@ -10,6 +10,7 @@ import EditorDialog from '../../components/ConnectorPage/EditorDialog'
 import { EDITOR_DIALOG_MODE, } from '../../reducers/ConnectorReducer/EditorDialogState'
 import ConfirmDialog from '../../components/ConnectorPage/ConfirmDialog'
 import { CONFIRM_DIALOG_MODE, } from '../../reducers/ConnectorReducer/ConfirmDialogState'
+import { Payload as PaginatorPayload, } from '../../reducers/ConnectorReducer/PaginatorState'
 import Snackbar, { CLOSABLE_SNACKBAR_MODE, } from '../../components/Common/ClosableSnackbar'
 
 import { ROOT, CONNECTOR, } from '../../constants/state'
@@ -31,7 +32,8 @@ class ConnectorPage extends React.Component {
 
   handlePageOffsetChange(newPageOffset) {
     const { actions, } = this.props
-    const payload = { newPageOffset, }
+    const payload = { [PaginatorPayload.NEW_PAGE_OFFSET]: newPageOffset, }
+
     actions.changePageOffset(payload)
   }
 

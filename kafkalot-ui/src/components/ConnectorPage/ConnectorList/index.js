@@ -6,7 +6,7 @@ import Divider from 'material-ui/lib/divider'
 import * as style from './style'
 import ConnectorItem from '../ConnectorItem'
 import {
-  ITEM_PROPERTY as CONNECTOR_PROPERTY,
+  ItemProperty as CONNECTOR_PROPERTY,
 } from '../../../reducers/ConnectorReducer/ItemState'
 
 export default class ConnectorList extends React.Component {

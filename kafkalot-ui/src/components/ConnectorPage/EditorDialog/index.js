@@ -7,9 +7,11 @@ import RaisedButton from 'material-ui/lib/raised-button'
 import FlatButton from 'material-ui/lib/flat-button'
 import Dialog from 'material-ui/lib/dialog'
 
-import { ITEM_PROPERTY, } from '../../../reducers/ConnectorReducer/ItemState'
-import { EDITOR_DIALOG_MODE, } from '../../../reducers/ConnectorReducer/EditorDialogState'
 import * as dialogStyle from './style'
+import { ItemProperty, Payload as ConnectorItemPayload, } from '../../../reducers/ConnectorReducer/ItemState'
+import {
+  EDITOR_DIALOG_MODE, Payload as EditorDialogPayload,
+} from '../../../reducers/ConnectorReducer/EditorDialogState'
 
 const ELEM_ID_EDITOR_DIALOG = 'editor-dialog'
 
@@ -36,7 +38,7 @@ export function isEditorJSONChanged(initial, updated) {
 export default class EditorDialog extends React.Component {
   static propTypes = {
     name: PropTypes.string.isRequired,
-    job: PropTypes.object.isRequired,
+    connector: PropTypes.object.isRequired,
     readonly: PropTypes.bool.isRequired,
     dialogMode: PropTypes.string.isRequired, /** EDITOR_DIALOG_MODE */
     closeEditorDialog: PropTypes.func.isRequired,
@@ -56,8 +58,8 @@ export default class EditorDialog extends React.Component {
 
   /** component life-cycle */
   componentDidMount() {
-    const { job, readonly, dialogMode, } = this.props
-    const initialJSON = job
+    const { connector, readonly, dialogMode, } = this.props
+    const initialJSON = connector
 
     const defaultMode = getDefaultEditorMode(readonly, dialogMode)
     const availableModes = getAvailableEditorModes(readonly, dialogMode)
@@ -84,8 +86,8 @@ export default class EditorDialog extends React.Component {
 
   /** component life-cycle */
   componentWillReceiveProps(nextProps) {
-    const { job: currentJSON, } = this.props
-    const { job: nextJSON, } = nextProps
+    const { connector: currentJSON, } = this.props
+    const { connector: nextJSON, } = nextProps
 
     /** if JSON is not changed, then disable `UPDATE` button */
     this.setState({ isJSONChanged: isEditorJSONChanged(currentJSON, nextJSON), }) // eslint-disable-line react/no-set-state
@@ -97,7 +99,7 @@ export default class EditorDialog extends React.Component {
   }
 
   handleEditorJSONChanged() {
-    const { job: prevJSON, } = this.props
+    const { connector: prevJSON, } = this.props
 
     const updatedJSON = this.getEditorJSONValue()
 
@@ -118,15 +120,20 @@ export default class EditorDialog extends React.Component {
     const { isJSONChanged, } = this.state
 
     if (isJSONChanged) {
-      updateConnector({ name, job: this.getEditorJSONValue(), })
+      updateConnector({
+        [EditorDialogPayload.NAME]: name,
+        [EditorDialogPayload.CONNECTOR]: this.getEditorJSONValue(),
+      })
     }
   }
 
   handleCreate() {
     const { createConnector, } = this.props
-    const job = this.getEditorJSONValue()
+    const connector = this.getEditorJSONValue()
 
-    createConnector({ job, })
+    createConnector({
+      [ConnectorItemPayload.CONNECTOR]: connector,
+    })
   }
 
   render() {
@@ -158,7 +165,7 @@ export default class EditorDialog extends React.Component {
         actions={buttons}
         open modal={false}
         onRequestClose={this.handleClose.bind(this)}>
-        <div name={ELEM_ID_EDITOR_DIALOG} style={dialogStyle.editor} />
+        <div id={ELEM_ID_EDITOR_DIALOG} style={dialogStyle.editor} />
       </Dialog>
     )
   }

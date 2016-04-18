@@ -3,6 +3,7 @@ import { take, put, call, fork, select, } from 'redux-saga/effects'
 
 import URL from './url'
 import * as Converter from './converter'
+import { ItemProperty as CONNECTOR_PROPERTY, } from '../reducers/ConnectorReducer/ItemState'
 
 /**
  * low-level APIs
@@ -122,4 +123,32 @@ export function* fetchAll(containerName) {
 
   return Converter.createClientConnectors(storageConnectors, containerConnectorNames)
 }
+
+export function* fetchConfig(connectorName) {
+  const storageConnectorUrl = URL.getStorageConnectorUrl(connectorName)
+
+  const storageConnector = yield call(getJSON, storageConnectorUrl)
+
+  return storageConnector
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 

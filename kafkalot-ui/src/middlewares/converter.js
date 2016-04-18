@@ -1,7 +1,7 @@
 import {
   INITIAL_ITEM_STATE as INITIAL_CONNECTOR_ITEM_STATE,
-  ITEM_PROPERTY as CONNECTOR_PROPERTY,
-  STATE as CONNECTOR_STATE,
+  ItemProperty as CONNECTOR_PROPERTY,
+  State as CONNECTOR_STATE,
 } from '../reducers/ConnectorReducer/ItemState'
 
 import * as Logger from '../util/logger'
@@ -17,7 +17,7 @@ export function getStorageMeta(storageConnector) {
   return storageConnector[STORAGE_PROPERTY.META]
 }
 
-export function getStroageEnabled(storageConnector) {
+export function getStorageEnabled(storageConnector) {
   return getStorageMeta(storageConnector)[STORAGE_PROPERTY.ENABLED]
 }
 
@@ -60,7 +60,7 @@ export function createClientConnector(storageConnector, containerConnectorNames)
   try {
     const connectorName = storageConnector[CONNECTOR_PROPERTY.name]
     const isRunning = (containerConnectorNames.includes(connectorName))
-    const isEnabled = getStroageEnabled(storageConnector)
+    const isEnabled = getStorageEnabled(storageConnector)
 
     // TODO comparison config between storage connector and container connector using `deep-equal`
 
