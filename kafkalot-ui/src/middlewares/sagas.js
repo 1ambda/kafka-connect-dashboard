@@ -11,7 +11,7 @@ import * as Handler from './handler'
 
 export function* initialize() {
   try {
-    yield call(Handler.callFetchAll)
+    yield call(Handler.fetchAndUpdateAll)
   } catch (error) {
     yield put(
       SnackbarAction.openErrorSnackbar({
@@ -29,9 +29,25 @@ export function* watchOpenEditorDialogToEdit() {
   )
 }
 
+export function* watchSetReadonly() {
+  yield* takeEvery(
+    SagaActionType.SET_READONLY,
+    Handler.handleSetReadonly
+  )
+}
+
+export function* watchUnsetReadonly() {
+  yield* takeEvery(
+    SagaActionType.UNSET_READONLY,
+    Handler.handleUnsetReadonly
+  )
+}
+
 export default function* root() {
   yield [
     fork(initialize),
     fork(watchOpenEditorDialogToEdit),
+    fork(watchSetReadonly),
+    fork(watchUnsetReadonly),
   ]
 }

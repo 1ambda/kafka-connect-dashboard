@@ -29,11 +29,22 @@ export function getConnectorConfig(connector) {
   return connector[CONNECTOR_PROPERTY.config]
 }
 
+export function getDisabledStorageMeta() {
+  return {
+    [STORAGE_PROPERTY.META]: {
+      [STORAGE_PROPERTY.ENABLED]: false,
+    },
+  }
+}
 
-/**
- * @param props Object
- * @param propsToIgnore Array of String
- */
+export function getEnabledStorageMeta() {
+  return {
+    [STORAGE_PROPERTY.META]: {
+      [STORAGE_PROPERTY.ENABLED]: true,
+    },
+  }
+}
+
 export function removeProps(props, propsToIgnore) {
   /** copy before removing properties */
   const copied = Object.assign({}, props)

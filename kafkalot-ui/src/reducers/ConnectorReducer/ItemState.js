@@ -22,6 +22,7 @@ export const INITIAL_ITEM_STATE = {
 }
 
 export const Payload = {
+  NAME: ItemProperty.name,
   CONNECTOR: 'connector',
   CONNECTORS: 'connectors',
 }
@@ -31,6 +32,10 @@ export const isStopped = (connector) => connector[ItemProperty.state] === State.
 export const isWaiting = (connector) => connector[ItemProperty.state] === State.WAITING
 
 export const isSwitching = (connector) => connector[ItemProperty.switching]
+
+export function getNameFilter(updated) {
+  return (connector) => (updated[ItemProperty.name] === connector[ItemProperty.name])
+}
 
 export const modifyProp = (connector, prop, value) =>
   Object.assign({}, connector, {[prop]: value,})
@@ -46,6 +51,7 @@ export const replaceWithFilter = (state, filter, updated) =>
   })
 
 export const stop = (state, { payload, }) => {
+  // TODO use compose to combine filters
   const filter = (connector) => (payload.name === connector[ItemProperty.name] && isRunning(connector))
   return modifyWithFilter(state, filter, ItemProperty.state, State.WAITING)
 }
@@ -53,22 +59,6 @@ export const stop = (state, { payload, }) => {
 export const start = (state, { payload, }) => {
   const filter = (connector) => (payload.name === connector[ItemProperty.name] && isWaiting(connector))
   return modifyWithFilter(state, filter, ItemProperty.state, State.RUNNING)
-}
-
-export const update = (state, { payload, }) => {
-  const updated = payload[Payload.CONNECTOR]
-  const filter = (connector) => (updated[ItemProperty.name] === connector[ItemProperty.name])
-  return replaceWithFilter(state, filter, updated)
-}
-
-export const setReadonly = (state, { payload, }) => {
-  const filter = (connector) => (payload.name === connector[ItemProperty.name] && isWaiting(connector))
-  return modifyWithFilter(state, filter, ItemProperty.state, State.STOPPED)
-}
-
-export const unsetReadonly = (state, { payload, }) => {
-  const filter = (connector) => (payload.name === connector[ItemProperty.name] && isStopped(connector))
-  return modifyWithFilter(state, filter, ItemProperty.state, State.WAITING)
 }
 
 export const startSwitching = (state, { payload, }) => {
@@ -79,10 +69,6 @@ export const startSwitching = (state, { payload, }) => {
 export const endSwitching = (state, { payload, }) => {
   const filter = (connector) => (payload.name === connector[ItemProperty.name])
   return modifyWithFilter(state, filter, ItemProperty.switching, false)
-}
-
-export const updateAll = (state, { payload, }) => {
-  return payload[Payload.CONNECTORS]
 }
 
 export function sortByRunning(connector1, connector2) {
@@ -115,21 +101,6 @@ export function sortByStopped(connector1, connector2) {
   else return 0
 }
 
-export function sort(state, { payload, }) {
-  const connectors = state.slice() /** copy origin state */
-
-  switch(payload[SorterState.Payload.STRATEGY]) {
-    case SorterState.RUNNING:
-      return connectors.sort(sortByRunning)
-    case SorterState.WAITING:
-      return connectors.sort(sortByWaiting)
-    case SorterState.STOPPED:
-      return connectors.sort(sortByStopped)
-  }
-
-  return state
-}
-
 export const ActionType = {
   START_SWITCHING: 'START_SWITCHING',
   END_SWITCHING: 'END_SWITCHING',
@@ -147,13 +118,32 @@ export const Action = {
 const INITIAL_STATE = []
 
 export const handler = handleActions({
-  /** client only */
+  /** from UI component */
   [ActionType.START_SWITCHING]: startSwitching,
   [ActionType.END_SWITCHING]: endSwitching,
+  [SorterState.ActionType.SORT]: (state, { payload, }) => {
+    const strategy = payload[SorterState.Payload.STRATEGY]
+    const connectors = state.slice() /** copy origin state */
 
-  [SorterState.ActionType.SORT]: sort,
+    switch(strategy) {
+      case SorterState.RUNNING:
+        return connectors.sort(sortByRunning)
+      case SorterState.WAITING:
+        return connectors.sort(sortByWaiting)
+      case SorterState.STOPPED:
+        return connectors.sort(sortByStopped)
+    }
 
-  /** api related */
-  [ActionType.UPDATE_ALL]: updateAll,
-  [ActionType.UPDATE]: update,
+    return state
+  },
+
+  /** from API sagas */
+  [ActionType.UPDATE_ALL]: (state, { payload, }) => {
+    return payload[Payload.CONNECTORS]
+  },
+
+  [ActionType.UPDATE]: (state, { payload, }) => {
+    const updated = payload[Payload.CONNECTOR]
+    return replaceWithFilter(state, getNameFilter(updated), updated)
+  },
 }, INITIAL_STATE)

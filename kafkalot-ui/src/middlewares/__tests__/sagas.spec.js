@@ -45,10 +45,10 @@ describe('sagas', () => {
   })
 
   describe('initialize', () => {
-    it('should callFetchAll', () => {
+    it('should fetchAndUpdateAll', () => {
       const gen = Sagas.initialize()
       expect(gen.next().value).to.deep.equal(
-        call(Handler.callFetchAll)
+        call(Handler.fetchAndUpdateAll)
       )
 
       expect(gen.next().done).to.deep.equal(true)
@@ -60,7 +60,7 @@ describe('sagas', () => {
       const gen = Sagas.initialize()
 
       expect(gen.next().value).to.deep.equal(
-        call(Handler.callFetchAll)
+        call(Handler.fetchAndUpdateAll)
       )
 
       const error = new Error('error')

@@ -1,16 +1,24 @@
 import { createAction, handleActions, } from 'redux-actions'
 
+import * as Logger from '../../util/logger'
+
 import { CLOSABLE_SNACKBAR_MODE, } from '../../components/Common/ClosableSnackbar'
 
-export const ActionType = {
-  OPEN_INFO_SNACKBAR: 'OPEN_INFO_SNACKBAR',
-  OPEN_ERROR_SNACKBAR: 'OPEN_ERROR_SNACKBAR',
-  CLOSE_SNACKBAR: 'CLOSE_SNACKBAR',
+
+export const Property = {
+  MESSAGE: 'message',
+  SNACKBAR_MODE: 'snackbarMode',
 }
 
 export const Payload = {
   ERROR: 'error',
   MESSAGE: 'message',
+}
+
+export const ActionType = {
+  OPEN_INFO_SNACKBAR: 'OPEN_INFO_SNACKBAR',
+  OPEN_ERROR_SNACKBAR: 'OPEN_ERROR_SNACKBAR',
+  CLOSE_SNACKBAR: 'CLOSE_SNACKBAR',
 }
 
 export const Action = {
@@ -19,9 +27,9 @@ export const Action = {
   closeSnackbar: createAction(ActionType.CLOSE_SNACKBAR),
 }
 
-export const INITIAL_SNACKBAR_STATE = {
-  snackbarMode: CLOSABLE_SNACKBAR_MODE.CLOSE,
-  message: '',
+export const INITIAL_STATE = {
+  [Property.MESSAGE]: '',
+  [Property.SNACKBAR_MODE]: CLOSABLE_SNACKBAR_MODE.CLOSE,
 }
 
 export const handler = handleActions({
@@ -29,17 +37,31 @@ export const handler = handleActions({
   [ActionType.CLOSE_SNACKBAR]: (state) =>
     Object.assign({}, state, { snackbarMode: CLOSABLE_SNACKBAR_MODE.CLOSE, }),
 
-  [ActionType.OPEN_ERROR_SNACKBAR]: (state, { payload, }) =>
-    Object.assign({}, state, {
-      snackbarMode: CLOSABLE_SNACKBAR_MODE.OPEN,
-      message: `[ERROR] ${payload[Payload.MESSAGE]} (${payload[Payload.ERROR].message})`,
-    }),
+  [ActionType.OPEN_ERROR_SNACKBAR]: (state, { payload, }) => {
 
-  [ActionType.OPEN_INFO_SNACKBAR]: (state, { payload, }) =>
-    Object.assign({}, state, {
-      snackbarMode: CLOSABLE_SNACKBAR_MODE.OPEN,
-      message: `[INFO] ${payload[Payload.MESSAGE]}`,
-    }),
+    const message = payload[Payload.MESSAGE]
+    const error = payload[Payload.ERROR]
+    const errorMessage = `${message} (${error.message}`
 
-}, INITIAL_SNACKBAR_STATE)
+    Logger.error(message, error)
+
+    return Object.assign({}, state, {
+      [Property.MESSAGE]: errorMessage,
+      [Property.SNACKBAR_MODE]: CLOSABLE_SNACKBAR_MODE.OPEN,
+    })
+  },
+
+  [ActionType.OPEN_INFO_SNACKBAR]: (state, { payload, }) => {
+
+    const message = payload[Payload.MESSAGE]
+
+    Logger.info(message)
+
+    return Object.assign({}, state, {
+      [Property.MESSAGE]: message,
+      [Property.SNACKBAR_MODE]: CLOSABLE_SNACKBAR_MODE.OPEN,
+    })
+  },
+
+}, INITIAL_STATE)
 

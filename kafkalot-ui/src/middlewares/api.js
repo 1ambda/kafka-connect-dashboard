@@ -1,9 +1,10 @@
-import Fetch from 'isomorphic-fetch'
+import fetch from 'isomorphic-fetch'
 import { take, put, call, fork, select, } from 'redux-saga/effects'
 
 import URL from './url'
 import * as Converter from './converter'
-import { ItemProperty as CONNECTOR_PROPERTY, } from '../reducers/ConnectorReducer/ItemState'
+import { ItemProperty as ConnectorProperty, } from '../reducers/ConnectorReducer/ItemState'
+import * as Selector from '../reducers/ConnectorReducer/selector'
 
 /**
  * low-level APIs
@@ -48,7 +49,7 @@ function getJSONs(urls) {
 function getJSON(url) {
   const method = HTTP_METHOD.GET
 
-  return handleJsonResponse(url, method, Fetch(url, {
+  return handleJsonResponse(url, method, fetch(url, {
     method,
     credentials: 'include',
     headers: HTTP_HEADERS_JSON,
@@ -58,7 +59,7 @@ function getJSON(url) {
 function postJSON(url, body) {
   const method = HTTP_METHOD.POST
 
-  return handleJsonResponse(url, method, Fetch(url, {
+  return handleJsonResponse(url, method, fetch(url, {
     method,
     credentials: 'include',
     headers: HTTP_HEADERS_JSON,
@@ -69,7 +70,7 @@ function postJSON(url, body) {
 function patchJSON(url, body) {
   const method = HTTP_METHOD.PATCH
 
-  return handleJsonResponse(url, method, Fetch(url, {
+  return handleJsonResponse(url, method, fetch(url, {
     method,
     credentials: 'include',
     headers: HTTP_HEADERS_JSON,
@@ -80,7 +81,7 @@ function patchJSON(url, body) {
 function putJSON(url, body) {
   const method = HTTP_METHOD.PUT
 
-  return handleJsonResponse(url, method, Fetch(url, {
+  return handleJsonResponse(url, method, fetch(url, {
     method,
     credentials: 'include',
     headers: HTTP_HEADERS_JSON,
@@ -91,7 +92,7 @@ function putJSON(url, body) {
 function deleteJSON(url) {
   const method = HTTP_METHOD.DELETE
 
-  return handleJsonResponse(url, method, Fetch(url, {
+  return handleJsonResponse(url, method, fetch(url, {
     method,
     credentials: 'include',
     headers: HTTP_HEADERS_JSON,
@@ -108,23 +109,37 @@ export function delay(millis) {
  * exception will be caught in watcher functions
  */
 
-export function* fetchAll(containerName) {
+export function* fetchAll() {
   const storageConnectorsUrl = URL.getStorageConnectorUrl()
   const storageConnectors = yield call(getJSON, storageConnectorsUrl)
 
   if (!Array.isArray(storageConnectors))
     throw new Error(`GET ${storageConnectorsUrl} didn't return an array, got ${storageConnectors}`)
 
+  const containerConnectorNames = yield call(fetchContainerConnectorNames)
+
+  return Converter.createClientConnectors(storageConnectors, containerConnectorNames)
+}
+
+export function* fetchContainerConnectorNames() {
+  const containerName = yield select(Selector.getSelectedContainer)
   const containerConnectorsUrl = URL.getContainerConnectorUrl(containerName)
   const containerConnectorNames = yield call(getJSON, containerConnectorsUrl)
 
   if (!Array.isArray(containerConnectorNames))
     throw new Error(`GET LIST ${containerConnectorsUrl} didn't return an array, got ${containerName}`)
 
-  return Converter.createClientConnectors(storageConnectors, containerConnectorNames)
+  return containerConnectorNames
 }
 
-export function* fetchConfig(connectorName) {
+export function* fetchConnector(connectorName) {
+  const containerConnectorNames = yield call(fetchContainerConnectorNames)
+  const storageConnector = yield call(fetchStorageConnector, connectorName)
+
+  return Converter.createClientConnector(storageConnector, containerConnectorNames)
+}
+
+export function* fetchStorageConnector(connectorName) {
   const storageConnectorUrl = URL.getStorageConnectorUrl(connectorName)
 
   const storageConnector = yield call(getJSON, storageConnectorUrl)
@@ -132,23 +147,15 @@ export function* fetchConfig(connectorName) {
   return storageConnector
 }
 
+export function* patchStorageConnectorMeta(connectorName, partialStorageMeta) {
+  const storageConnectorUrl = URL.getStorageConnectorUrl(connectorName)
 
+  yield call(patchJSON, storageConnectorUrl, partialStorageMeta)
 
+  yield call(fetchStorageConnector, connectorName)
+  const updated = yield call(fetchConnector, connectorName)
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+  return updated
+}
 
 

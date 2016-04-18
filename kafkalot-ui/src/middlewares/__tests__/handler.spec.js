@@ -10,11 +10,11 @@ import * as Selector from '../../reducers/ConnectorReducer/selector'
 import * as API from '../api'
 import * as Handler from '../handler'
 
-describe('handler', () => {
+describe('Handler', () => {
 
   describe('utils', () => {
 
-    describe('callFetchAll', () => {
+    describe('fetchAndUpdateAll', () => {
 
       it(`should
           - select Selector.getSelectedContainer
@@ -29,7 +29,7 @@ describe('handler', () => {
       const sortStrategy = 'strategy'
       const jobs = []
 
-      const gen = Handler.callFetchAll()
+      const gen = Handler.fetchAndUpdateAll()
 
       expect(gen.next().value).to.deep.equal(
         select(Selector.getSelectedContainer)
@@ -56,7 +56,7 @@ describe('handler', () => {
       )
     })
 
-  })
+  }) /** end describe for utils */
 
   describe('handlers', () => {
 
@@ -64,5 +64,9 @@ describe('handler', () => {
 
     }) /** end handleOpenEditorDialogToEdit */
 
-  }) /** end describe watchers */
+    describe('handleSetReadonly', () => {
+
+    }) /** end handleSetReadonly */
+
+  }) /** end describe for handlers */
 })

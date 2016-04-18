@@ -16,6 +16,7 @@ export const KEY_ID = 'id'
 export const KEY_TASK_CLASS = 'task.class'
 export const KEY_CONNECTOR_CLASS = 'connector.class'
 export const KEY_STORAGE_META = '_storage_meta'
+export const KEY_ENABLED = 'enabled'
 
 const WAITING_CONNECTOR_NAME = 'file-sink-1'
 
