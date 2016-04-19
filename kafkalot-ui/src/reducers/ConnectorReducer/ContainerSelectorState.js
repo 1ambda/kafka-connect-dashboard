@@ -1,6 +1,5 @@
 import { createAction, handleActions, } from 'redux-actions'
 
-import * as SagaAction from '../../middlewares/SagaAction'
 import * as URL from '../../middlewares/url'
 
 export const ActionType = {

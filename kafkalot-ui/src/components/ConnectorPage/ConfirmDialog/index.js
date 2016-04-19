@@ -11,8 +11,8 @@ export default class ConfirmDialog extends React.Component {
   static propTypes = {
     connector: PropTypes.object.isRequired,
     dialogMode: PropTypes.string.isRequired,
-    closeConfirmDialog: PropTypes.func.Required,
-    removeConnector: PropTypes.func.Required,
+    closeConfirmDialog: PropTypes.func.isRequired,
+    removeConnector: PropTypes.func.isRequired,
   }
 
   static createTitle(element) {
@@ -31,6 +31,7 @@ export default class ConfirmDialog extends React.Component {
 
   handleRemove() {
     const { removeConnector, connector, closeConfirmDialog, } = this.props
+
     removeConnector({ [DialogProperty.CONNECTOR]: connector, })
     closeConfirmDialog()
   }

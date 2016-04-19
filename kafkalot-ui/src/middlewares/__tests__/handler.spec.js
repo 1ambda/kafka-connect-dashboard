@@ -5,7 +5,6 @@ import { Action as SorterAction, } from '../../reducers/ConnectorReducer/SorterS
 import { Action as ConnectorItemAction, }from '../../reducers/ConnectorReducer/ItemState'
 import { Action as ContainerSelectorAction, } from '../../reducers/ConnectorReducer/ContainerSelectorState'
 
-import * as SagaAction from '../SagaAction'
 import * as Selector from '../../reducers/ConnectorReducer/selector'
 import * as API from '../api'
 import * as Handler from '../handler'
@@ -67,6 +66,34 @@ describe('Handler', () => {
     describe('handleSetReadonly', () => {
 
     }) /** end handleSetReadonly */
+
+    //describe('initialize', () => {
+    //  it('should fetchAndUpdateAll', () => {
+    //    const gen = Sagas.initialize()
+    //    expect(gen.next().value).to.deep.equal(
+    //      call(Handler.fetchAndUpdateAll)
+    //    )
+    //
+    //    expect(gen.next().done).to.deep.equal(true)
+    //  })
+    //
+    //  it(`should callFetchJobs
+    //    - if exception is occurred,
+    //      put(openErrorSnackbar with { message, error }`, () => {
+    //    const gen = Sagas.initialize()
+    //
+    //    expect(gen.next().value).to.deep.equal(
+    //      call(Handler.fetchAndUpdateAll)
+    //    )
+    //
+    //    const error = new Error('error')
+    //    expect(gen.throw(error).value).to.deep.equal(
+    //      put(ClosableSnackBarState.Action.openErrorSnackbar({ message: 'Failed to fetch all connectors', error, }))
+    //    )
+    //  })
+    //})
+
+
 
   }) /** end describe for handlers */
 })

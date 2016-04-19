@@ -101,6 +101,15 @@ export function sortByStopped(connector1, connector2) {
   else return 0
 }
 
+export const EMPTY_CONNECTOR = null
+export function isEmptyConnector(connector) {
+  return connector === null
+}
+
+export function isEmptyName(name) {
+  return (name === void 0) || (name === null)
+}
+
 export const ActionType = {
   START_SWITCHING: 'START_SWITCHING',
   END_SWITCHING: 'END_SWITCHING',

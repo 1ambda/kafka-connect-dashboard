@@ -1,9 +1,10 @@
 import express from 'express'
 import cors from 'cors'
 import bodyParser from 'body-parser'
-import * as Res from './resource'
+import * as Resource from './resource'
+import * as Middleware from './middleware'
 
-const db = Res.REST_DB
+const db = Resource.REST_DB
 
 const app = express()
 
@@ -19,57 +20,40 @@ app.use(cors({
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false, }));
 
-function checkConnectorExists(req, res, next) {
-  const name = req.params[Res.KEY_NAME]
-
-  const connector = db(Res.KEY_CONNECTORS)
-    .find({ [Res.KEY_NAME]: name, })
-
-  if (connector === void 0) {
-    res.status(404).json({
-      "error_code": 404,
-      "message": `Connector ${name} not found`
-    })
-  } else {
-    req[Res.KEY_CONNECTOR] = connector
-    next()
-  }
-}
-
-app.get(`/${Res.KEY_CONNECTORS}`,
+app.get(`/${Resource.KEY_CONNECTORS}`,
   (req, res) => {
-    res.json(db(Res.KEY_CONNECTORS).map(connector => connector.name))
+    res.json(db(Resource.KEY_CONNECTORS).map(connector => connector.name))
   }
 )
 
-app.get(`/${Res.KEY_CONNECTORS}/:${Res.KEY_NAME}`,
-  checkConnectorExists,
+app.get(`/${Resource.KEY_CONNECTORS}/:${Resource.KEY_NAME}`,
+  Middleware.checkConnectorExists(db),
   (req, res) => {
 
-    res.json(req[Res.KEY_CONNECTOR])
+    res.json(req[Resource.KEY_CONNECTOR])
   }
 )
 
-app.get(`/${Res.KEY_CONNECTORS}/:${Res.KEY_NAME}/${Res.KEY_CONFIG}`,
-  checkConnectorExists,
+app.get(`/${Resource.KEY_CONNECTORS}/:${Resource.KEY_NAME}/${Resource.KEY_CONFIG}`,
+  Middleware.checkConnectorExists(db),
   (req, res) => {
 
-    res.json(req[Res.KEY_CONNECTOR][Res.KEY_CONFIG])
+    res.json(req[Resource.KEY_CONNECTOR][Resource.KEY_CONFIG])
   }
 )
 
-app.get(`/${Res.KEY_CONNECTORS}/:${Res.KEY_NAME}/${Res.KEY_TASKS}`,
-  checkConnectorExists,
+app.get(`/${Resource.KEY_CONNECTORS}/:${Resource.KEY_NAME}/${Resource.KEY_TASKS}`,
+  Middleware.checkConnectorExists(db),
   (req, res) => {
-    const connector = req[Res.KEY_CONNECTOR]
-    const config = connector[Res.KEY_CONFIG]
+    const connector = req[Resource.KEY_CONNECTOR]
+    const config = connector[Resource.KEY_CONFIG]
 
-    const tasks = connector[Res.KEY_TASKS].map(task => {
+    const tasks = connector[Resource.KEY_TASKS].map(task => {
       return Object.assign({}, {
-        [Res.KEY_ID]: task,
-        [Res.KEY_CONFIG]: {
+        [Resource.KEY_ID]: task,
+        [Resource.KEY_CONFIG]: {
           ...config,
-          [Res.KEY_TASK_CLASS]: config[Res.KEY_CONNECTOR_CLASS],
+          [Resource.KEY_TASK_CLASS]: config[Resource.KEY_CONNECTOR_CLASS],
         },
       })
     })

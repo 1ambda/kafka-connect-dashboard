@@ -11,9 +11,12 @@ import * as style from './style'
 import { ConnectorItemColors, } from '../../../constants/theme'
 
 import {
-  ItemProperty as CONNECTOR_PROPERTY, isRunning, isStopped, isWaiting, isSwitching,
+  ItemProperty as ConnectorProperty,
+  Payload as ConnectorItemPayload,
+  isRunning, isStopped, isWaiting, isSwitching,
 } from '../../../reducers/ConnectorReducer/ItemState'
 import { Payload as EditorDialogPayload, } from '../../../reducers/ConnectorReducer/EditorDialogState'
+import { Payload as ConfirmDialogPayload, } from '../../../reducers/ConnectorReducer/ConfirmDialogState'
 
 /** extract getInactiveState functions for testability */
 export function isReadonly(connector) {
@@ -121,8 +124,9 @@ export default class ConnectorItem extends React.Component {
      * we rely on the redux state instead of passed params of this callback
      * to send actions
      */
-    if (isReadonly(connector)) unsetReadonly(connector)
-    else setReadonly(connector)
+
+    if (isReadonly(connector)) unsetReadonly({ [ConnectorItemPayload.CONNECTOR]: connector, })
+    else setReadonly({ [ConnectorItemPayload.CONNECTOR]: connector, })
   }
 
   handleRunningToggleChange() {
@@ -133,14 +137,16 @@ export default class ConnectorItem extends React.Component {
      * we rely on the redux state instead of passed params of this callback
      * to send actions
      */
-    if (isRunning(connector)) stopConnector(connector)
-    else startConnector(connector)
+    if (isRunning(connector)) stopConnector({ [ConnectorItemPayload.CONNECTOR]: connector, })
+    else startConnector({ [ConnectorItemPayload.CONNECTOR]: connector, })
   }
 
   handleRemoveButtonClick(event) {
     const { connector, openConfirmDialogToRemove, } = this.props
 
-    if (isWaiting(connector)) openConfirmDialogToRemove(connector)
+    if (isWaiting(connector)) openConfirmDialogToRemove({
+      [ConfirmDialogPayload.CONNECTOR]: connector,
+    })
   }
 
   handleItemClick(event) {
@@ -149,7 +155,7 @@ export default class ConnectorItem extends React.Component {
     /** check current connector is readonly */
     const readonly = isReadonly(connector)
     const payload = {
-      [EditorDialogPayload.NAME]: connector[CONNECTOR_PROPERTY.name],
+      [EditorDialogPayload.NAME]: connector[ConnectorProperty.name],
       [EditorDialogPayload.READONLY]: readonly,
     }
 
@@ -164,8 +170,8 @@ export default class ConnectorItem extends React.Component {
 
   render() {
     const { connector, } = this.props
-    const tags = connector[CONNECTOR_PROPERTY.tags]
-    const name = connector[CONNECTOR_PROPERTY.name]
+    const tags = connector[ConnectorProperty.tags]
+    const name = connector[ConnectorProperty.name]
 
     /** 1. Remove Button */
     const readonly = isReadonly(connector)

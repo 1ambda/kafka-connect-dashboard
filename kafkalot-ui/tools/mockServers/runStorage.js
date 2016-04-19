@@ -2,6 +2,8 @@ import express from 'express'
 import cors from 'cors'
 import bodyParser from 'body-parser'
 import * as Resource from './resource'
+import * as Middleware from './middleware'
+import * as Util from './util'
 
 const db = Resource.STORAGE_DB
 const app = express()
@@ -18,31 +20,6 @@ app.use(cors({
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false, }));
 
-function sendErrorMessage(res, status, message) {
-  res.status(status).json({
-    "error_code": status,
-    "message": message,
-  })
-}
-
-function isBoolean(variable) {
-  return typeof variable === 'boolean'
-}
-
-function checkConnectorExists(req, res, next) {
-  const name = req.params[Resource.KEY_NAME]
-
-  const connector = db(Resource.KEY_CONNECTORS)
-    .find({ [Resource.KEY_NAME]: name, })
-
-  if (connector === void 0) {
-    sendErrorMessage(res, 404, `Can't found connector ${name}`)
-  } else {
-    req[Resource.KEY_CONNECTOR] = connector
-    next()
-  }
-}
-
 app.get(`/${Resource.KEY_CONNECTORS}`,
   (req, res) => {
     res.json(db(Resource.KEY_CONNECTORS))
@@ -50,7 +27,7 @@ app.get(`/${Resource.KEY_CONNECTORS}`,
 )
 
 app.get(`/${Resource.KEY_CONNECTORS}/:${Resource.KEY_NAME}`,
-  checkConnectorExists,
+  Middleware.checkConnectorExists(db),
   (req, res) => {
 
     res.json(req[Resource.KEY_CONNECTOR])
@@ -58,7 +35,7 @@ app.get(`/${Resource.KEY_CONNECTORS}/:${Resource.KEY_NAME}`,
 )
 
 app.patch(`/${Resource.KEY_CONNECTORS}/:${Resource.KEY_NAME}`,
-  checkConnectorExists,
+  Middleware.checkConnectorExists(db),
   (req, res) => {
 
     const connector = req[Resource.KEY_CONNECTOR]
@@ -70,12 +47,73 @@ app.patch(`/${Resource.KEY_CONNECTORS}/:${Resource.KEY_NAME}`,
       res.json(connector)
     } catch (error) {
       console.error(error)
-      sendErrorMessage(res, 400, `Failed to patch connector (${error.message})`)
+      Util.sendErrorMessage(res, 400, `Failed to patch connector (${error.message})`)
     }
   }
 )
 
+/** create new connector */
+app.post(`/${Resource.KEY_CONNECTORS}`,
+  Middleware.checkDuplicatedConnector(db),
+  Middleware.checkStorageMeta,
+  Middleware.checkConfig,
+  (req, res) => {
+
+    const connector = req.body
+
+    db(Resource.KEY_CONNECTORS)
+      .push(connector)
+
+    res.status(201).json(connector)
+  }
+)
+
+app.delete(`/${Resource.KEY_CONNECTORS}/:${Resource.KEY_NAME}`,
+  Middleware.checkConnectorExists(db),
+  (req, res) => {
+
+    const name = req.params[Resource.KEY_NAME]
+
+    const connector = db(Resource.KEY_CONNECTORS)
+      .find({ [Resource.KEY_NAME]: name, })
+
+    db(Resource.KEY_CONNECTORS)
+      .remove({[Resource.KEY_NAME]: name,})
+
+    res.status(200).json(connector) /** return removed connector */
+  }
+)
+
+/** update existing connector */
+app.put(`/${Resource.KEY_CONNECTORS}/:${Resource.KEY_NAME}`,
+  Middleware.checkConnectorExists(db),
+  (req, res) => {
+
+    const name = req.params[Resource.KEY_NAME]
+    const connector = req.body
+
+    /** name field in connector object */
+    const connectorName = connector[Resource.KEY_NAME]
+
+    if (name !== connectorName) {
+      return Util.sendErrorMessage(
+        res,
+        400,
+        `Cannot updated connector due to inconsistency in '${Resource.KEY_NAME}' fields`)
+    }
+
+    db(Resource.KEY_CONNECTORS)
+      .remove({[Resource.KEY_NAME]: name,})
+
+    db(Resource.KEY_CONNECTORS)
+      .push(connector)
+
+    res.status(200).json(connector) /** return updated connector */
+  }
+)
+
+
 app.listen(app.get('port'), () => {
-  console.log(`Mock server is running on PORT ${app.get('port')}!`)
+  console.log(`Mock storage server is running on PORT ${app.get('port')}!`)
 })
 

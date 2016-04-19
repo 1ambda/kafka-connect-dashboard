@@ -110,7 +110,7 @@ export function delay(millis) {
  */
 
 export function* fetchAll() {
-  const storageConnectorsUrl = URL.getStorageConnectorUrl()
+  const storageConnectorsUrl = URL.getStorageConnectorsUrl()
   const storageConnectors = yield call(getJSON, storageConnectorsUrl)
 
   if (!Array.isArray(storageConnectors))
@@ -156,6 +156,24 @@ export function* patchStorageConnectorMeta(connectorName, partialStorageMeta) {
   const updated = yield call(fetchConnector, connectorName)
 
   return updated
+}
+
+export function* postStorageConnector(connector) {
+  const storageConnectorsUrl = URL.getStorageConnectorsUrl()
+
+  yield call(postJSON, storageConnectorsUrl, connector)
+}
+
+export function* deleteStorageConnector(connectorName) {
+  const storageConnectorsUrl = URL.getStorageConnectorUrl(connectorName)
+
+  yield call(deleteJSON, storageConnectorsUrl)
+}
+
+export function* putStorageConnector(connector, connectorName) {
+  const storageConnectorUrl = URL.getStorageConnectorUrl(connectorName)
+
+  yield call(putJSON, storageConnectorUrl, connector)
 }
 
 

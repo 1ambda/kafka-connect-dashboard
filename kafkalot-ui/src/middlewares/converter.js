@@ -2,6 +2,7 @@ import {
   INITIAL_ITEM_STATE as INITIAL_CONNECTOR_ITEM_STATE,
   ItemProperty as CONNECTOR_PROPERTY,
   State as CONNECTOR_STATE,
+  EMPTY_CONNECTOR, isEmptyConnector,
 } from '../reducers/ConnectorReducer/ItemState'
 
 import * as Logger from '../util/logger'
@@ -45,6 +46,14 @@ export function getEnabledStorageMeta() {
   }
 }
 
+export function getInitialStorageMeta() {
+  return Object.assign(getEnabledStorageMeta(), {
+    [STORAGE_PROPERTY.META]: {
+      [STORAGE_PROPERTY.TAGS]: [],
+    },
+  })
+}
+
 export function removeProps(props, propsToIgnore) {
   /** copy before removing properties */
   const copied = Object.assign({}, props)
@@ -60,11 +69,6 @@ export function createConnectorState(connectorName, isRunning, isEnabled) {
   else if (!isRunning && isEnabled) return CONNECTOR_STATE.WAITING
   else if (!isRunning && !isEnabled) return CONNECTOR_STATE.STOPPED
   else throw new Error(`Invalid connector ${connectorName} state isRunning: ${isRunning}, isEnabled: ${isEnabled}`)
-}
-
-export const EMPTY_CONNECTOR = undefined
-export function isEmptyConnector(connector) {
-  return connector === void 0
 }
 
 export function createClientConnector(storageConnector, containerConnectorNames) {

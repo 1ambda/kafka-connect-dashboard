@@ -20,21 +20,27 @@ export const Property = {
   DIALOG_MODE: 'dialogMode',
 }
 
+export const Payload = {
+  CONNECTOR: Property.CONNECTOR,
+}
+
 const INITIAL_STATE = {
   connector: {},
   dialogMode: CONFIRM_DIALOG_MODE.CLOSE,
 }
 
 export const handler = handleActions({
-  [ActionType.OPEN_CONFIRM_DIALOG_TO_REMOVE]: (state, { payload, }) =>
-    Object.assign({}, state, {
-      [Property.CONNECTOR]: payload[Property.CONNECTOR],
+  [ActionType.OPEN_CONFIRM_DIALOG_TO_REMOVE]: (state, { payload, }) => {
+    return Object.assign({}, state, {
+      [Property.CONNECTOR]: payload[Payload.CONNECTOR],
       [Property.DIALOG_MODE]: CONFIRM_DIALOG_MODE.REMOVE,
-    }),
+    })
+  },
 
-  [ActionType.CLOSE_CONFIRM_DIALOG]: (state, { payload, }) =>
-    Object.assign({}, state, {
+  [ActionType.CLOSE_CONFIRM_DIALOG]: (state) => {
+    return Object.assign({}, state, {
       [Property.DIALOG_MODE]: CONFIRM_DIALOG_MODE.CLOSE,
-    }),
+    })
+  },
 
 }, INITIAL_STATE)

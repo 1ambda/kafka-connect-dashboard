@@ -3,24 +3,51 @@ import { fork, take, call, put, select, } from 'redux-saga/effects'
 import { takeEvery, } from 'redux-saga'
 
 import * as ClosableSnackBarState from '../../reducers/ConnectorReducer/ClosableSnackbarState'
-import * as SagaAction from '../SagaAction'
-
 import * as Selector from '../../reducers/ConnectorReducer/selector'
-
 import * as API from '../api'
 import * as Handler from '../handler'
-import rootSaga, * as Sagas from '../sagas'
+import RootSaga, { ActionType as SagaActionType, Action as SagaAction, } from '../sagas'
+import * as Watcher from '../sagas'
 
 describe('sagas', () => {
 
+  describe('SagaAction', () => {
+    const payload = 'payload'
+    const PROP_NAME_TYPE = 'type'
+    const PROP_NAME_PAYLOAD = 'payload'
+
+    const EXPECTED_ACTIONS = [
+      { name: 'create', type: SagaActionType.CREATE, },
+      { name: 'remove', type: SagaActionType.REMOVE, },
+      { name: 'update', type: SagaActionType.UPDATE, },
+
+      { name: 'changeContainer', type: SagaActionType.CHANGE_CONTAINER, },
+
+      { name: 'unsetReadonly', type: SagaActionType.UNSET_READONLY, },
+      { name: 'setReadonly', type: SagaActionType.SET_READONLY, },
+      { name: 'start', type: SagaActionType.START, },
+      { name: 'stop', type: SagaActionType.STOP, },
+
+      { name: 'openEditorDialogToEdit', type: SagaActionType.OPEN_EDITOR_DIALOG_TO_EDIT, },
+    ]
+
+    EXPECTED_ACTIONS.map(({ name, type, }) => {
+      it(`should provide ${name} which return ${type} type`, () => {
+        const result = SagaAction[name](payload)
+        expect(result[PROP_NAME_PAYLOAD]).to.equal(payload)
+        expect(result[PROP_NAME_TYPE]).to.equal(type)
+      })
+    })
+  })
+
   const takeEveryWatcherProps = [
     {
-      actionType: SagaAction.ActionType.OPEN_EDITOR_DIALOG_TO_EDIT,
-      watcher: Sagas.watchOpenEditorDialogToEdit,
+      actionType: SagaActionType.OPEN_EDITOR_DIALOG_TO_EDIT,
+      watcher: Watcher.watchOpenEditorDialogToEdit,
       handler: Handler.handleOpenEditorDialogToEdit,
     },
   ]
-  //
+
   takeEveryWatcherProps.map(watcherProp => {
     describe('watchOpenEditorDialogToEdit', () => {
       const actionType = watcherProp.actionType
@@ -44,44 +71,22 @@ describe('sagas', () => {
     })
   })
 
-  describe('initialize', () => {
-    it('should fetchAndUpdateAll', () => {
-      const gen = Sagas.initialize()
-      expect(gen.next().value).to.deep.equal(
-        call(Handler.fetchAndUpdateAll)
-      )
-
-      expect(gen.next().done).to.deep.equal(true)
-    })
-
-    it(`should callFetchJobs
-        - if exception is occurred,
-          put(openErrorSnackbar with { message, error }`, () => {
-      const gen = Sagas.initialize()
-
-      expect(gen.next().value).to.deep.equal(
-        call(Handler.fetchAndUpdateAll)
-      )
-
-      const error = new Error('error')
-      expect(gen.throw(error).value).to.deep.equal(
-        put(ClosableSnackBarState.Action.openErrorSnackbar({ message: 'Failed to fetch all connectors', error, }))
-      )
-    })
-  })
-
   describe('RootSaga', () => {
     it(`should
-        - fork callFetchJobs to initialize
+        - fork Handler.initialize
         - fork other watchers
         `, () => {
 
-      const gen = rootSaga()
+      const gen = RootSaga()
 
-      /** initialize */
       expect(gen.next().value).to.deep.equal( [
-          fork(Sagas.initialize),
-          fork(Sagas.watchOpenEditorDialogToEdit),
+          fork(Handler.initialize),
+          fork(Watcher.watchOpenEditorDialogToEdit),
+          fork(Watcher.watchSetReadonly),
+          fork(Watcher.watchUnsetReadonly),
+          fork(Watcher.watchCreate),
+          fork(Watcher.watchUpdate),
+          fork(Watcher.watchRemove),
         ]
       )
     })

@@ -8,7 +8,7 @@ import * as ItemState from '../reducers/ConnectorReducer/ItemState'
 import * as ConfirmDialogState from '../reducers/ConnectorReducer/ConfirmDialogState'
 import * as ClosableSnackBarState from '../reducers/ConnectorReducer/ClosableSnackbarState'
 
-import * as SagaAction from '../middlewares/SagaAction'
+import { Action as SagaAction, } from '../middlewares/sagas'
 
 /**
  * for documentation, enumerate all actions
@@ -39,16 +39,16 @@ export default Object.assign({},
   },
 
   { /** API Actions */
-    unsetReadonly: SagaAction.Action.unsetReadonly,
-    setReadonly: SagaAction.Action.setReadonly,
-    start: SagaAction.Action.start,
-    stop: SagaAction.Action.stop,
+    unsetReadonly: SagaAction.unsetReadonly,
+    setReadonly: SagaAction.setReadonly,
+    start: SagaAction.start,
+    stop: SagaAction.stop,
 
-    create: SagaAction.Action.create,
-    remove: SagaAction.Action.remove,
-    update: SagaAction.Action.update,
+    create: SagaAction.create,
+    remove: SagaAction.remove,
+    update: SagaAction.update,
 
-    changeContainer: SagaAction.Action.changeContainer,
-    openEditorDialogToEdit: SagaAction.Action.openEditorDialogToEdit,
+    changeContainer: SagaAction.changeContainer,
+    openEditorDialogToEdit: SagaAction.openEditorDialogToEdit,
   }
 )

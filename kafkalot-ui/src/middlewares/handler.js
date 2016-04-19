@@ -6,26 +6,33 @@ import {
   ItemProperty as ConnectorItemProperty,
   Action as ConnectorItemAction,
   Payload as ConnectorItemPayload,
+  isEmptyConnector, isEmptyName,
 } from '../reducers/ConnectorReducer/ItemState'
 import { Action as ContainerSelectorAction, Payload as ContainerSelectorPayload, } from '../reducers/ConnectorReducer/ContainerSelectorState'
 import { Action as EditorDialogAction, Payload as EditorDialogPayload, } from '../reducers/ConnectorReducer/EditorDialogState'
 import { Action as SnackbarAction, Payload as SnackbarPayload, } from '../reducers/ConnectorReducer/ClosableSnackbarState'
 
-import * as SagaAction from '../middlewares/SagaAction'
-
+import { Code as ErrorCode, } from '../constants/error'
 import * as Converter from './converter'
 import * as API from './api'
 import * as Selector from '../reducers/ConnectorReducer/selector'
 
 export const JOB_TRANSITION_DELAY = 1000
 
-/** utils */
-
 /**
- * handlers used in watcher functions
- *
- * every handler should catch exceptions
+ * handlers that catch exceptions and validate conditions. (used in watcher functions)
  */
+
+export function* initialize() {
+  try {
+    yield call(fetchAndUpdateAll)
+  } catch (error) {
+    yield put(SnackbarAction.openErrorSnackbar({
+        [SnackbarPayload.MESSAGE]: 'Failed to fetch all connectors',
+        [SnackbarPayload.ERROR]: error,
+    }))
+  }
+}
 
 export function* handleOpenEditorDialogToEdit(action) {
   const { payload, } = action
@@ -49,8 +56,7 @@ export function* handleOpenEditorDialogToEdit(action) {
     yield put(SnackbarAction.openErrorSnackbar({
         [SnackbarPayload.MESSAGE]: `Failed to fetchConfig '${name}'`,
         [SnackbarPayload.ERROR]: error,
-      })
-    )
+    }))
   }
 }
 
@@ -60,19 +66,20 @@ export function* handleSetReadonly(action) {
   let name = null
 
   try {
-    name = payload[ConnectorItemPayload.NAME]
-    const connector = yield select(Selector.getConnector, name)
+    const connector = payload[ConnectorItemPayload.CONNECTOR]
 
-    // TODO use fetchConnector
-    if (isStopped(connector) || isRunning(connector)) throw new Error('INVALID STATE')
+    if (isStopped(connector) || isRunning(connector))
+      throw new Error(ErrorCode.INVALID_STATE)
+
+    name = connector[ConnectorItemProperty.name]
+
     yield call(setReadonly, name)
 
   } catch (error) {
     yield put(SnackbarAction.openErrorSnackbar({
         [SnackbarPayload.MESSAGE]: `Failed to set readonly '${name}'`,
         [SnackbarPayload.ERROR]: error,
-      })
-    )
+    }))
   }
 }
 
@@ -82,11 +89,13 @@ export function* handleUnsetReadonly(action) {
   let name = null
 
   try {
-    name = payload[ConnectorItemPayload.NAME]
-    const connector = yield select(Selector.getConnector, name)
+    const connector = payload[ConnectorItemPayload.CONNECTOR]
 
-    // TODO use fetchConnector
-    if (isWaiting(connector) || isRunning(connector)) throw new Error('INVALID STATE')
+    if (isWaiting(connector) || isRunning(connector))
+      throw new Error(ErrorCode.INVALID_STATE)
+
+    name = connector[ConnectorItemProperty.name]
+    if (isEmptyName(name)) throw new Error(ErrorCode.EMPTY_NAME)
 
     yield call(unsetReadonly, name)
 
@@ -94,12 +103,81 @@ export function* handleUnsetReadonly(action) {
     yield put(SnackbarAction.openErrorSnackbar({
         [SnackbarPayload.MESSAGE]: `Failed to unset readonly '${name}'`,
         [SnackbarPayload.ERROR]: error,
-      })
-    )
+    }))
   }
 }
 
-/** utils that wrap high-level APIs. */
+export function* handleCreate(action) {
+  const { payload, } = action
+
+  let connector = null
+  let name = null
+
+  try {
+    connector = payload[ConnectorItemPayload.CONNECTOR]
+
+    name = connector[ConnectorItemProperty.name]
+    if (isEmptyName(name)) throw new Error(ErrorCode.EMPTY_NAME)
+
+    const existing = yield select(Selector.getConnectorByNameElseEmptyConnector, name)
+    if (!isEmptyConnector(existing)) throw new Error(ErrorCode.DUPLICATE_NAME)
+
+    yield call(create, connector, name)
+  } catch (error) {
+    yield put(SnackbarAction.openErrorSnackbar({
+        [SnackbarPayload.MESSAGE]: `Failed to create '${name}'`,
+        [SnackbarPayload.ERROR]: error,
+    }))
+  }
+}
+
+export function* handleRemove(action) {
+  const { payload, } = action
+
+  let name = null
+
+  try {
+    const connector = payload[ConnectorItemPayload.CONNECTOR]
+    name = connector[ConnectorItemProperty.name]
+    if (isEmptyName(name)) throw new Error(ErrorCode.EMPTY_NAME)
+
+    yield call(remove, name)
+  } catch (error) {
+    yield put(SnackbarAction.openErrorSnackbar({
+        [SnackbarPayload.MESSAGE]: `Failed to create '${name}'`,
+        [SnackbarPayload.ERROR]: error,
+    }))
+  }
+}
+
+export function* handleUpdate(action) {
+  const { payload, } = action
+
+  let name = null
+
+  try {
+    const connector = payload[ConnectorItemPayload.CONNECTOR]
+    name = payload[ConnectorItemPayload.NAME]
+
+    if (isEmptyName(name)) throw new Error(ErrorCode.EMPTY_NAME)
+
+    /** name field in connector object */
+    const connectorName = connector[ConnectorItemProperty.name]
+
+    if (isEmptyName(connectorName)) throw new Error(ErrorCode.EMPTY_NAME)
+
+    if (name !== connectorName) throw new Error(ErrorCode.CANNOT_CHANGE_NAME)
+
+    yield call(update, connector, name)
+  } catch (error) {
+    yield put(SnackbarAction.openErrorSnackbar({
+      [SnackbarPayload.MESSAGE]: `Failed to update '${name}'`,
+      [SnackbarPayload.ERROR]: error,
+    }))
+  }
+}
+
+/** utils that call high-level APIs and update redux state. */
 
 export function* fetchAndUpdateAll() {
   const currentSortStrategy = yield select(Selector.getCurrentSortStrategy)
@@ -126,5 +204,36 @@ export function* unsetReadonly(connectorName) {
 
   yield put(ConnectorItemAction.update({
     [ConnectorItemPayload.CONNECTOR]: updated,
+  }))
+}
+
+export function* create(connector, name) {
+  const connectorWithMeta = Object.assign(Converter.getInitialStorageMeta(), connector)
+  yield call(API.postStorageConnector, connectorWithMeta)
+
+  yield call(fetchAndUpdateAll) /** then, updated all */
+
+  yield put(SnackbarAction.openInfoSnackbar({
+    [SnackbarPayload.MESSAGE]: `Created connector '${name}'`,
+  }))
+}
+
+export function* remove(name) {
+  yield call(API.deleteStorageConnector, name)
+
+  yield call(fetchAndUpdateAll) /** then, updated all */
+
+  yield put(SnackbarAction.openInfoSnackbar({
+    [SnackbarPayload.MESSAGE]: `Removed connector '${name}'`,
+  }))
+}
+
+export function* update(connector, name) {
+  yield call(API.putStorageConnector, connector, name)
+
+  yield call(fetchAndUpdateAll) /** then, updated all */
+
+  yield put(SnackbarAction.openInfoSnackbar({
+    [SnackbarPayload.MESSAGE]: `Updated connector '${name}'`,
   }))
 }

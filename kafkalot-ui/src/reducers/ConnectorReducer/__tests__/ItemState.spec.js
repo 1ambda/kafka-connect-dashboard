@@ -3,6 +3,7 @@ import { expect, } from 'chai'
 import {
   ActionType, Action, State, ItemProperty, INITIAL_ITEM_STATE,
   isRunning, isStopped, isWaiting,
+  EMPTY_CONNECTOR, isEmptyConnector,
 } from '../ItemState'
 import * as SorterState from '../SorterState'
 
@@ -23,6 +24,13 @@ describe('ItemState', () => {
       const result = Action[name](payload)
       expect(result[PROP_NAME_PAYLOAD]).to.equal(payload)
       expect(result[PROP_NAME_TYPE]).to.equal(type)
+    })
+  })
+
+  describe('isEmptyConnector', () => {
+    it(`should return true when connector is ${EMPTY_CONNECTOR}`, () => {
+      expect(isEmptyConnector(EMPTY_CONNECTOR))
+        .to.equal(true)
     })
   })
 })
