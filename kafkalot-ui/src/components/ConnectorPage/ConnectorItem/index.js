@@ -137,6 +137,7 @@ export default class ConnectorItem extends React.Component {
      * we rely on the redux state instead of passed params of this callback
      * to send actions
      */
+
     if (isRunning(connector)) stopConnector({ [ConnectorItemPayload.CONNECTOR]: connector, })
     else startConnector({ [ConnectorItemPayload.CONNECTOR]: connector, })
   }

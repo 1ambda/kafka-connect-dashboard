@@ -6,7 +6,7 @@ import {
   ItemProperty as ConnectorItemProperty,
   Action as ConnectorItemAction,
   Payload as ConnectorItemPayload,
-  isEmptyConnector, isEmptyName,
+  isEmptyConnector, isEmptyName, isEmptyConfig,
 } from '../reducers/ConnectorReducer/ItemState'
 import { Action as ContainerSelectorAction, Payload as ContainerSelectorPayload, } from '../reducers/ConnectorReducer/ContainerSelectorState'
 import { Action as EditorDialogAction, Payload as EditorDialogPayload, } from '../reducers/ConnectorReducer/EditorDialogState'
@@ -131,25 +131,6 @@ export function* handleCreate(action) {
   }
 }
 
-export function* handleRemove(action) {
-  const { payload, } = action
-
-  let name = null
-
-  try {
-    const connector = payload[ConnectorItemPayload.CONNECTOR]
-    name = connector[ConnectorItemProperty.name]
-    if (isEmptyName(name)) throw new Error(ErrorCode.EMPTY_NAME)
-
-    yield call(remove, name)
-  } catch (error) {
-    yield put(SnackbarAction.openErrorSnackbar({
-        [SnackbarPayload.MESSAGE]: `Failed to create '${name}'`,
-        [SnackbarPayload.ERROR]: error,
-    }))
-  }
-}
-
 export function* handleUpdate(action) {
   const { payload, } = action
 
@@ -176,6 +157,90 @@ export function* handleUpdate(action) {
     }))
   }
 }
+
+export function* handleRemove(action) {
+  const { payload, } = action
+
+  let name = null
+
+  try {
+    const connector = payload[ConnectorItemPayload.CONNECTOR]
+    name = connector[ConnectorItemProperty.name]
+    if (isEmptyName(name)) throw new Error(ErrorCode.EMPTY_NAME)
+
+    yield call(remove, name)
+  } catch (error) {
+    yield put(SnackbarAction.openErrorSnackbar({
+        [SnackbarPayload.MESSAGE]: `Failed to remove '${name}'`,
+        [SnackbarPayload.ERROR]: error,
+    }))
+  }
+}
+
+export function* handleStart(action) {
+  const { payload, } = action
+
+  let name = null
+
+  try {
+    const connector = payload[ConnectorItemPayload.CONNECTOR]
+    name = connector[ConnectorItemProperty.name]
+
+    yield put(ConnectorItemAction.startSwitching({
+      [ConnectorItemPayload.NAME]: name,
+    }))
+    yield call(API.delay, JOB_TRANSITION_DELAY)
+
+    const config = connector[ConnectorItemProperty.config]
+
+    /** validation */
+    if (isEmptyName(name)) throw new Error(ErrorCode.EMPTY_NAME)
+    if (isEmptyConfig(config)) throw new Error(ErrorCode.EMPTY_CONFIG)
+
+    yield call(start, connector, name)
+  } catch (error) {
+    yield put(SnackbarAction.openErrorSnackbar({
+      [SnackbarPayload.MESSAGE]: `Failed to start '${name}'`,
+      [SnackbarPayload.ERROR]: error,
+    }))
+  }
+
+  yield put(ConnectorItemAction.endSwitching({
+    [ConnectorItemPayload.NAME]: name,
+  }))
+}
+
+export function* handleStop(action) {
+  const { payload, } = action
+
+  let name = null
+
+  try {
+    const connector = payload[ConnectorItemPayload.CONNECTOR]
+    name = connector[ConnectorItemProperty.name]
+
+    yield put(ConnectorItemAction.startSwitching({
+      [ConnectorItemPayload.NAME]: name,
+    }))
+    yield call(API.delay, JOB_TRANSITION_DELAY)
+
+    /** validation */
+    if (isEmptyName(name)) throw new Error(ErrorCode.EMPTY_NAME)
+
+    yield call(stop, name)
+  } catch (error) {
+    yield put(SnackbarAction.openErrorSnackbar({
+      [SnackbarPayload.MESSAGE]: `Failed to stop '${name}'`,
+      [SnackbarPayload.ERROR]: error,
+    }))
+  }
+
+  yield put(ConnectorItemAction.endSwitching({
+    [ConnectorItemPayload.NAME]: name,
+  }))
+}
+
+
 
 /** utils that call high-level APIs and update redux state. */
 
@@ -218,6 +283,20 @@ export function* create(connector, name) {
   }))
 }
 
+export function* update(connector, name) {
+  yield call(API.putStorageConnector, connector, name)
+
+  const updated = yield call(API.fetchConnector, name) /** then, update it */
+
+  yield put(ConnectorItemAction.update({
+    [ConnectorItemPayload.CONNECTOR]: updated,
+  }))
+
+  yield put(SnackbarAction.openInfoSnackbar({
+    [SnackbarPayload.MESSAGE]: `Updated connector '${name}'`,
+  }))
+}
+
 export function* remove(name) {
   yield call(API.deleteStorageConnector, name)
 
@@ -228,12 +307,22 @@ export function* remove(name) {
   }))
 }
 
-export function* update(connector, name) {
-  yield call(API.putStorageConnector, connector, name)
+export function* start(connector, name) {
+  yield call(API.postContainerConnector, connector)
 
-  yield call(fetchAndUpdateAll) /** then, updated all */
+  const updated = yield call(API.fetchConnector, name) /** then, update it */
 
-  yield put(SnackbarAction.openInfoSnackbar({
-    [SnackbarPayload.MESSAGE]: `Updated connector '${name}'`,
+  yield put(ConnectorItemAction.update({
+    [ConnectorItemPayload.CONNECTOR]: updated,
+  }))
+}
+
+export function* stop(name) {
+  yield call(API.deleteContainerConnector, name)
+  
+  const updated = yield call(API.fetchConnector, name) /** then, update it */
+
+  yield put(ConnectorItemAction.update({
+    [ConnectorItemPayload.CONNECTOR]: updated,
   }))
 }

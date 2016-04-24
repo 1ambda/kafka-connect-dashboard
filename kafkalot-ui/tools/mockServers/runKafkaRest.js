@@ -3,6 +3,7 @@ import cors from 'cors'
 import bodyParser from 'body-parser'
 import * as Resource from './resource'
 import * as Middleware from './middleware'
+import * as Util from './util'
 
 const db = Resource.REST_DB
 
@@ -62,127 +63,35 @@ app.get(`/${Resource.KEY_CONNECTORS}/:${Resource.KEY_NAME}/${Resource.KEY_TASKS}
   }
 )
 
+app.post(`/${Resource.KEY_CONNECTORS}`,
+  Middleware.checkDuplicatedConnector(db),
+  (req, res) => {
+    const connector = req.body
+    const config = connector[Resource.KEY_CONFIG]
+
+    if (config === void 0 || config === null || Util.isEmptyObject(config)) {
+      return Util.sendErrorMessage(res, 400, `Invalid '${Resource.KEY_CONFIG}' field`)
+    }
+
+    db(Resource.KEY_CONNECTORS)
+      .push(connector)
+
+    res.status(201).json(connector)
+  }
+)
+
+app.delete(`/${Resource.KEY_CONNECTORS}/:${Resource.KEY_NAME}`,
+  Middleware.checkConnectorExists(db),
+  (req, res) => {
+    const name = req.params[Resource.KEY_NAME]
+
+    const connector = db(Resource.KEY_CONNECTORS)
+      .remove({ [Resource.KEY_NAME]: name, })
+
+    res.status(200).json(connector)
+  }
+)
+
 app.listen(app.get('port'), () => {
-  console.log(`Mock server is running on PORT ${app.get('port')}!`)
+  console.log(`Mock container server is running on PORT ${app.get('port')}!`)
 })
-
-/**
- *  Ref - http://kafka.apache.org/documentation.html#connect
- *
- *  GET /connectors - return a list of active connectors
- *  GET /connectors/{name} - get information about a specific connector
- *  GET /connectors/{name}/config - get the configuration parameters for a specific connector
- *  GET /connectors/{name}/tasks - get a list of tasks currently running for a connector
- *
- *  POST /connectors - create a new connector; the request body should be a JSON object containing a string name field and a object config field with the connector configuration parameters
- *  DELETE /connectors/{name} - delete a connector, halting all tasks and deleting its configuration
- *  PUT /connectors/{name}/config - update the configuration parameters for a specific connector
- */
-
-/**
- *
- * example of `GET: /connectors`
- *
- *  [
- *    "console-sink1"
- *  ]
- */
-
-/**
- *
- * example of `GET: /connectors/:name`
- *
- *  {
- *    "name":"console-sink1",
- *    "config":{
- *      "connector.class":"io.github.lambda.ConsoleSinkConnector",
- *      "tasks.max":"4",
- *      "topics":"test-p4-1",
- *      "name":"console-sink1",
- *      "id":"console-connector-id"
- *    },
- *    "tasks":[
- *      {  "connector":"console-sink1", "task":0  },
- *      {  "connector":"console-sink1", "task":1  },
- *      {  "connector":"console-sink1", "task":2  },
- *      {  "connector":"console-sink1", "task":3  }
- *    ]
- *  }
- */
-
-/**
- *
- * example of `GET: /connectors/:name/config`
- *
- *  {
- *    "connector.class":"io.github.lambda.ConsoleSinkConnector",
- *    "tasks.max":"4",
- *    "topics":"test-p4-1",
- *    "name":"console-sink-1",
- *    "id":"console-connector-id"
- *  }
- */
-
-/**
- *
- * example of `GET: /connectors/:name/tasks`
- *
- *  [
- *   {
- *     "id":{
- *       "connector":"console-sink1",
- *       "task":0
- *     },
- *     "config":{
- *       "connector.class":"io.github.lambda.ConsoleSinkConnector",
- *       "name":"console-sink1",
- *       "id":"console-connector-id",
- *       "task.class":"io.github.lambda.ConsoleSinkTask",
- *       "tasks.max":"4",
- *       "topics":"test-p4-1"
- *     }
- *   },
- *   {
- *     "id":{
- *       "connector":"console-sink1",
- *       "task":1
- *     },
- *     "config":{
- *       "connector.class":"io.github.lambda.ConsoleSinkConnector",
- *       "name":"console-sink1",
- *       "id":"console-connector-id",
- *       "task.class":"io.github.lambda.ConsoleSinkTask",
- *       "tasks.max":"4",
- *       "topics":"test-p4-1"
- *     }
- *   },
- *   {
- *     "id":{
- *       "connector":"console-sink1",
- *       "task":2
- *     },
- *     "config":{
- *       "connector.class":"io.github.lambda.ConsoleSinkConnector",
- *       "name":"console-sink1",
- *       "id":"console-connector-id",
- *       "task.class":"io.github.lambda.ConsoleSinkTask",
- *       "tasks.max":"4",
- *       "topics":"test-p4-1"
- *     }
- *   },
- *   {
- *     "id":{
- *       "connector":"console-sink1",
- *       "task":3
- *     },
- *     "config":{
- *       "connector.class":"io.github.lambda.ConsoleSinkConnector",
- *       "name":"console-sink1",
- *       "id":"console-connector-id",
- *       "task.class":"io.github.lambda.ConsoleSinkTask",
- *       "tasks.max":"4",
- *       "topics":"test-p4-1"
- *     }
- *   }
- *  ]
- */

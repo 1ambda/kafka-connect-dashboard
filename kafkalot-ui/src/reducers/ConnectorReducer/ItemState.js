@@ -50,27 +50,6 @@ export const replaceWithFilter = (state, filter, updated) =>
     return (filter(connector)) ? updated : connector
   })
 
-export const stop = (state, { payload, }) => {
-  // TODO use compose to combine filters
-  const filter = (connector) => (payload.name === connector[ItemProperty.name] && isRunning(connector))
-  return modifyWithFilter(state, filter, ItemProperty.state, State.WAITING)
-}
-
-export const start = (state, { payload, }) => {
-  const filter = (connector) => (payload.name === connector[ItemProperty.name] && isWaiting(connector))
-  return modifyWithFilter(state, filter, ItemProperty.state, State.RUNNING)
-}
-
-export const startSwitching = (state, { payload, }) => {
-  const filter = (connector) => (payload.name === connector[ItemProperty.name])
-  return modifyWithFilter(state, filter, ItemProperty.switching, true)
-}
-
-export const endSwitching = (state, { payload, }) => {
-  const filter = (connector) => (payload.name === connector[ItemProperty.name])
-  return modifyWithFilter(state, filter, ItemProperty.switching, false)
-}
-
 export function sortByRunning(connector1, connector2) {
   if (isRunning((connector1)) && !isRunning(connector2)) return -1
   else if (!isRunning(connector1) && isRunning(connector2)) return 1
@@ -110,6 +89,11 @@ export function isEmptyName(name) {
   return (name === void 0) || (name === null)
 }
 
+export function isEmptyConfig(config) {
+  return (Object.keys(config).length === 0)
+    && (JSON.stringify(config) === JSON.stringify({}))
+}
+
 export const ActionType = {
   START_SWITCHING: 'START_SWITCHING',
   END_SWITCHING: 'END_SWITCHING',
@@ -128,8 +112,18 @@ const INITIAL_STATE = []
 
 export const handler = handleActions({
   /** from UI component */
-  [ActionType.START_SWITCHING]: startSwitching,
-  [ActionType.END_SWITCHING]: endSwitching,
+  [ActionType.START_SWITCHING]: (state, { payload, }) => {
+    const name = payload[ItemProperty.name]
+    const filter = (connector) => (payload.name === name)
+    return modifyWithFilter(state, filter, ItemProperty.switching, true)
+  }
+    ,
+  [ActionType.END_SWITCHING]: (state, { payload, }) => {
+    const name = payload[ItemProperty.name]
+    const filter = (connector) => (payload.name === name)
+    return modifyWithFilter(state, filter, ItemProperty.switching, false)
+  },
+
   [SorterState.ActionType.SORT]: (state, { payload, }) => {
     const strategy = payload[SorterState.Payload.STRATEGY]
     const connectors = state.slice() /** copy origin state */

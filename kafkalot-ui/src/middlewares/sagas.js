@@ -78,6 +78,20 @@ export function* watchRemove() {
   )
 }
 
+export function* watchStart() {
+  yield* takeEvery(
+    ActionType.START,
+    Handler.handleStart
+  )
+}
+
+export function* watchStop() {
+  yield* takeEvery(
+    ActionType.STOP,
+    Handler.handleStop
+  )
+}
+
 export default function* root() {
   yield [
     fork(Handler.initialize),
@@ -87,5 +101,7 @@ export default function* root() {
     fork(watchCreate),
     fork(watchUpdate),
     fork(watchRemove),
+    fork(watchStart),
+    fork(watchStop),
   ]
 }

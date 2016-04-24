@@ -176,4 +176,16 @@ export function* putStorageConnector(connector, connectorName) {
   yield call(putJSON, storageConnectorUrl, connector)
 }
 
+export function* postContainerConnector(connector) {
+  const containerName = yield select(Selector.getSelectedContainer)
+  const containerConnectorsUrl = URL.getContainerConnectorsUrl(containerName)
 
+  yield call(postJSON, containerConnectorsUrl, connector)
+}
+
+export function* deleteContainerConnector(name) {
+  const containerName = yield select(Selector.getSelectedContainer)
+  const containerConnectorUrl = URL.getContainerConnectorUrl(containerName, name)
+
+  yield call(deleteJSON, containerConnectorUrl)
+}
