@@ -11,5 +11,5 @@ export const CONNECTOR = {
   CONFIRM_DIALOG: 'confirmDialog',
   SORTER: 'sortingStrategy',
   SNACKBAR: 'snackbar',
-  CONTAINER_SELECTOR: 'containerSelector',
+  STORAGE_SELECTOR: 'storageSelector',
 }

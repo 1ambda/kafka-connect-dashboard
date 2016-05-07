@@ -13,7 +13,7 @@ export const ActionType = {
   REMOVE: 'API_REMOVE',
   UPDATE: 'API_UPDATE',
 
-  CHANGE_CONTAINER: 'API_CHANGE_CONTAINER',
+  CHANGE_STORAGE: 'API_CHANGE_STORAGE',
   OPEN_EDITOR_DIALOG_TO_EDIT: 'API_OPEN_EDITOR_DIALOG_TO_EDIT',
 
   SET_READONLY: 'API_SET_READONLY',
@@ -27,7 +27,7 @@ export const Action = {
   remove: createAction(ActionType.REMOVE),
   update: createAction(ActionType.UPDATE),
 
-  changeContainer: createAction(ActionType.CHANGE_CONTAINER),
+  changeStorage: createAction(ActionType.CHANGE_STORAGE),
   openEditorDialogToEdit: createAction(ActionType.OPEN_EDITOR_DIALOG_TO_EDIT),
 
   unsetReadonly: createAction(ActionType.UNSET_READONLY),

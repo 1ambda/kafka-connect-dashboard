@@ -21,7 +21,7 @@ describe('sagas', () => {
       { name: 'remove', type: SagaActionType.REMOVE, },
       { name: 'update', type: SagaActionType.UPDATE, },
 
-      { name: 'changeContainer', type: SagaActionType.CHANGE_CONTAINER, },
+      { name: 'changeStorage', type: SagaActionType.CHANGE_STORAGE, },
 
       { name: 'unsetReadonly', type: SagaActionType.UNSET_READONLY, },
       { name: 'setReadonly', type: SagaActionType.SET_READONLY, },

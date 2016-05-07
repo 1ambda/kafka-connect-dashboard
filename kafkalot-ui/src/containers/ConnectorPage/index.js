@@ -27,7 +27,7 @@ class ConnectorPage extends React.Component {
     confirmDialog: PropTypes.object.isRequired,
     snackbar: PropTypes.object.isRequired,
     sortingStrategy: PropTypes.object.isRequired,
-    containerSelector: PropTypes.object.isRequired,
+    storageSelector: PropTypes.object.isRequired,
   }
 
   handlePageOffsetChange(newPageOffset) {
@@ -40,7 +40,7 @@ class ConnectorPage extends React.Component {
   render() {
     const {
       actions, connectors, paginator, filterKeyword,
-      sortingStrategy, containerSelector,
+      sortingStrategy, storageSelector,
       editorDialog, confirmDialog, snackbar, } = this.props
 
     const { itemCountPerPage, currentPageOffset, currentItemOffset, } = paginator
@@ -72,12 +72,12 @@ class ConnectorPage extends React.Component {
     return (
       <div>
         <ConnectorHeader sortingStrategy={sortingStrategy}
-                         containerSelector={containerSelector}
+                         storageSelector={storageSelector}
                          connectors={filtered}
                          openEditorDialogToCreate={actions.openEditorDialogToCreate}
                          filterConnector={actions.filter}
                          sortConnector={actions.sort}
-                         changeContainer={actions.changeContainer}
+                         changeStorage={actions.changeStorage}
           />
         <ConnectorList connectors={sliced} actions={actions} />
         <div className="center" style={style.paginator}>
@@ -104,7 +104,7 @@ function mapStateToProps(state) {
     confirmDialog: state[ROOT.CONNECTOR][CONNECTOR.CONFIRM_DIALOG],
     snackbar: state[ROOT.CONNECTOR][CONNECTOR.SNACKBAR],
     sortingStrategy: state[ROOT.CONNECTOR][CONNECTOR.SORTER],
-    containerSelector: state[ROOT.CONNECTOR][CONNECTOR.CONTAINER_SELECTOR],
+    storageSelector: state[ROOT.CONNECTOR][CONNECTOR.STORAGE_SELECTOR],
   }
 }
 

@@ -2,14 +2,16 @@ import {
   INITIAL_ITEM_STATE as INITIAL_CONNECTOR_ITEM_STATE,
   ItemProperty as CONNECTOR_PROPERTY,
   State as CONNECTOR_STATE,
+  isRunning, isWaiting, isStopped,
   EMPTY_CONNECTOR, isEmptyConnector,
 } from '../reducers/ConnectorReducer/ItemState'
 
 import * as Logger from '../util/logger'
 
 export const STORAGE_PROPERTY = {
-  META: '_storage_meta',
+  META: '_meta',
   ENABLED: 'enabled',
+  RUNNING: 'running',
   TAGS: 'tags',
 }
 
@@ -22,6 +24,10 @@ export function getStorageEnabled(storageConnector) {
   return getStorageMeta(storageConnector)[STORAGE_PROPERTY.ENABLED]
 }
 
+export function getStorageRunning(storageConnector) {
+  return getStorageMeta(storageConnector)[STORAGE_PROPERTY.RUNNING]
+}
+
 export function getStorageTags(storageConnector) {
   return getStorageMeta(storageConnector)[STORAGE_PROPERTY.TAGS]
 }
@@ -30,28 +36,14 @@ export function getConnectorConfig(connector) {
   return connector[CONNECTOR_PROPERTY.config]
 }
 
-export function getDisabledStorageMeta() {
+export function getInitialStorageMeta() {
   return {
     [STORAGE_PROPERTY.META]: {
-      [STORAGE_PROPERTY.ENABLED]: false,
-    },
-  }
-}
-
-export function getEnabledStorageMeta() {
-  return {
-    [STORAGE_PROPERTY.META]: {
+      [STORAGE_PROPERTY.TAGS]: [],
+      [STORAGE_PROPERTY.RUNNING]: false,
       [STORAGE_PROPERTY.ENABLED]: true,
     },
   }
-}
-
-export function getInitialStorageMeta() {
-  return Object.assign(getEnabledStorageMeta(), {
-    [STORAGE_PROPERTY.META]: {
-      [STORAGE_PROPERTY.TAGS]: [],
-    },
-  })
 }
 
 export function removeProps(props, propsToIgnore) {
@@ -71,10 +63,10 @@ export function createConnectorState(connectorName, isRunning, isEnabled) {
   else throw new Error(`Invalid connector ${connectorName} state isRunning: ${isRunning}, isEnabled: ${isEnabled}`)
 }
 
-export function createClientConnector(storageConnector, containerConnectorNames) {
+export function createClientConnector(storageConnector) {
   try {
     const connectorName = storageConnector[CONNECTOR_PROPERTY.name]
-    const isRunning = (containerConnectorNames.includes(connectorName))
+    const isRunning = getStorageRunning(storageConnector)
     const isEnabled = getStorageEnabled(storageConnector)
 
     // TODO comparison config between storage connector and container connector using `deep-equal`
@@ -96,9 +88,52 @@ export function createClientConnector(storageConnector, containerConnectorNames)
   }
 }
 
-export function createClientConnectors(storageConnectors, containerConnectorNames) {
+export function createStorageMetaFromClientConnector(connector) {
+  let running = false
+  let enabled = false
+
+  const tags = connector[CONNECTOR_PROPERTY.tags]
+
+  if (isRunning(connector)) {
+    enabled = true; running = true
+  } else if (isWaiting(connector)) {
+    enabled = true; running = false
+  } else if (isStopped(connector)) {
+    enabled = false; running = false
+  }
+
+  return Object.assign({}, connector[STORAGE_PROPERTY.META], {
+    [STORAGE_PROPERTY.ENABLED]: enabled,
+    [STORAGE_PROPERTY.RUNNING]: running,
+    [STORAGE_PROPERTY.TAGS]: tags,
+  })
+}
+
+export function createStorageMetaToStart(connector) {
+  return createStorageMetaFromClientConnector(Object.assign({}, connector, {
+    [CONNECTOR_PROPERTY.state]: CONNECTOR_STATE.RUNNING,
+  }))
+}
+
+export function createStorageMetaToStop(connector) {
+  return createStorageMetaFromClientConnector(Object.assign({}, connector, {
+    [CONNECTOR_PROPERTY.state]: CONNECTOR_STATE.WAITING,
+  }))
+}
+
+export function createStorageMetaToEnable(connector) {
+  return createStorageMetaToStop(connector)
+}
+
+export function createStorageMetaToDisable(connector) {
+  return createStorageMetaFromClientConnector(Object.assign({}, connector, {
+    [CONNECTOR_PROPERTY.state]: CONNECTOR_STATE.STOPPED,
+  }))
+}
+
+export function createClientConnectors(storageConnectors) {
   return storageConnectors.map(storageConnector => {
-    return createClientConnector(storageConnector, containerConnectorNames)
+    return createClientConnector(storageConnector)
   }).filter(connector => !isEmptyConnector(connector))
 }
 

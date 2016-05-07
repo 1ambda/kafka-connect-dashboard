@@ -10,7 +10,7 @@
     "start:mock-kafka-rest-server": "babel-node tools/mockServers/runKafkaRest",
     "start:mock-storage-server": "babel-node tools/mockServers/runStorage",
     "start:client": "cross-env NODE_ENV=development npm-run-all --parallel lint:tools test:watch open:dev",
-    "start": "npm-run-all --parallel start:mock-kafka-rest-server start:mock-storage-server start:client",
+    "start": "npm-run-all --parallel start:mock-storage-server start:client",
     "lint:src": "eslint src",
     "lint:tools": "eslint webpack tools",
     "lint": "npm run lint:src && npm run lint:tools",

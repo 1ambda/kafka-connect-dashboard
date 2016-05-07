@@ -8,7 +8,7 @@ import {
   Payload as ConnectorItemPayload,
   isEmptyConnector, isEmptyName, isEmptyConfig,
 } from '../reducers/ConnectorReducer/ItemState'
-import { Action as ContainerSelectorAction, Payload as ContainerSelectorPayload, } from '../reducers/ConnectorReducer/ContainerSelectorState'
+import { Action as StorageSelectorAction, Payload as StorageSelectorPayload, } from '../reducers/ConnectorReducer/StorageSelectorState'
 import { Action as EditorDialogAction, Payload as EditorDialogPayload, } from '../reducers/ConnectorReducer/EditorDialogState'
 import { Action as SnackbarAction, Payload as SnackbarPayload, } from '../reducers/ConnectorReducer/ClosableSnackbarState'
 
@@ -72,8 +72,9 @@ export function* handleSetReadonly(action) {
       throw new Error(ErrorCode.INVALID_STATE)
 
     name = connector[ConnectorItemProperty.name]
+    if (isEmptyName(name)) throw new Error(ErrorCode.EMPTY_NAME)
 
-    yield call(setReadonly, name)
+    yield call(setReadonly, connector, name)
 
   } catch (error) {
     yield put(SnackbarAction.openErrorSnackbar({
@@ -97,7 +98,7 @@ export function* handleUnsetReadonly(action) {
     name = connector[ConnectorItemProperty.name]
     if (isEmptyName(name)) throw new Error(ErrorCode.EMPTY_NAME)
 
-    yield call(unsetReadonly, name)
+    yield call(unsetReadonly, connector, name)
 
   } catch (error) {
     yield put(SnackbarAction.openErrorSnackbar({
@@ -191,11 +192,7 @@ export function* handleStart(action) {
     }))
     yield call(API.delay, JOB_TRANSITION_DELAY)
 
-    const config = connector[ConnectorItemProperty.config]
-
-    /** validation */
     if (isEmptyName(name)) throw new Error(ErrorCode.EMPTY_NAME)
-    if (isEmptyConfig(config)) throw new Error(ErrorCode.EMPTY_CONFIG)
 
     yield call(start, connector, name)
   } catch (error) {
@@ -227,7 +224,8 @@ export function* handleStop(action) {
     /** validation */
     if (isEmptyName(name)) throw new Error(ErrorCode.EMPTY_NAME)
 
-    yield call(stop, name)
+    yield call(stop, connector, name)
+
   } catch (error) {
     yield put(SnackbarAction.openErrorSnackbar({
       [SnackbarPayload.MESSAGE]: `Failed to stop '${name}'`,
@@ -240,14 +238,13 @@ export function* handleStop(action) {
   }))
 }
 
-
-
 /** utils that call high-level APIs and update redux state. */
 
 export function* fetchAndUpdateAll() {
   const currentSortStrategy = yield select(Selector.getCurrentSortStrategy)
+  const storageName = yield select(Selector.getSelectedStorage)
 
-  const connectors = yield call(API.fetchAll)
+  const connectors = yield call(API.fetchAll, storageName)
   yield put(ConnectorItemAction.updateAll({
     [ConnectorItemPayload.CONNECTORS]: connectors,
   }))
@@ -256,16 +253,18 @@ export function* fetchAndUpdateAll() {
   }))
 }
 
-export function* setReadonly(connectorName) {
-  const updated = yield call(API.patchStorageConnectorMeta, connectorName, Converter.getDisabledStorageMeta())
+export function* setReadonly(connector, name) {
+  const meta = Converter.createStorageMetaToDisable(connector)
+  const updated = yield call(API.putConnectorMeta, name, meta)
 
   yield put(ConnectorItemAction.update({
     [ConnectorItemPayload.CONNECTOR]: updated,
   }))
 }
 
-export function* unsetReadonly(connectorName) {
-  const updated = yield call(API.patchStorageConnectorMeta, connectorName, Converter.getEnabledStorageMeta())
+export function* unsetReadonly(connector, name) {
+  const meta = Converter.createStorageMetaToEnable(connector)
+  const updated = yield call(API.putConnectorMeta, name, meta)
 
   yield put(ConnectorItemAction.update({
     [ConnectorItemPayload.CONNECTOR]: updated,
@@ -274,7 +273,7 @@ export function* unsetReadonly(connectorName) {
 
 export function* create(connector, name) {
   const connectorWithMeta = Object.assign(Converter.getInitialStorageMeta(), connector)
-  yield call(API.postStorageConnector, connectorWithMeta)
+  yield call(API.postConnector, connectorWithMeta)
 
   yield call(fetchAndUpdateAll) /** then, updated all */
 
@@ -284,7 +283,7 @@ export function* create(connector, name) {
 }
 
 export function* update(connector, name) {
-  yield call(API.putStorageConnector, connector, name)
+  yield call(API.putConnector, connector, name)
 
   const updated = yield call(API.fetchConnector, name) /** then, update it */
 
@@ -298,7 +297,7 @@ export function* update(connector, name) {
 }
 
 export function* remove(name) {
-  yield call(API.deleteStorageConnector, name)
+  yield call(API.deleteConnector, name)
 
   yield call(fetchAndUpdateAll) /** then, updated all */
 
@@ -308,21 +307,20 @@ export function* remove(name) {
 }
 
 export function* start(connector, name) {
-  yield call(API.postContainerConnector, connector)
+  const meta = Converter.createStorageMetaToStart(connector)
+  const updated = yield call(API.putConnectorMeta, name, meta)
 
-  const updated = yield call(API.fetchConnector, name) /** then, update it */
+  yield put(ConnectorItemAction.update({
+    [ConnectorItemPayload.CONNECTOR]: updated,
+  }))
+}
+
+export function* stop(connector, name) {
+  const meta = Converter.createStorageMetaToStop(connector)
+  const updated = yield call(API.putConnectorMeta, name, meta)
 
   yield put(ConnectorItemAction.update({
     [ConnectorItemPayload.CONNECTOR]: updated,
   }))
 }
 
-export function* stop(name) {
-  yield call(API.deleteContainerConnector, name)
-  
-  const updated = yield call(API.fetchConnector, name) /** then, update it */
-
-  yield put(ConnectorItemAction.update({
-    [ConnectorItemPayload.CONNECTOR]: updated,
-  }))
-}

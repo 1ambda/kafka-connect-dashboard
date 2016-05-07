@@ -3,6 +3,9 @@ import {
   ItemProperty as ConnectorProperty,
   EMPTY_CONNECTOR, isEmptyConnector,
 } from './ItemState'
+import {
+  Property as StorageSelectorProperty,
+} from './StorageSelectorState'
 import { Code as ErrorCode, } from '../../constants/error'
 
 
@@ -31,13 +34,8 @@ export function findConnector(connectors, connectorName) {
   return found[0]
 }
 
-export function getConnectorByNameElseThrowError(state, connectorName) {
-  const connectors = getConnectors(state)
-  return findConnector(connectors, connectorName)
-}
-
-export function getSelectedContainer(state) {
-  return state[ROOT.CONNECTOR][CONNECTOR.CONTAINER_SELECTOR].selectedContainer
+export function getSelectedStorage(state) {
+  return state[ROOT.CONNECTOR][CONNECTOR.STORAGE_SELECTOR][StorageSelectorProperty.SELECTED_STORAGE]
 }
 
 export function getCurrentSortStrategy(state) {

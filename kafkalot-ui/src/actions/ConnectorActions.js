@@ -48,7 +48,7 @@ export default Object.assign({},
     remove: SagaAction.remove,
     update: SagaAction.update,
 
-    changeContainer: SagaAction.changeContainer,
+    changeStorage: SagaAction.changeStorage,
     openEditorDialogToEdit: SagaAction.openEditorDialogToEdit,
   }
 )

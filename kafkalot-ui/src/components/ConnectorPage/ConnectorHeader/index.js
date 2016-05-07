@@ -12,19 +12,19 @@ import * as style from './style'
 import { isRunning, } from '../../../reducers/ConnectorReducer/ItemState'
 import { Payload as SorterPayload, } from '../../../reducers/ConnectorReducer/SorterState'
 import { Payload as FilterPayload, } from '../../../reducers/ConnectorReducer/FilterState'
-import { Payload as ContainerSelectorPayload, } from '../../../reducers/ConnectorReducer/ContainerSelectorState'
+import { Payload as StorageSelectorPayload, } from '../../../reducers/ConnectorReducer/StorageSelectorState'
 import * as URL from '../../../middlewares/url'
 import * as Page from '../../../constants/page'
 
 export default class ConnectorHeader extends React.Component {
   static propTypes = {
     sortingStrategy: PropTypes.object.isRequired,
-    containerSelector: PropTypes.object.isRequired,
+    storageSelector: PropTypes.object.isRequired,
     connectors: PropTypes.array.isRequired,
     openEditorDialogToCreate: PropTypes.func.isRequired,
     filterConnector: PropTypes.func.isRequired,
     sortConnector: PropTypes.func.isRequired,
-    changeContainer: PropTypes.func.isRequired,
+    changeStorage: PropTypes.func.isRequired,
   }
 
   static createSummaryDOM(connectors, createButton) {
@@ -32,11 +32,11 @@ export default class ConnectorHeader extends React.Component {
     const runningJobCount = connectors.filter(connector => isRunning(connector)).length
 
     return (
-      <div style={style.summaryContainer}>
+      <div style={style.summaryStorage}>
         <span>Running</span>
         <span style={style.summaryRunningConnector}> {runningJobCount}</span>
         <span> of {totalJobCount}</span>
-        <span style={style.buttonContainer}> {createButton} </span>
+        <span style={style.buttonStorage}> {createButton} </span>
       </div>
     )
   }
@@ -63,15 +63,15 @@ export default class ConnectorHeader extends React.Component {
     sortConnector(payload)
   }
 
-  handleContainerSelectorChange(container) {
-    const { changeContainer, } = this.props
-    const payload = { [ContainerSelectorPayload.CONTAINER]: container, }
+  handleStorageSelectorChange(storage) {
+    const { changeStorage, } = this.props
+    const payload = { [StorageSelectorPayload.STORAGE]: storage, }
 
-     changeContainer(payload)
+     changeStorage(payload)
   }
 
   render() {
-    const { sortingStrategy, containerSelector, connectors, } = this.props
+    const { sortingStrategy, storageSelector, connectors, } = this.props
 
     /** 1. create `CREATE` button */
     const createButton = (
@@ -91,13 +91,13 @@ export default class ConnectorHeader extends React.Component {
           <Filter handler={this.handleFilterChange.bind(this)}
                   floatingLabel="Insert Filter"
                   style={style.filterInput} />
-          <Selector handler={this.handleContainerSelectorChange.bind(this)}
-                    style={style.containerSelector}
-                    labelStyle={style.containerSelectorLabel}
-                    floatingLabel="Container"
+          <Selector handler={this.handleStorageSelectorChange.bind(this)}
+                    style={style.storageSelector}
+                    labelStyle={style.storageSelectorLabel}
+                    floatingLabel="Storage"
                     floatingLabelStyle={style.selectorFloatingLabel}
-                    strategies={containerSelector.availableContainers}
-                    currentStrategy={containerSelector.selectedContainer} />
+                    strategies={storageSelector.availableStorages}
+                    currentStrategy={storageSelector.selectedStorage} />
           <Selector handler={this.handleSorterChange.bind(this)}
                   style={style.selector}
                   labelStyle={style.selectorLabel}

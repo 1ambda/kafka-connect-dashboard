@@ -80,5 +80,17 @@ export function checkConnectorExists(db) {
   }
 }
 
+export function checkValidStorageMeta(req, res, next) {
+  const name = req.params[Resource.KEY_NAME]
 
+  const meta = req.body
+
+  if (!Util.isBoolean(meta[Resource.KEY_ENABLED])
+    || !Util.isBoolean(meta[Resource.KEY_RUNNING])
+    || !Util.isArray(meta[Resource.KEY_TAGS])) {
+    Util.sendErrorMessage(res, 400, `Invalid Storage Meta for ${name}`)
+  } else {
+    next()
+  }
+}
 

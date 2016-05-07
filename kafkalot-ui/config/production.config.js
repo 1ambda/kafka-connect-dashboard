@@ -1,13 +1,12 @@
-const envContainers = process.env.KAFKALOT_CONTAINERS
-const envStorage = process.env.KAFKALOT_STORAGE
+const envStorages = process.env.KAFKALOT_STORAGES
 const envTitle = process.env.KAFKALOT_TITLE
 const envPaginatorItemCount = process.env.KAFKALOT_PAGINATOR_ITEM_COUNT
 
 /** exposed variables, should be stringified if it is string */
-export const CONTAINERS = (envContainers === void 0) ?
+export const STORAGES = (envStorages === void 0) ?
   JSON.stringify([
-    { name: 'kafka-rest', address: 'http://localhost:8083', },
-  ]) : envContainers /** envContainer is already stringified */
+    { name: 'kafka-rest', address: 'http://localhost:8081', },
+  ]) : envStorages /** envContainer is already stringified */
 
 
 export const TITLE = (envTitle === void 0) ?

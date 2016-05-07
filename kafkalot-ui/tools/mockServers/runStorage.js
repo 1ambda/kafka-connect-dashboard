@@ -34,24 +34,6 @@ app.get(`/${Resource.KEY_CONNECTORS}/:${Resource.KEY_NAME}`,
   }
 )
 
-app.patch(`/${Resource.KEY_CONNECTORS}/:${Resource.KEY_NAME}`,
-  Middleware.checkConnectorExists(db),
-  (req, res) => {
-
-    const connector = req[Resource.KEY_CONNECTOR]
-    const requestedMeta = req.body[Resource.KEY_STORAGE_META]
-
-    try {
-      let currentMeta = connector[Resource.KEY_STORAGE_META]
-      connector[Resource.KEY_STORAGE_META] = Object.assign({}, currentMeta, requestedMeta)
-      res.json(connector)
-    } catch (error) {
-      console.error(error)
-      Util.sendErrorMessage(res, 400, `Failed to patch connector (${error.message})`)
-    }
-  }
-)
-
 /** create new connector */
 app.post(`/${Resource.KEY_CONNECTORS}`,
   Middleware.checkDuplicatedConnector(db),
@@ -112,6 +94,23 @@ app.put(`/${Resource.KEY_CONNECTORS}/:${Resource.KEY_NAME}`,
   }
 )
 
+/** update existing connector meta */
+app.put(`/${Resource.KEY_CONNECTORS}/:${Resource.KEY_NAME}/${Resource.KEY_STORAGE_META}`,
+  Middleware.checkConnectorExists(db),
+  Middleware.checkValidStorageMeta,
+  (req, res) => {
+
+    const name = req.params[Resource.KEY_NAME]
+    const meta = req.body
+
+    const connector = db(Resource.KEY_CONNECTORS)
+      .find({ [Resource.KEY_NAME]: name, })
+
+    connector[Resource.KEY_STORAGE_META] = meta
+
+    res.status(200).json(connector) /** return updated connector */
+  }
+)
 
 app.listen(app.get('port'), () => {
   console.log(`Mock storage server is running on PORT ${app.get('port')}!`)

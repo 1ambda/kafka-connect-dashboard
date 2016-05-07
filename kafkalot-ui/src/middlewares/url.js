@@ -1,90 +1,45 @@
-import { CONTAINERS, STORAGE, } from '../constants/config'
+import { STORAGES, } from '../constants/config'
 
 export const URL_BASE = 'connectors'
-export const URL_PROPERTY_TASKS = 'tasks'
-export const URL_PROPERTY_STATE = 'state'
-export const URL_PROPERTY_CONFIG = 'config'
+export const URL_POSTFIX_META = '_meta'
 
-export const CONTAINER_PROPERTY = { name: 'name', address: 'address', }
+export const STORAGE_PROPERTY = { name: 'name', address: 'address', }
 
-/** multi container support */
-export const CONTAINER_NAMES = CONTAINERS.map(container => container[CONTAINER_PROPERTY.name])
-export const INITIAL_CONTAINER_NAME = CONTAINER_NAMES[0]
+/** multi storage support */
+export const STORAGE_NAMES = STORAGES.map(storage => storage[STORAGE_PROPERTY.name])
+export const INITIAL_STORAGE_NAME = STORAGE_NAMES[0]
 
 /** internal functions (tested) */
 
-export function _getContainerAddress(containers, name) {
-  const filtered = containers.filter(container => container[CONTAINER_PROPERTY.name] === name)
+export function _getStorageAddress(storages, storageName) {
+  const filtered = storages.filter(storage => storage[STORAGE_PROPERTY.name] === storageName)
 
-  if (filtered.length >= 2) throw new Error(`CONTAINERS has duplicated ${name}`)
-  if (filtered.length === 0) throw new Error(`Can't find address using container name: ${name}`)
+  if (filtered.length >= 2) throw new Error(`STORAGES has duplicated ${storageName}`)
+  if (filtered.length === 0) throw new Error(`Can't find address using stroage name: ${storageName}`)
 
   return filtered[0].address
 }
 
-export function _buildStorageConnnectorUrl(storage, connectorName) {
+export function _buildConnectorUrl(storageName, connectorName) {
   /** connectorName might be undefined to retrieve all connectors */
   const postfix = (connectorName === void 0) ? '' : `/${connectorName}`
+  const storageAddress = _getStorageAddress(STORAGES, storageName)
 
-  return `${storage}/${URL_BASE}${postfix}`
-}
-
-export function _buildContainerConnectorPropertyUrl(containers, containerName, connectorName, property) {
-  if (connectorName === void 0 || connectorName === null || connectorName === '')
-    throw new Error(`Can't get container connector url. name is ${connectorName}`)
-
-  if (property === void 0 || property === null || property === '')
-    throw new Error(`Can't get container connector url. property is ${property}`)
-
-  if (containerName === void 0 || containerName === null || containerName === '')
-    throw new Error(`Can't get container connector ${property} url. container' is ${containerName}`)
-
-  const containerAddress = _getContainerAddress(containers, containerName)
-
-  if (containerAddress === void 0 || containerAddress === null || containerAddress === '')
-    throw new Error(`Can\'t get container address, CONTAINER_NAME_TO_ADDRESS[${containerName}] is undefined`)
-
-  return `${containerAddress}/${URL_BASE}/${connectorName}/${property}`
-}
-
-export function buildContainerConnectorPropertyUrl(containerName, connectorName, property) {
-  return _buildContainerConnectorPropertyUrl(CONTAINERS, containerName, connectorName, property)
-}
-
-export function _buildContainerConnectorUrl(containers, containerName, connectorName) {
-
-  /** connectorName might be undefined to retrieve all connectors */
-  const postfix = (connectorName === void 0) ? '' : `/${connectorName}`
-
-  const containerAddress = _getContainerAddress(containers, containerName)
-
-  return `${containerAddress}/${URL_BASE}${postfix}`
+  return `${storageAddress}/${URL_BASE}${postfix}`
 }
 
 /** exposed functions, use ENV variables (injected by webpack) */
 export default {
-  getContainerConnectorStateUrl: (containerName, connectorName) => {
-    return buildContainerConnectorPropertyUrl(containerName, connectorName, URL_PROPERTY_STATE)
+  getConnectorsUrl: (storageName) => {
+    return _buildConnectorUrl(storageName)
   },
 
-  getContainerConnectorConfigUrl: (containerName, connectorName) => {
-    return buildContainerConnectorPropertyUrl(containerName, connectorName, URL_PROPERTY_CONFIG)
+  getConnectorUrl: (storageName, connectorName) => {
+    return _buildConnectorUrl(storageName, connectorName)
   },
 
-  getContainerConnectorsUrl: (containerName) => {
-    return _buildContainerConnectorUrl(CONTAINERS, containerName)
-  },
-
-  getContainerConnectorUrl: (containerName, connectorName) => {
-    return _buildContainerConnectorUrl(CONTAINERS, containerName, connectorName)
-  },
-
-  getStorageConnectorsUrl: () => {
-    return _buildStorageConnnectorUrl(STORAGE)
-  },
-
-  getStorageConnectorUrl: (connectorName) => {
-    return _buildStorageConnnectorUrl(STORAGE, connectorName)
+  getConnectorMetaUrl: (storageName, connectorName) => {
+    return `${_buildConnectorUrl(storageName, connectorName)}/${URL_POSTFIX_META}`
   },
 }
 

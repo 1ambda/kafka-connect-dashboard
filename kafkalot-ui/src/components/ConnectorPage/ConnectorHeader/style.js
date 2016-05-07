@@ -6,7 +6,7 @@ export const title = {
   marginTop: 10,
 }
 
-export const summaryContainer = {
+export const summaryStorage = {
   fontSize: 15,
   fontWeight: 300,
   marginTop: 20,
@@ -17,7 +17,7 @@ export const summaryRunningConnector = {
   fontWeight: 500,
 }
 
-export const buttonContainer = {
+export const buttonStorage = {
   float: 'right',
   marginLeft: 10,
 }
@@ -42,11 +42,11 @@ export const selectorLabel = {
   fontSize: 14,
 }
 
-export const containerSelector = Object.assign({}, selector, {
+export const storageSelector = Object.assign({}, selector, {
   width: 120,
 })
 
-export const containerSelectorLabel = Object.assign({}, selectorLabel, {
+export const storageSelectorLabel = Object.assign({}, selectorLabel, {
   fontSize: 14,
 })
 

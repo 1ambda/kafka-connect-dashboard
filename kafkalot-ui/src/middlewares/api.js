@@ -109,83 +109,59 @@ export function delay(millis) {
  * exception will be caught in watcher functions
  */
 
-export function* fetchAll() {
-  const storageConnectorsUrl = URL.getStorageConnectorsUrl()
+export function* fetchAll(storageName) {
+  const storageConnectorsUrl = URL.getConnectorsUrl(storageName)
   const storageConnectors = yield call(getJSON, storageConnectorsUrl)
 
   if (!Array.isArray(storageConnectors))
     throw new Error(`GET ${storageConnectorsUrl} didn't return an array, got ${storageConnectors}`)
 
-  const containerConnectorNames = yield call(fetchContainerConnectorNames)
-
-  return Converter.createClientConnectors(storageConnectors, containerConnectorNames)
-}
-
-export function* fetchContainerConnectorNames() {
-  const containerName = yield select(Selector.getSelectedContainer)
-  const containerConnectorsUrl = URL.getContainerConnectorUrl(containerName)
-  const containerConnectorNames = yield call(getJSON, containerConnectorsUrl)
-
-  if (!Array.isArray(containerConnectorNames))
-    throw new Error(`GET LIST ${containerConnectorsUrl} didn't return an array, got ${containerName}`)
-
-  return containerConnectorNames
+  return Converter.createClientConnectors(storageConnectors)
 }
 
 export function* fetchConnector(connectorName) {
-  const containerConnectorNames = yield call(fetchContainerConnectorNames)
   const storageConnector = yield call(fetchStorageConnector, connectorName)
 
-  return Converter.createClientConnector(storageConnector, containerConnectorNames)
+  return Converter.createClientConnector(storageConnector)
 }
 
 export function* fetchStorageConnector(connectorName) {
-  const storageConnectorUrl = URL.getStorageConnectorUrl(connectorName)
+  const storageName = yield select(Selector.getSelectedStorage)
+  const connectorUrl = URL.getConnectorUrl(storageName, connectorName)
 
-  const storageConnector = yield call(getJSON, storageConnectorUrl)
+  const storageConnector = yield call(getJSON, connectorUrl)
 
   return storageConnector
 }
 
-export function* patchStorageConnectorMeta(connectorName, partialStorageMeta) {
-  const storageConnectorUrl = URL.getStorageConnectorUrl(connectorName)
 
-  yield call(patchJSON, storageConnectorUrl, partialStorageMeta)
+export function* postConnector(connector) {
+  const storageName = yield select(Selector.getSelectedStorage)
+  const connectorsUrl = URL.getConnectorsUrl(storageName)
 
-  yield call(fetchStorageConnector, connectorName)
-  const updated = yield call(fetchConnector, connectorName)
-
-  return updated
+  yield call(postJSON, connectorsUrl, connector)
 }
 
-export function* postStorageConnector(connector) {
-  const storageConnectorsUrl = URL.getStorageConnectorsUrl()
+export function* deleteConnector(connectorName) {
+  const storageName = yield select(Selector.getSelectedStorage)
+  const connectorsUrl = URL.getConnectorUrl(storageName, connectorName)
 
-  yield call(postJSON, storageConnectorsUrl, connector)
+  yield call(deleteJSON, connectorsUrl)
 }
 
-export function* deleteStorageConnector(connectorName) {
-  const storageConnectorsUrl = URL.getStorageConnectorUrl(connectorName)
+export function* putConnector(connector, connectorName) {
+  const storageName = yield select(Selector.getSelectedStorage)
+  const connectorUrl = URL.getConnectorUrl(storageName, connectorName)
 
-  yield call(deleteJSON, storageConnectorsUrl)
+  yield call(putJSON, connectorUrl, connector)
 }
 
-export function* putStorageConnector(connector, connectorName) {
-  const storageConnectorUrl = URL.getStorageConnectorUrl(connectorName)
+export function* putConnectorMeta(connectorName, meta) {
+  const storageName = yield select(Selector.getSelectedStorage)
+  const connectorUrl = URL.getConnectorMetaUrl(storageName, connectorName)
 
-  yield call(putJSON, storageConnectorUrl, connector)
+  const updated = yield call(putJSON, connectorUrl, meta)
+
+  return Converter.createClientConnector(updated)
 }
 
-export function* postContainerConnector(connector) {
-  const containerName = yield select(Selector.getSelectedContainer)
-  const containerConnectorsUrl = URL.getContainerConnectorsUrl(containerName)
-
-  yield call(postJSON, containerConnectorsUrl, connector)
-}
-
-export function* deleteContainerConnector(name) {
-  const containerName = yield select(Selector.getSelectedContainer)
-  const containerConnectorUrl = URL.getContainerConnectorUrl(containerName, name)
-
-  yield call(deleteJSON, containerConnectorUrl)
-}
