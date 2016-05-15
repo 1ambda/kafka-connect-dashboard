@@ -10,7 +10,6 @@ case class Connector(name: String, _meta: ConnectorMeta)
 object Connector {
   private[this] val db = mutable.Map.empty[String, Connector]
 
-
   def get(name: String): Option[Connector] = synchronized { db.get(name) }
   def getAll(): List[Connector] = synchronized { db.values.toList }
   def upsert(c: Connector): Unit = synchronized { db += (c.name -> c) }
@@ -18,22 +17,21 @@ object Connector {
 
   /** fixtures */
   val cs = List(
-    Connector(
-      "c1",
-      ConnectorMeta(true, true, List("akka"))
-    ),
-    Connector(
-      "c2",
-      ConnectorMeta(true, false, List("batch"))
-    ),
-    Connector(
-      "c3",
-      ConnectorMeta(false, false, List("spark-streaming"))
-    )
+      Connector(
+          "c1",
+          ConnectorMeta(true, true, List("akka"))
+      ),
+      Connector(
+          "c2",
+          ConnectorMeta(true, false, List("batch"))
+      ),
+      Connector(
+          "c3",
+          ConnectorMeta(false, false, List("spark-streaming"))
+      )
   )
 
   cs.foreach { c =>
     upsert(c)
   }
 }
-

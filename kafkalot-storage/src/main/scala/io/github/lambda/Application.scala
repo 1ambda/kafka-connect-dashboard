@@ -8,6 +8,7 @@ import io.github.lambda.security.CorsFilter
 object Application extends App {
 
   val corsFilter = new CorsFilter
+  val service = ConnectorApi.api
 
-  Await.ready(Http.server.serve(":3003", corsFilter andThen ConnectorApi.api))
+  Await.ready(Http.server.serve(":3003", corsFilter andThen service))
 }
