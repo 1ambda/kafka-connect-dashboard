@@ -1,31 +1,54 @@
 package io.github.lambda.api
 
-import cats.std.int._
 import com.twitter.finagle.Service
 import com.twitter.finagle.http.{Request, Response}
-import io.circe.generic.auto._
+import com.twitter.logging.Logger
+import com.twitter.util.{Future, Await}
 import io.finch._
 import io.finch.circe._
+import io.circe._
+import io.circe.generic.auto._
+import io.circe.parser._
+import io.circe.syntax._
+import io.circe.jawn._
+
 import io.github.lambda.exception.ErrorCode
 import io.github.lambda.model.{ConnectorMeta, Connector}
 
-object ConnectorApi {
+object StorageApi {
 
   val END_POINT = "connectors"
 
   def extractConnector(name: String): Option[Connector] = Connector.get(name)
   object connectorFromName extends Extractor("connector", extractConnector)
+
   val connector: Endpoint[Connector] = body.as[Connector]
   val connectorMeta: Endpoint[ConnectorMeta] = body.as[ConnectorMeta]
 
-  val getConnectors: Endpoint[List[Connector]] = get(END_POINT) {
-    Ok(Connector.getAll())
-  }
+  val getConnectors: Endpoint[List[Connector]] =
+    get(END_POINT) {
+      Ok(Connector.getAll())
+    } mapAsync { cs =>
+      KafkaConnectClient.getConnectors().map { runningConnectorNames =>
+        cs.foreach { c =>
+          if (runningConnectorNames.contains(c.name)) {
+            val updatedMeta = c._meta.copy(running = true)
+            Connector.upsert(c.copy(_meta = updatedMeta))
+          }
+        }
+      }
+    } mapOutput { _ =>
+      Ok(Connector.getAll())
+    }
 
-  val getConnector: Endpoint[Connector] = get(END_POINT :: connectorFromName) {
-    (c: Connector) =>
+  val getConnector: Endpoint[JsonObject] =
+    get(END_POINT :: connectorFromName) { c: Connector =>
       Ok(c)
-  }
+    } mapAsync { c =>
+      KafkaConnectClient.getConnector(c.name).map { clientConnectJson =>
+        clientConnectJson.add(Connector.FIELD_NAME_META, c._meta.asJson)
+      }
+    }
 
   val postConnector: Endpoint[Connector] = post(END_POINT :: connector) {
     (c: Connector) =>

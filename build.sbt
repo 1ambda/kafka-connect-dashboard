@@ -27,6 +27,7 @@ lazy val PROJECT_STORAGE = Project("kafkalot-storage", file("kafkalot-storage"))
     libraryDependencies ++= Seq(
       "com.github.finagle" %% "finch-core" % LIB_VERSION_FINCH,
       "com.github.finagle" %% "finch-circe" % LIB_VERSION_FINCH,
+      "com.github.finagle" %% "finch-test" % LIB_VERSION_FINCH,
       "com.chuusai" %% "shapeless" % LIB_VERSION_SHAPELESS,
       "io.circe" %% "circe-core" % LIB_VERSION_CIRCLE,
       "io.circe" %% "circe-generic" % LIB_VERSION_CIRCLE,

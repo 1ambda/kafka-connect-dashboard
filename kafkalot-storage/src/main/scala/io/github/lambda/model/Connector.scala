@@ -8,6 +8,9 @@ case class ConnectorMeta(enabled: Boolean,
 case class Connector(name: String, _meta: ConnectorMeta)
 
 object Connector {
+
+  val FIELD_NAME_META = "_meta"
+
   private[this] val db = mutable.Map.empty[String, Connector]
 
   def get(name: String): Option[Connector] = synchronized { db.get(name) }
@@ -18,8 +21,12 @@ object Connector {
   /** fixtures */
   val cs = List(
       Connector(
+          "kafka-connect-console-sink-143",
+          ConnectorMeta(true, true, List("console"))
+      ),
+      Connector(
           "c1",
-          ConnectorMeta(true, true, List("akka"))
+          ConnectorMeta(true, false, List("akka"))
       ),
       Connector(
           "c2",
