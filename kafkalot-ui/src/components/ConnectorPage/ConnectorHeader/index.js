@@ -23,6 +23,7 @@ export default class ConnectorHeader extends React.Component {
     connectors: PropTypes.array.isRequired,
     openEditorDialogToCreate: PropTypes.func.isRequired,
     filterConnector: PropTypes.func.isRequired,
+    filterKeyword: PropTypes.string.isRequired,
     sortConnector: PropTypes.func.isRequired,
     changeStorage: PropTypes.func.isRequired,
   }
@@ -71,7 +72,9 @@ export default class ConnectorHeader extends React.Component {
   }
 
   render() {
-    const { sortingStrategy, storageSelector, connectors, } = this.props
+    const {
+      sortingStrategy, storageSelector,
+      connectors, filterKeyword, } = this.props
 
     /** 1. create `CREATE` button */
     const createButton = (
@@ -82,6 +85,10 @@ export default class ConnectorHeader extends React.Component {
     /** 2. draw summary */
     const summaryWithPopover = ConnectorHeader.createSummaryDOM(connectors, createButton)
 
+    /** 3. filter label */
+    const filterLabel = (filterKeyword !== '') ?
+      `filtered by '${filterKeyword}'` : 'Insert Filter'
+
     return (
       <div>
         <div style={style.title}>
@@ -89,7 +96,7 @@ export default class ConnectorHeader extends React.Component {
         </div>
         <div>
           <Filter handler={this.handleFilterChange.bind(this)}
-                  floatingLabel="Insert Filter"
+                  floatingLabel={filterLabel}
                   style={style.filterInput} />
           <Selector handler={this.handleStorageSelectorChange.bind(this)}
                     style={style.storageSelector}

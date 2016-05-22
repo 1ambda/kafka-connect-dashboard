@@ -16,6 +16,14 @@ export const STORAGE_PROPERTY = {
 }
 
 
+export const KEY_OPERATION = 'operation'
+export const CONNECTOR_COMMAND = {
+  START: { [KEY_OPERATION]: 'start', },
+  STOP: { [KEY_OPERATION]: 'stop', },
+  ENABLE: { [KEY_OPERATION]: 'enable', },
+  DISABLE: { [KEY_OPERATION]: 'disable', },
+}
+
 export function getStorageMeta(storageConnector) {
   return storageConnector[STORAGE_PROPERTY.META]
 }
@@ -71,7 +79,7 @@ export function createClientConnector(storageConnector) {
 
     // TODO comparison config between storage connector and container connector using `deep-equal`
 
-    const state = createConnectorState(name, isRunning, isEnabled)
+    const state = createConnectorState(connectorName, isRunning, isEnabled)
     const tags = getStorageTags(storageConnector)
     const config = getConnectorConfig(storageConnector)
 
@@ -109,31 +117,12 @@ export function createStorageMetaFromClientConnector(connector) {
   })
 }
 
-export function createStorageMetaToStart(connector) {
-  return createStorageMetaFromClientConnector(Object.assign({}, connector, {
-    [CONNECTOR_PROPERTY.state]: CONNECTOR_STATE.RUNNING,
-  }))
-}
-
-export function createStorageMetaToStop(connector) {
-  return createStorageMetaFromClientConnector(Object.assign({}, connector, {
-    [CONNECTOR_PROPERTY.state]: CONNECTOR_STATE.WAITING,
-  }))
-}
-
-export function createStorageMetaToEnable(connector) {
-  return createStorageMetaToStop(connector)
-}
-
-export function createStorageMetaToDisable(connector) {
-  return createStorageMetaFromClientConnector(Object.assign({}, connector, {
-    [CONNECTOR_PROPERTY.state]: CONNECTOR_STATE.STOPPED,
-  }))
-}
-
 export function createClientConnectors(storageConnectors) {
   return storageConnectors.map(storageConnector => {
     return createClientConnector(storageConnector)
   }).filter(connector => !isEmptyConnector(connector))
 }
+
+
+
 

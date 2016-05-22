@@ -16,7 +16,7 @@ import io.github.lambda.exception.ErrorCode
 
 import scala.util.{Try, Success, Failure}
 
-object KafkaConnectClient {
+object KafkaConnectClientApi {
 
   val CONTAINER_HOST = "localhost" // TODO config
   val CONTAINER_PORT = "8083" // TODO config
@@ -66,62 +66,66 @@ object KafkaConnectClient {
     }
   }
 
-  def getConnectors(): Future[Try[List[String]]] = {
+  def getConnectors(): Future[List[String]] = {
     val request = createGetRequest(new URL(buildConnectorsUrl()))
 
     client(request).map { response =>
       if (response.getStatusCode() != 200 /** OK */ )
-        Failure(new RuntimeException(ErrorCode.FAILED_TO_GET_CONNECTORS))
+        throw new RuntimeException(ErrorCode.FAILED_TO_GET_CONNECTORS)
 
       decode[List[String]](response.getContentString()) match {
-        case Xor.Right(jsonObject) => Success(jsonObject)
-        case Xor.Left(error) => Failure(new RuntimeException(error))
+        case Xor.Right(connectorNames) => connectorNames
+        case Xor.Left(error) => throw new RuntimeException(error)
       }
     }
   }
 
-  def getConnector(name: String): Future[Try[JsonObject]] = {
+  def getConnector(name: String): Future[JsonObject] = {
     val request = createGetRequest(new URL(buildConnectorUrl(name)))
 
     client(request).map { response =>
       if (response.getStatusCode() != 200 /** OK */ )
-        Failure(new RuntimeException(ErrorCode.FAILED_TO_GET_CONNECTOR))
+        throw new RuntimeException(ErrorCode.FAILED_TO_GET_CONNECTOR)
 
-      Success(decodeResponseToJsonObject(response.getContentString()))
+      decodeResponseToJsonObject(response.getContentString())
     }
   }
 
-  def updateConnectorConfig(name: String, config: Json): Future[Try[JsonObject]] = {
+  def updateConnectorConfig(
+      name: String, config: Json): Future[JsonObject] = {
     val request = createPutRequest(
         new URL(buildConnectorConfigUrl(name)), config)
 
     client(request).map { response =>
       if (response.getStatusCode() != 200 /** OK */ )
-        Failure(new RuntimeException(ErrorCode.FAILED_TO_UPDATE_CONNECTOR_CONFIG))
+        throw new RuntimeException(ErrorCode.FAILED_TO_UPDATE_CONNECTOR_CONFIG)
 
-      Success(decodeResponseToJsonObject(response.getContentString()))
+      decodeResponseToJsonObject(response.getContentString())
     }
   }
 
-  def startConnector(config: Json): Future[Try[JsonObject]] = {
-    val request = createPostRequest(new URL(buildConnectorsUrl()), config)
+  def startConnector(jsonConnector: JsonObject): Future[JsonObject] = {
+    val request = createPostRequest(
+        new URL(buildConnectorsUrl()),
+        Json.fromJsonObject(jsonConnector)
+    )
 
     client(request).map { response =>
       if (response.getStatusCode() != 201 /** CREATED */ )
-        Failure(new RuntimeException(ErrorCode.FAILED_TO_START_CONNECTOR))
-
-      Success(decodeResponseToJsonObject(response.getContentString()))
+        throw new RuntimeException(ErrorCode.FAILED_TO_START_CONNECTOR)
+      else
+        decodeResponseToJsonObject(response.getContentString())
     }
   }
 
-  def stopConnector(name: String): Future[Try[Int]] = {
+  def stopConnector(name: String): Future[Int] = {
     val request = createDeleteRequest(new URL(buildConnectorUrl(name)))
 
     client(request).map { response =>
       if (response.getStatusCode() != 204 /** NO CONTENT */ )
-        Failure(new RuntimeException(ErrorCode.FAILED_TO_STOP_CONNECTOR))
+        throw new RuntimeException(ErrorCode.FAILED_TO_STOP_CONNECTOR)
 
-      Success(response.getStatusCode())
+      response.getStatusCode()
     }
   }
 }

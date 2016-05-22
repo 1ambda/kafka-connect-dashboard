@@ -76,6 +76,7 @@ class ConnectorPage extends React.Component {
                          connectors={filtered}
                          openEditorDialogToCreate={actions.openEditorDialogToCreate}
                          filterConnector={actions.filter}
+                         filterKeyword={filterKeyword}
                          sortConnector={actions.sort}
                          changeStorage={actions.changeStorage}
           />

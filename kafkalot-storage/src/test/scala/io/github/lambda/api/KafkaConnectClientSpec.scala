@@ -10,7 +10,7 @@ import com.twitter.util.Await
 
 class KafkaConnectClientSpec extends TestSuite {
 
-  import KafkaConnectClient._
+  import KafkaConnectClientApi._
 
   test("example") {
 
@@ -43,8 +43,8 @@ class KafkaConnectClientSpec extends TestSuite {
     val startJsonConfig = parse(startConfig).getOrElse(Json.Null)
     val name = "kafka-connect-console-sink-143"
 
-    val result = Await.result(startConnector(startJsonConfig))
-    println(result)
+//    val result = Await.result(startConnector(startJsonConfig))
+//    println(result)
   }
 
 }

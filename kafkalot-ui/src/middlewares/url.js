@@ -28,6 +28,10 @@ export function _buildConnectorUrl(storageName, connectorName) {
   return `${storageAddress}/${URL_BASE}${postfix}`
 }
 
+export function _buildConnectorCommandUrl(storageName, connectorName) {
+  return `${_buildConnectorUrl(storageName, connectorName)}/command`
+}
+
 /** exposed functions, use ENV variables (injected by webpack) */
 export default {
   getConnectorsUrl: (storageName) => {
@@ -38,10 +42,11 @@ export default {
     return _buildConnectorUrl(storageName, connectorName)
   },
 
+  getConnectorCommandUrl: (storageName, connectorName) => {
+    return _buildConnectorCommandUrl(storageName, connectorName)
+  },
+
   getConnectorMetaUrl: (storageName, connectorName) => {
     return `${_buildConnectorUrl(storageName, connectorName)}/${URL_POSTFIX_META}`
   },
 }
-
-
-

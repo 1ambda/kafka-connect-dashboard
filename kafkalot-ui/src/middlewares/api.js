@@ -3,7 +3,6 @@ import { take, put, call, fork, select, } from 'redux-saga/effects'
 
 import URL from './url'
 import * as Converter from './converter'
-import { ItemProperty as ConnectorProperty, } from '../reducers/ConnectorReducer/ItemState'
 import * as Selector from '../reducers/ConnectorReducer/selector'
 
 /**
@@ -28,8 +27,7 @@ const HTTP_HEADERS_JSON = {
 function handleJsonResponse(url, method, promise) {
   return promise
     .then(response => {
-      if ((method === HTTP_METHOD.POST && response.status !== 201) /** if post, status should === 201 */
-        || (method !== HTTP_METHOD.POST && response.status !== 200)) /** otherwise, status === 200 */
+      if (response.status >= 300)
         throw new Error(`${method} ${url}, status: ${response.status}`)
       else return response.json()
     })
@@ -120,15 +118,10 @@ export function* fetchAll(storageName) {
 }
 
 export function* fetchConnector(connectorName) {
-  const storageConnector = yield call(fetchStorageConnector, connectorName)
-
-  return Converter.createClientConnector(storageConnector)
-}
-
-export function* fetchStorageConnector(connectorName) {
   const storageName = yield select(Selector.getSelectedStorage)
   const connectorUrl = URL.getConnectorUrl(storageName, connectorName)
 
+  /** do not convert */
   const storageConnector = yield call(getJSON, connectorUrl)
 
   return storageConnector
@@ -149,11 +142,12 @@ export function* deleteConnector(connectorName) {
   yield call(deleteJSON, connectorsUrl)
 }
 
-export function* putConnector(connector, connectorName) {
+export function* postConnectorCommand(connectorName, command) {
   const storageName = yield select(Selector.getSelectedStorage)
-  const connectorUrl = URL.getConnectorUrl(storageName, connectorName)
+  const connectorCommandUrl = URL.getConnectorCommandUrl(storageName, connectorName)
+  const updated = yield call(postJSON, connectorCommandUrl, command)
 
-  yield call(putJSON, connectorUrl, connector)
+  return Converter.createClientConnector(updated)
 }
 
 export function* putConnectorMeta(connectorName, meta) {
