@@ -1,11 +1,13 @@
 package io.github.lambda.model
 
+import io.circe._, io.circe.generic.auto._, io.circe.jawn._, io.circe.syntax._
+
 import scala.collection.mutable
 
 case class ConnectorMeta(enabled: Boolean,
                          running: Boolean,
                          tags: List[String])
-case class Connector(name: String, _meta: ConnectorMeta)
+case class Connector(name: String, config: JsonObject, _meta: ConnectorMeta)
 
 object Connector {
 
@@ -22,18 +24,22 @@ object Connector {
   val cs = List(
       Connector(
           "kafka-connect-console-sink-143",
+          JsonObject.empty,
           ConnectorMeta(true, true, List("console"))
       ),
       Connector(
           "c1",
+          JsonObject.empty,
           ConnectorMeta(true, false, List("akka"))
       ),
       Connector(
           "c2",
+          JsonObject.empty,
           ConnectorMeta(true, false, List("batch"))
       ),
       Connector(
           "c3",
+          JsonObject.empty,
           ConnectorMeta(false, false, List("spark-streaming"))
       )
   )

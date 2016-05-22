@@ -7,7 +7,8 @@ lazy val LIB_VERSION_CIRCLE = "0.4.1"
 lazy val LIB_VERSION_TWITTER_SERVER = "1.19.0"
 
 lazy val TEST_DEPENDENCIES = Seq(
-  "org.scalatest" %% "scalatest" % LIB_VERSION_SCALA_TEST
+  "org.scalatest" %% "scalatest" % LIB_VERSION_SCALA_TEST,
+  "com.lihaoyi" % "ammonite-repl" % "0.5.7" % "test" cross CrossVersion.full
 )
 
 lazy val commonSettings = Seq(

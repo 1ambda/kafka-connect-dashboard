@@ -11,18 +11,9 @@ object ErrorCode {
   val CANNOT_UPDATE_DUPLICATED_META = "CANNOT_UPDATE_DUPLICATED_META"
   val CANNOT_RUN_CONNECTOR_WHILE_DISABLING =
     "CANNOT_RUN_CONNECTOR_WHILE_DISABLING"
-
-  def genConnectorNotFound = new RuntimeException(CONNECTOR_NOT_FOUND)
-  def genConnectorNameDuplicated =
-    new RuntimeException(CONNECTOR_NAME_DUPLICATED)
-  def genCannotModifyRunningConnectorMeta =
-    new RuntimeException(CANNOT_MODIFY_RUNNING_CONNECTOR_META)
-  def genCannotModifyDisabledConnectorMeta =
-    new RuntimeException(CANNOT_MODIFY_DISABLED_CONNECTOR_META)
-  def genCannotCreateRunningConnector =
-    new RuntimeException(CANNOT_CREATE_RUNNING_CONNECTOR)
-  def genCannotUpdateDuplicatedMeta =
-    new RuntimeException(CANNOT_UPDATE_DUPLICATED_META)
-  def genCannotRunConnectorWhileDisabling =
-    new RuntimeException(CANNOT_RUN_CONNECTOR_WHILE_DISABLING)
+  val FAILED_TO_STOP_CONNECTOR = "FAILED_TO_STOP_CONNECTOR"
+  val FAILED_TO_START_CONNECTOR = "FAILED_TO_START_CONNECTOR"
+  val FAILED_TO_GET_CONNECTOR = "FAILED_TO_GET_CONNECTOR"
+  val FAILED_TO_GET_CONNECTORS = "FAILED_TO_GET_CONNECTORS"
+  val FAILED_TO_UPDATE_CONNECTOR_CONFIG = "FAILED_TO_UPDATE_CONNECTOR_CONFIG"
 }
