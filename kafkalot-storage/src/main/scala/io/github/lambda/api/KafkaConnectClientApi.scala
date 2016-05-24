@@ -13,8 +13,7 @@ import io.circe.syntax._
 import cats.data.Xor
 import com.twitter.io.Buf
 import io.github.lambda.exception.ErrorCode
-
-import scala.util.{Try, Success, Failure}
+import io.github.lambda.util.JsonUtil
 
 object KafkaConnectClientApi {
 
@@ -59,13 +58,6 @@ object KafkaConnectClientApi {
       .buildPost(Buf.Utf8(payload.toString))
   }
 
-  def decodeResponseToJsonObject(responseContent: String): JsonObject = {
-    decode[JsonObject](responseContent) match {
-      case Xor.Right(jsonObject) => jsonObject
-      case Xor.Left(error) => throw new RuntimeException(error)
-    }
-  }
-
   def getConnectors(): Future[List[String]] = {
     val request = createGetRequest(new URL(buildConnectorsUrl()))
 
@@ -87,7 +79,7 @@ object KafkaConnectClientApi {
       if (response.getStatusCode() != 200 /** OK */ )
         throw new RuntimeException(ErrorCode.FAILED_TO_GET_CONNECTOR)
 
-      decodeResponseToJsonObject(response.getContentString())
+      JsonUtil.convertStringToJsonObject(response.getContentString())
     }
   }
 
@@ -100,7 +92,7 @@ object KafkaConnectClientApi {
       if (response.getStatusCode() != 200 /** OK */ )
         throw new RuntimeException(ErrorCode.FAILED_TO_UPDATE_CONNECTOR_CONFIG)
 
-      decodeResponseToJsonObject(response.getContentString())
+      JsonUtil.convertStringToJsonObject(response.getContentString())
     }
   }
 
@@ -114,7 +106,7 @@ object KafkaConnectClientApi {
       if (response.getStatusCode() != 201 /** CREATED */ )
         throw new RuntimeException(ErrorCode.FAILED_TO_START_CONNECTOR)
       else
-        decodeResponseToJsonObject(response.getContentString())
+        JsonUtil.convertStringToJsonObject(response.getContentString())
     }
   }
 

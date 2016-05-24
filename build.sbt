@@ -5,10 +5,11 @@ lazy val LIB_VERSION_FINCH = "0.10.0"
 lazy val LIB_VERSION_SHAPELESS = "2.3.0"
 lazy val LIB_VERSION_CIRCLE = "0.4.1"
 lazy val LIB_VERSION_TWITTER_SERVER = "1.19.0"
+lazy val LIB_VERSION_MONGO_CASBAH = "3.1.1"
+lazy val LIB_VERSION_SALAT = "1.9.9"
 
 lazy val TEST_DEPENDENCIES = Seq(
-  "org.scalatest" %% "scalatest" % LIB_VERSION_SCALA_TEST,
-  "com.lihaoyi" % "ammonite-repl" % "0.5.7" % "test" cross CrossVersion.full
+  "org.scalatest" %% "scalatest" % LIB_VERSION_SCALA_TEST
 )
 
 lazy val commonSettings = Seq(
@@ -30,6 +31,8 @@ lazy val PROJECT_STORAGE = Project("kafkalot-storage", file("kafkalot-storage"))
       "com.github.finagle" %% "finch-circe" % LIB_VERSION_FINCH,
       "com.github.finagle" %% "finch-test" % LIB_VERSION_FINCH,
       "com.chuusai" %% "shapeless" % LIB_VERSION_SHAPELESS,
+      "com.novus" %% "salat" % LIB_VERSION_SALAT,
+      "org.mongodb" %% "casbah" % LIB_VERSION_MONGO_CASBAH,
       "io.circe" %% "circe-core" % LIB_VERSION_CIRCLE,
       "io.circe" %% "circe-generic" % LIB_VERSION_CIRCLE,
       "io.circe" %% "circe-parser" % LIB_VERSION_CIRCLE

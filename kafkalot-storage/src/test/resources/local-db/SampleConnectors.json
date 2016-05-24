@@ -1,0 +1,26 @@
+[
+  {
+    "name": "kafka-connect-console-sink-0",
+    "config": "{ \"connector.class\": \"io.github.lambda.ConsoleSinkConnector\", \"tasks.max\": \"4\", \"topics\": \"test-p4-1\", \"name\": \"kafka-connect-console-sink-0\", \"id\": \"console-connector-0-A\" }",
+    "_meta": {
+      "enabled": true,
+      "tags": ["console"]
+    }
+  },
+  {
+    "name": "akka-stream-connector-sink-0",
+    "config": "{ \"connector.class\": \"io.github.lambda.ConsoleSinkConnector\", \"tasks.max\": \"2\", \"topics\": \"test-p4-1\", \"name\": \"akka-stream-connector-sink-0\", \"id\": \"akka-stream-connector-sink-0-A\" }",
+    "_meta": {
+      "enabled": true,
+      "tags": ["akka-stream"]
+    }
+  },
+  {
+    "name": "spark-stream-connector-sink-0",
+    "config": "{ \"connector.class\": \"io.github.lambda.ConsoleSinkConnector\", \"tasks.max\": \"1\", \"topics\": \"test-p4-1\", \"name\": \"spark-stream-connector-sink-0\", \"id\": \"spark-stream-connector-sink-0-A\" }",
+    "_meta": {
+      "enabled": false,
+      "tags": ["spark-stream"]
+    }
+  }
+]

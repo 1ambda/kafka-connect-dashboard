@@ -17,7 +17,7 @@ import * as Converter from './converter'
 import * as API from './api'
 import * as Selector from '../reducers/ConnectorReducer/selector'
 
-export const JOB_TRANSITION_DELAY = 3000
+export const JOB_TRANSITION_DELAY = 1500
 
 /**
  * handlers that catch exceptions and validate conditions. (used in watcher functions)

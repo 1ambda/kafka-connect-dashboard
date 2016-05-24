@@ -1,9 +1,9 @@
 package io.github.lambda.api
 
-import scala.util.{Failure, Success, Try}
 import com.twitter.finagle.Service
 import com.twitter.finagle.http.{Request, Response}
 import com.twitter.logging.Logger
+import com.twitter.util.Future
 import io.finch._
 import io.finch.circe._
 import io.circe._
@@ -12,19 +12,17 @@ import io.circe.parser._
 import io.circe.syntax._
 import io.circe.jawn._
 import cats.data.Xor
-import com.twitter.util.Future
+import shapeless._
+
 import io.github.lambda.exception.ErrorCode
-import io.github.lambda.model.{Connector, ConnectorMeta}
+import io.github.lambda.model._
 
 object StorageApi {
 
   val END_POINT = "connectors"
 
-  def extractConnector(name: String): Option[Connector] = Connector.get(name)
-  object connectorFromName extends Extractor("connector", extractConnector)
-
-  val ConnectorExtractor: Endpoint[Connector] = body.as[Connector]
-  val ConnectorMetaExtractor: Endpoint[ConnectorMeta] = body.as[ConnectorMeta]
+  val StorageConnectorExtractor: Endpoint[StorageConnector] = body.as[StorageConnector]
+  val StorageConnectorMetaExtractor: Endpoint[StorageConnectorMeta] = body.as[StorageConnectorMeta]
   val ConnectorCommandExtractor: Endpoint[ConnectorCommand] =
     body.as[ConnectorCommand] mapOutput { command: ConnectorCommand =>
       command.operation match {
@@ -41,114 +39,84 @@ object StorageApi {
       }
     }
 
-  val getConnectors: Endpoint[List[Connector]] =
-    get(END_POINT) {
-      Ok(Connector.getAll())
-    } mapAsync { cs: List[Connector] =>
-      KafkaConnectClientApi.getConnectors().map {
-        runningConnectorNames: List[String] =>
-          cs.foreach { c =>
-            if (runningConnectorNames.contains(c.name)) {
-              val updatedMeta = c._meta.copy(running = true)
-              Connector.upsert(c.copy(_meta = updatedMeta))
-            }
-          }
+  val getConnectors: Endpoint[List[ExportedConnector]] =
+    get(END_POINT) mapAsync { _ =>
+      StorageConnectorDao.getAll()
+    } mapOutputAsync { storageConnectors: List[StorageConnector] =>
+      StorageConnector.getExportedConnectors(storageConnectors) map {
+        Ok(_)
       } rescue {
-        case e: Exception => Future { BadRequest(e) }
-      }
-    } mapOutput { _ =>
-      Ok(Connector.getAll())
-    }
-
-  val getConnector: Endpoint[Connector] =
-    get(END_POINT :: connectorFromName) mapAsync { c: Connector =>
-      KafkaConnectClientApi.getConnector(c.name).map {
-        connectorJson: JsonObject =>
-          val updatedMeta = c._meta.copy(running = true)
-          val connectorJsonCursor = Json.fromJsonObject(connectorJson).hcursor
-          val updatedConnector =
-            connectorJsonCursor.get[JsonObject]("config") match {
-              case Xor.Right(updatedConfig) =>
-                c.copy(_meta = updatedMeta, config = updatedConfig)
-              case Xor.Left(error) =>
-                throw new RuntimeException(error)
-            }
-
-          Connector.upsert(updatedConnector)
-          updatedConnector
-      } rescue {
-        case e: Exception => Future { c }
+        case e: Exception => Future { InternalServerError(e) }
       }
     }
 
-  val postConnector: Endpoint[Connector] =
-    post(END_POINT :: ConnectorExtractor) { (c: Connector) =>
-      Connector.get(c.name) match {
-        case Some(_) =>
-          Conflict(new RuntimeException(ErrorCode.CONNECTOR_NAME_DUPLICATED))
-        case None =>
-          if (c._meta.running) {
-            BadRequest(
-                new RuntimeException(ErrorCode.CANNOT_CREATE_RUNNING_CONNECTOR)
-            )
-          } else {
-            Connector.upsert(c)
-            Created(c)
-          }
+  val getConnector: Endpoint[ExportedConnector] =
+    get(END_POINT :: string) mapAsync { connectorName: String =>
+      StorageConnectorDao.get(connectorName)
+    } mapOutput { scOption: Option[StorageConnector] =>
+      scOption match {
+        case None => BadRequest(new RuntimeException(ErrorCode.FAILED_TO_GET_CONNECTOR))
+        case Some(sc) => Ok(sc)
+      }
+    } mapAsync { sc: StorageConnector =>
+      sc.toExportedConnector
+    }
+
+  val postConnector: Endpoint[ExportedConnector] =
+    post(END_POINT :: StorageConnectorExtractor) { (sc: StorageConnector) =>
+      StorageConnectorDao.insert(sc) map { inserted =>
+        Created(inserted.toStoppedExportedConnector) } rescue {
+        case e: Exception =>
+          Future { Conflict(e) } // TODO branch CreatedFailedException
       }
     }
 
-  val handlePostConnectorCommand: Endpoint[Connector] =
-    post(END_POINT :: connectorFromName :: "command" :: ConnectorCommandExtractor) mapOutputAsync {
-      hlist => {
-        val connector: Connector = hlist.head
-        val command: ConnectorCommand = hlist.tail.head
-
-        command.operation match {
-          case ConnectorCommand.OPERATION_START =>
-            connector.start map { _ =>
-              // TODO already
-              val updatedMeta = connector._meta.copy(running = true)
-              val updatedConnector = connector.copy(_meta = updatedMeta)
-              Ok(Connector.upsert(updatedConnector))
-            } rescue { case e: Exception => Future { BadRequest(e) } }
-          case ConnectorCommand.OPERATION_STOP =>
-            connector.stop map { _ =>
-              val updatedMeta = connector._meta.copy(running = false)
-              val updatedConnector = connector.copy(_meta = updatedMeta)
-              Ok(Connector.upsert(updatedConnector))
-            } rescue { case e: Exception => Future { BadRequest(e) } }
-          case ConnectorCommand.OPERATION_ENABLE =>
-            val updatedMeta = connector._meta.copy(enabled = true)
-            val updatedConnector = connector.copy(_meta = updatedMeta)
-            Future { Ok(Connector.upsert(updatedConnector)) }
-          case ConnectorCommand.OPERATION_DISABLE =>
-            val updatedMeta = connector._meta.copy(enabled = false)
-            val updatedConnector = connector.copy(_meta = updatedMeta)
-            Future { Ok(Connector.upsert(updatedConnector)) }
-          case _ =>
-            Future { createBadRequest(ErrorCode.UNSUPPORTED_CONNECTOR_OPERATION) }
+  val handlePostConnectorCommand: Endpoint[ExportedConnector] =
+    post(END_POINT :: string :: "command" :: ConnectorCommandExtractor) {
+      (name: String, command: ConnectorCommand) =>
+        /** get storage connector from DB */
+        val f = StorageConnectorDao.get(name) map { scOption => (scOption, command) }
+        Ok(f)
+    } mapOutput {
+      scOptionWithCommand =>
+        val (scOption: Option[StorageConnector], command: ConnectorCommand) = scOptionWithCommand
+        scOption match {
+          case None => createBadRequest(ErrorCode.FAILED_TO_GET_CONNECTOR)
+          case Some(sc) => Ok((sc, command))
         }
-      }
+    } mapOutputAsync {
+      scWithCommand =>
+        val (sc: StorageConnector, command: ConnectorCommand) = scWithCommand
+
+        sc.handleCommand(command) map { ec: ExportedConnector =>
+          Ok(ec)
+        } rescue {
+          case e: Exception => Future { BadRequest(e) }
+        }
     }
 
-  val putConnectorMeta: Endpoint[Connector] =
-    put(END_POINT :: connectorFromName :: "_meta" :: ConnectorMetaExtractor) {
-      (c: Connector, requestedMeta: ConnectorMeta) => {
-        val currentMeta = c._meta
-
-        if (currentMeta == requestedMeta) {
-          Conflict(new RuntimeException(ErrorCode.CANNOT_UPDATE_DUPLICATED_META))
-        } else if (currentMeta.running != requestedMeta.running ||
-          currentMeta.enabled != requestedMeta.enabled) {
-          createBadRequest(ErrorCode.CANNOT_UPDATE_META_USING_PUT_API)
-        } else {
-          /** update tags only */
-          val updatedMeta = c._meta.copy(tags = requestedMeta.tags)
-          val updatedConnector = c.copy(_meta = updatedMeta)
-          Ok(Connector.upsert(updatedConnector))
+  val putConnectorMeta: Endpoint[ExportedConnector] =
+    put(END_POINT :: string :: "_meta" :: StorageConnectorMetaExtractor) {
+      (name: String, requestedMeta: StorageConnectorMeta) =>
+        val f = StorageConnectorDao.get(name) map { scOption => (scOption, requestedMeta) }
+        Ok(f)
+    } mapOutput {
+      scOptionWithMeta=>
+        val (scOption: Option[StorageConnector], meta: StorageConnectorMeta) = scOptionWithMeta
+        scOption match {
+          case None => createBadRequest(ErrorCode.FAILED_TO_GET_CONNECTOR)
+          case Some(sc) => Ok((sc, meta))
         }
-      }
+    } mapOutputAsync {
+      scWithMeta =>
+        val (sc: StorageConnector, requestedMeta: StorageConnectorMeta) = scWithMeta
+
+        sc.updateMeta(requestedMeta) map { ec: ExportedConnector =>
+          Ok(ec)
+        } rescue {
+          // TODO Conflict(DUPLICATED_META), BadRequest(others)
+          case e: Exception => Future { BadRequest(e) }
+        }
     }
 
   def createBadRequest(errorCode: String): Output[Nothing] =
