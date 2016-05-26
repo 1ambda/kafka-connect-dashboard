@@ -1,4 +1,4 @@
-package io.github.lambda.api
+package io.github.lambda.kafkalot.storage.api
 
 import com.twitter.finagle.Service
 import com.twitter.finagle.http.{Request, Response}
@@ -14,8 +14,8 @@ import io.circe.jawn._
 import cats.data.Xor
 import shapeless._
 
-import io.github.lambda.exception.ErrorCode
-import io.github.lambda.model._
+import io.github.lambda.kafkalot.storage.exception.ErrorCode
+import io.github.lambda.kafkalot.storage.model._
 
 object StorageApi {
 

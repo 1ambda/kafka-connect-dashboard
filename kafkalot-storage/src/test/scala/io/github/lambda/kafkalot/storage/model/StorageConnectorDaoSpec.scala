@@ -1,8 +1,8 @@
-package io.github.lambda.model
+package io.github.lambda.kafkalot.storage.model
 
 import com.twitter.util.Await
 import io.github.lambda.TestSuite
-import io.github.lambda.util.JsonUtil
+import io.github.lambda.kafkalot.storage.util.JsonUtil
 import io.circe._
 
 class StorageConnectorDaoSpec extends TestSuite {

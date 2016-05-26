@@ -1,4 +1,4 @@
-package io.github.lambda.model
+package io.github.lambda.kafkalot.storage.model
 
 import io.circe._
 import io.circe.generic.auto._
@@ -8,8 +8,8 @@ import com.twitter.util.Future
 import com.novus.salat._
 import com.novus.salat.global._
 import com.mongodb.casbah.Imports._
-import io.github.lambda.exception.ErrorCode
-import io.github.lambda.util.JsonUtil
+import io.github.lambda.kafkalot.storage.exception.ErrorCode
+import io.github.lambda.kafkalot.storage.util.JsonUtil
 
 /**
   * StorageConnector including the stringified `config` field

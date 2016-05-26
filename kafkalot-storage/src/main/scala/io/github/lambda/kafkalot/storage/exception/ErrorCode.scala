@@ -1,4 +1,4 @@
-package io.github.lambda.exception
+package io.github.lambda.kafkalot.storage.exception
 
 object ErrorCode {
   val CONNECTOR_NAME_DUPLICATED = "CONNECTOR_NAME_DUPLICATED"

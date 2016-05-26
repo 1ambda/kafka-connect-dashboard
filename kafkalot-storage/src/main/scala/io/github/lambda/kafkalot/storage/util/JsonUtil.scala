@@ -1,11 +1,11 @@
-package io.github.lambda.util
+package io.github.lambda.kafkalot.storage.util
 
 import io.circe._
 import io.circe.generic.auto._
 import io.circe.jawn._
 import io.circe.syntax._
 import cats.data.Xor
-import io.github.lambda.exception.ErrorCode
+import io.github.lambda.kafkalot.storage.exception.ErrorCode
 
 import scala.util.Try
 

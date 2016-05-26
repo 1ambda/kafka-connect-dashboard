@@ -1,4 +1,4 @@
-package io.github.lambda.api
+package io.github.lambda.kafkalot.storage.api
 
 import java.net.URL
 
@@ -12,8 +12,8 @@ import io.circe.parser._
 import io.circe.syntax._
 import cats.data.Xor
 import com.twitter.io.Buf
-import io.github.lambda.exception.ErrorCode
-import io.github.lambda.util.JsonUtil
+import io.github.lambda.kafkalot.storage.exception.ErrorCode
+import io.github.lambda.kafkalot.storage.util.JsonUtil
 
 object KafkaConnectClientApi {
 

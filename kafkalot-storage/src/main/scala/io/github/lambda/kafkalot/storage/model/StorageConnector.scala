@@ -1,18 +1,17 @@
-package io.github.lambda.model
+package io.github.lambda.kafkalot.storage.model
 
-import scala.collection.mutable
 import io.circe._
 import io.circe.generic.auto._
 import io.circe.jawn._
 import io.circe.syntax._
 import cats.data.Xor
 import com.twitter.util.Future
-import io.github.lambda.api.{ConnectorCommand, KafkaConnectClientApi}
-import io.github.lambda.exception.ErrorCode
-import io.github.lambda.util.JsonUtil
+import io.github.lambda.kafkalot.storage.api.{ConnectorCommand, KafkaConnectClientApi}
+import io.github.lambda.kafkalot.storage.exception.ErrorCode
+import io.github.lambda.kafkalot.storage.util.JsonUtil
 
 case class StorageConnectorMeta(enabled: Boolean,
-                                 tags: List[String])
+                                tags: List[String])
 
 case class StorageConnector(name: String, config: JsonObject, _meta: StorageConnectorMeta) {
   def toJsonObjectWithoutMeta: JsonObject = {
@@ -99,12 +98,6 @@ case class StorageConnector(name: String, config: JsonObject, _meta: StorageConn
     }
   }
 }
-
-case class ExportedConnectorMeta(enabled: Boolean,
-                                 running: Boolean,
-                                 tags: List[String])
-
-case class ExportedConnector(name: String, config: JsonObject, _meta: ExportedConnectorMeta)
 
 object StorageConnector {
   val FIELD_KEY_META = "_meta"

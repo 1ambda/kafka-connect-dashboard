@@ -1,4 +1,4 @@
-package io.github.lambda.model
+package io.github.lambda.kafkalot.storage.model
 
 
 object MongoUtil {
