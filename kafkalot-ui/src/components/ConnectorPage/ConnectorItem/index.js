@@ -109,10 +109,10 @@ export default class ConnectorItem extends React.Component {
   }
 
   static createSpinIcon(connector) {
-
-
-    return (isRunning(connector)) ? (<FontIcon style={{color: ConnectorItemColors.runningSpin,}} className="fa fa-circle-o-notch fa-spin" />) :
-      (isWaiting(connector))  ? (<FontIcon style={{color: ConnectorItemColors.waitingSpin,}} className="fa fa-circle-o-notch" />) :
+    return (isRunning(connector)) ? 
+      (<FontIcon style={{color: ConnectorItemColors.runningSpin,}} className="fa fa-circle-o-notch fa-spin" />) : 
+      (isWaiting(connector)) ? 
+        (<FontIcon style={{color: ConnectorItemColors.waitingSpin,}} className="fa fa-circle-o-notch" />) : 
         (<FontIcon className="fa fa-circle-o-notch" />)
   }
 

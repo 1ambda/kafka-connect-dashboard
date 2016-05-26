@@ -27,21 +27,20 @@ const HTTP_HEADERS_JSON = {
 function handleJsonResponse(url, method, promise) {
   return promise
     .then(response => {
+      let error = undefined
       if (response.status >= 300)
-        throw new Error(`${method} ${url}, status: ${response.status}`)
-      else return response.json()
-    })
-}
+        error = new Error(`${method} ${url}, status: ${response.status}`)
 
-function getJSONs(urls) {
-  const promises = urls.map(url => {
-    return getJSON(url)
-      .catch(error => {
-        console.error(`Failed to fetch ${url}. ${error.message}`) // eslint-disable-line no-console
-        return [] /** return an empty array */
+      return response.text().then(text => {
+        return { error, text, }
       })
-  })
-  return Promise.all(promises) /** return nested arrays */
+    })
+    .then(parsed => {
+      const { error, text, } = parsed
+      if (error) throw new Error(`${error.message}, body: ${text}`)
+
+      return JSON.parse(text)
+    })
 }
 
 function getJSON(url) {
@@ -117,7 +116,7 @@ export function* fetchAll(storageName) {
   return Converter.createClientConnectors(storageConnectors)
 }
 
-export function* fetchConnector(connectorName) {
+export function* getStorageConnector(connectorName) {
   const storageName = yield select(Selector.getSelectedStorage)
   const connectorUrl = URL.getConnectorUrl(storageName, connectorName)
 
@@ -125,6 +124,11 @@ export function* fetchConnector(connectorName) {
   const storageConnector = yield call(getJSON, connectorUrl)
 
   return storageConnector
+}
+
+export function* getConnector(connectorName) {
+  const storageConnector = yield call(getStorageConnector, connectorName)
+  return Converter.createClientConnector(storageConnector)
 }
 
 

@@ -44,7 +44,7 @@ export function* handleOpenEditorDialogToEdit(action) {
     name = payload[EditorDialogPayload.NAME]
     readonly = payload[EditorDialogPayload.READONLY]
 
-    const connector = yield call(API.fetchConnector, name)
+    const connector = yield call(API.getStorageConnector, name)
 
     yield put(EditorDialogAction.openEditorDialogToEdit({
       [EditorDialogPayload.NAME]: name,
@@ -150,7 +150,7 @@ export function* handleUpdate(action) {
 
     if (name !== connectorName) throw new Error(ErrorCode.CANNOT_CHANGE_NAME)
 
-    yield call(update, connector, name)
+    yield call(updateMeta, connector, name)
   } catch (error) {
     yield put(SnackbarAction.openErrorSnackbar({
       [SnackbarPayload.MESSAGE]: `Failed to update '${name}'`,
@@ -200,6 +200,8 @@ export function* handleStart(action) {
       [SnackbarPayload.MESSAGE]: `Failed to start '${name}'`,
       [SnackbarPayload.ERROR]: error,
     }))
+
+    if (name) yield call(fetch, name)
   }
 
   yield put(ConnectorItemAction.endSwitching({
@@ -231,6 +233,8 @@ export function* handleStop(action) {
       [SnackbarPayload.MESSAGE]: `Failed to stop '${name}'`,
       [SnackbarPayload.ERROR]: error,
     }))
+
+    if (name) yield call(fetch, name)
   }
 
   yield put(ConnectorItemAction.endSwitching({
@@ -264,7 +268,7 @@ export function* create(connector, name) {
   }))
 }
 
-export function* update(connector, name) {
+export function* updateMeta(connector, name) {
   const updated = yield call(
     API.putConnectorMeta, name, connector[Converter.STORAGE_PROPERTY.META]
   )
@@ -305,6 +309,16 @@ export function* stop(name) {
 
   yield put(ConnectorItemAction.update({
     [ConnectorItemPayload.CONNECTOR]: updated,
+  }))
+}
+
+export function* fetch(name) {
+  const connector = yield call(
+    API.getConnector, name
+  )
+
+  yield put(ConnectorItemAction.update({
+    [ConnectorItemPayload.CONNECTOR]: connector,
   }))
 }
 
