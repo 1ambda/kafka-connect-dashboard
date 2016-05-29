@@ -1,6 +1,6 @@
 import React, { PropTypes, } from 'react'
-import SelectField from 'material-ui/lib/select-field'
-import MenuItem from 'material-ui/lib/menus/menu-item'
+import SelectField from 'material-ui/SelectField'
+import MenuItem from 'material-ui/MenuItem'
 
 export default class Sorter extends React.Component {
 
@@ -12,6 +12,12 @@ export default class Sorter extends React.Component {
     labelStyle: PropTypes.object,
     floatingLabel: PropTypes.string,
     floatingLabelStyle: PropTypes.object,
+  }
+
+  constructor(props) {
+    super(props)
+
+    this.handleSorterChange = this.handleSorterChange.bind(this)
   }
 
   handleSorterChange(event, selectedIndex) {
@@ -34,7 +40,7 @@ export default class Sorter extends React.Component {
     return (
       <SelectField value={currentStrategy}
                    style={style || {}}
-                   onChange={this.handleSorterChange.bind(this)}
+                   onChange={this.handleSorterChange}
                    labelStyle={labelStyle || {}}
                    floatingLabelText={floatingLabel || 'Sort by'}
                    floatingLabelStyle={floatingLabelStyle || {}} >

@@ -2,8 +2,8 @@ import React, { PropTypes, } from 'react'
 import { connect, } from 'react-redux'
 import { bindActionCreators, } from 'redux'
 
-import FontIcon from 'material-ui/lib/font-icon'
-import RaisedButton from 'material-ui/lib/raised-button'
+import FontIcon from 'material-ui/FontIcon'
+import RaisedButton from 'material-ui/RaisedButton'
 
 import * as style from './style'
 

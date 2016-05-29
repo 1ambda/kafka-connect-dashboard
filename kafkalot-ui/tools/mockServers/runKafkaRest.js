@@ -9,7 +9,7 @@ const db = Resource.REST_DB
 
 const app = express()
 
-app.set('port', process.env.KAFKA_REST_PORT || 3002);
+app.set('port', process.env.KAFKA_REST_PORT || 3002)
 
 /** add CORS support */
 app.use(cors({
@@ -19,7 +19,7 @@ app.use(cors({
 
 /** add bodyParser */
 app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: false, }));
+app.use(bodyParser.urlencoded({ extended: false, }))
 
 app.get(`/${Resource.KEY_CONNECTORS}`,
   (req, res) => {
@@ -93,5 +93,5 @@ app.delete(`/${Resource.KEY_CONNECTORS}/:${Resource.KEY_NAME}`,
 )
 
 app.listen(app.get('port'), () => {
-  console.log(`Mock container server is running on PORT ${app.get('port')}!`)
+  console.log(`Mock container server is running on PORT ${app.get('port')}!`) //
 })

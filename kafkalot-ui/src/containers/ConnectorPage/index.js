@@ -30,6 +30,12 @@ class ConnectorPage extends React.Component {
     storageSelector: PropTypes.object.isRequired,
   }
 
+  constructor(props) {
+    super(props)
+
+    this.handlePageOffsetChange  = this.handlePageOffsetChange.bind(this)
+  }
+
   handlePageOffsetChange(newPageOffset) {
     const { actions, } = this.props
     const payload = { [PaginatorPayload.NEW_PAGE_OFFSET]: newPageOffset, }
@@ -86,7 +92,7 @@ class ConnectorPage extends React.Component {
                      currentPageOffset={currentPageOffset}
                      currentItemOffset={currentItemOffset}
                      totalItemCount={filtered.length}
-                     handler={this.handlePageOffsetChange.bind(this)} />
+                     handler={this.handlePageOffsetChange} />
         </div>
         {editorDialogDOM}
         {confirmDialogDOM}

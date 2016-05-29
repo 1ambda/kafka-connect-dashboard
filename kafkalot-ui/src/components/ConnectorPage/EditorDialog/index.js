@@ -3,9 +3,8 @@ import React, { PropTypes, } from 'react'
 import 'jsoneditor/dist/jsoneditor.min.css'
 import JSONEditor from 'jsoneditor/dist/jsoneditor.min.js'
 
-import RaisedButton from 'material-ui/lib/raised-button'
-import FlatButton from 'material-ui/lib/flat-button'
-import Dialog from 'material-ui/lib/dialog'
+import FlatButton from 'material-ui/FlatButton'
+import Dialog from 'material-ui/Dialog'
 
 import * as dialogStyle from './style'
 import { ItemProperty, Payload as ConnectorItemPayload, } from '../../../reducers/ConnectorReducer/ItemState'
@@ -54,6 +53,12 @@ export default class EditorDialog extends React.Component {
      * EditorDialog manages editor as it's state
      */
     this.state = { editor: null, isJSONChanged: false, }
+
+    this.handleClose = this.handleClose.bind(this)
+    this.handleCreate = this.handleCreate.bind(this)
+    this.handleUpdate = this.handleUpdate.bind(this)
+    this.handleEditorError = this.handleEditorError.bind(this)
+    this.handleEditorJSONChanged = this.handleEditorJSONChanged.bind(this)
   }
 
   /** component life-cycle */
@@ -65,8 +70,8 @@ export default class EditorDialog extends React.Component {
     const availableModes = getAvailableEditorModes(readonly, dialogMode)
 
     const onChangeHandler = (EDITOR_DIALOG_MODE.EDIT === dialogMode) ?
-      this.handleEditorJSONChanged.bind(this) : undefined
-    const onErrorHandler = this.handleEditorError.bind(this)
+      this.handleEditorJSONChanged : undefined
+    const onErrorHandler = this.handleEditorError
 
     const options = {
       search: false, // TODO: fix search width
@@ -145,17 +150,17 @@ export default class EditorDialog extends React.Component {
                     style={dialogStyle.button}
                     primary disabled={readonly || !isJSONChanged}
                     key="update" label="Update"
-                    onTouchTap={this.handleUpdate.bind(this)} />) :
+                    onTouchTap={this.handleUpdate} />) :
       (<FlatButton labelStyle={dialogStyle.buttonLabel}
                    style={dialogStyle.button}
                    primary
                    key="create" label="Create"
-                   onTouchTap={this.handleCreate.bind(this)} /> )
+                   onTouchTap={this.handleCreate} /> )
     const buttons = [
       <FlatButton
         style={dialogStyle.button} labelStyle={dialogStyle.buttonLabel}
         secondary key="cancel" label="Cancel"
-        onTouchTap={this.handleClose.bind(this)} />,
+        onTouchTap={this.handleClose} />,
       submitButton,
     ]
 
@@ -164,7 +169,7 @@ export default class EditorDialog extends React.Component {
         title={name} titleStyle={dialogStyle.title}
         actions={buttons}
         open modal={false}
-        onRequestClose={this.handleClose.bind(this)}>
+        onRequestClose={this.handleClose}>
         <div id={ELEM_ID_EDITOR_DIALOG} style={dialogStyle.editor} />
       </Dialog>
     )

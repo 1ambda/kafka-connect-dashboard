@@ -1,11 +1,9 @@
 import React, { PropTypes, } from 'react'
 
-import ListItem from 'material-ui/lib/lists/list-item'
-import Divider from 'material-ui/lib/divider'
-import Checkbox from 'material-ui/lib/checkbox'
-import Toggle from 'material-ui/lib/toggle'
-import FontIcon from 'material-ui/lib/font-icon'
-import Delete from 'material-ui/lib/svg-icons/action/delete'
+import {List, ListItem,} from 'material-ui/List'
+import Toggle from 'material-ui/Toggle'
+import FontIcon from 'material-ui/FontIcon'
+import Delete from 'material-ui/svg-icons/action/delete'
 
 import * as style from './style'
 import { ConnectorItemColors, } from '../../../constants/theme'
@@ -116,14 +114,17 @@ export default class ConnectorItem extends React.Component {
         (<FontIcon className="fa fa-circle-o-notch" />)
   }
 
+  constructor(props) {
+    super(props)
+
+    this.handleRemoveButtonClick = this.handleRemoveButtonClick.bind(this)
+    this.handleReadonlyToggleChange = this.handleReadonlyToggleChange.bind(this)
+    this.handleRunningToggleChange = this.handleRunningToggleChange.bind(this)
+    this.handleItemClick =  this.handleItemClick.bind(this)
+  }
+
   handleReadonlyToggleChange() {
     const { connector, setReadonly, unsetReadonly, } = this.props
-
-    /**
-     * since material-ui toggle doesn't property work, (0.14.4)
-     * we rely on the redux state instead of passed params of this callback
-     * to send actions
-     */
 
     if (isReadonly(connector)) unsetReadonly({ [ConnectorItemPayload.CONNECTOR]: connector, })
     else setReadonly({ [ConnectorItemPayload.CONNECTOR]: connector, })
@@ -132,17 +133,11 @@ export default class ConnectorItem extends React.Component {
   handleRunningToggleChange() {
     const { connector, stopConnector, startConnector, } = this.props
 
-    /**
-     * since material-ui toggle doesn't property work, (0.14.4)
-     * we rely on the redux state instead of passed params of this callback
-     * to send actions
-     */
-
     if (isRunning(connector)) stopConnector({ [ConnectorItemPayload.CONNECTOR]: connector, })
     else startConnector({ [ConnectorItemPayload.CONNECTOR]: connector, })
   }
 
-  handleRemoveButtonClick(event) {
+  handleRemoveButtonClick() {
     const { connector, openConfirmDialogToRemove, } = this.props
 
     if (isWaiting(connector)) openConfirmDialogToRemove({
@@ -150,7 +145,7 @@ export default class ConnectorItem extends React.Component {
     })
   }
 
-  handleItemClick(event) {
+  handleItemClick() {
     const { openEditorDialogToEdit, connector, } = this.props
 
     /** check current connector is readonly */
@@ -160,13 +155,7 @@ export default class ConnectorItem extends React.Component {
       [EditorDialogPayload.READONLY]: readonly,
     }
 
-    /**
-     * preventDefault hack
-     *
-     * since we can't control nestedListToggle event in current material-ui version (0.14.4)
-     * we have to avoid opening dialog when nestedListToggle is clicked
-     */
-    if (event.dispatchMarker.includes('Text')) openEditorDialogToEdit(payload)
+    openEditorDialogToEdit(payload)
   }
 
   render() {
@@ -177,7 +166,7 @@ export default class ConnectorItem extends React.Component {
     /** 1. Remove Button */
     const readonly = isReadonly(connector)
     const removeButton = ConnectorItem.createRemoveButton(
-      0, readonly, this.handleRemoveButtonClick.bind(this))
+      0, readonly, this.handleRemoveButtonClick)
 
     /** 2. Disable Toggle */
     const readonlyToggleInactive = isReadonlyToggleDisabled(connector)
@@ -185,7 +174,7 @@ export default class ConnectorItem extends React.Component {
 
     const readonlyToggle = ConnectorItem.createReadonlyToggle(
       1, readonlyToggleInactive, readonlyToggleDefaultToggled,
-      this.handleReadonlyToggleChange.bind(this))
+      this.handleReadonlyToggleChange)
 
     /** 3. Running Toggle */
     const runningToggleInactive = isRunningToggleDisabled(connector)
@@ -193,7 +182,7 @@ export default class ConnectorItem extends React.Component {
 
     const runningToggle = ConnectorItem.createRunningToggle(
       2, runningToggleInactive, runningToggleDefaultToggled,
-      this.handleRunningToggleChange.bind(this))
+      this.handleRunningToggleChange)
 
     /** 4. spin */
     const spinIcon = ConnectorItem.createSpinIcon(connector)
@@ -202,7 +191,7 @@ export default class ConnectorItem extends React.Component {
     const tagString = (tags) ? tags.join(', ') : null
 
     return (
-      <ListItem onClick={this.handleItemClick.bind(this)}
+      <ListItem onClick={this.handleItemClick}
                 primaryText={name}
                 secondaryText={tagString}
                 leftIcon={spinIcon}

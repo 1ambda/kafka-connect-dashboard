@@ -12,6 +12,19 @@ const styles = {
 
 export default class Paginator extends React.Component {
 
+  static propTypes = {
+    handler: React.PropTypes.func.isRequired,
+    totalItemCount: React.PropTypes.number.isRequired,
+    currentPageOffset: React.PropTypes.number.isRequired,
+    itemCountPerPage: React.PropTypes.number.isRequired,
+  }
+
+  constructor(props) {
+    super(props)
+
+    this.handlePageChange = this.handlePageChange.bind(this)
+  }
+
   handlePageChange(data) {
     const { handler, } = this.props
 
@@ -21,10 +34,7 @@ export default class Paginator extends React.Component {
   }
 
   render() {
-
-    const { style, handler, totalItemCount, currentPageOffset, itemCountPerPage, } = this.props
-    const mergedStyle = Object.assign({}, styles.container, style)
-
+    const { totalItemCount, currentPageOffset, itemCountPerPage, } = this.props
     const totalPageCount = Math.ceil(totalItemCount / itemCountPerPage)
 
     return(
@@ -35,19 +45,11 @@ export default class Paginator extends React.Component {
                      pageNum={totalPageCount}
                      marginPagesDisplayed={1}
                      pageRangeDisplayed={3}
-                     clickCallback={this.handlePageChange.bind(this)}
+                     clickCallback={this.handlePageChange}
                      containerClassName={"pagination"}
                      subContainerClassName={"pages pagination"}
                      activeClassName={paginatorStyle.activeLabel} />
 
     )
   }
-}
-
-Paginator.propTypes = {
-  style: React.PropTypes.object,
-  handler: React.PropTypes.func.isRequired,
-  totalItemCount: React.PropTypes.number.isRequired,
-  currentPageOffset: React.PropTypes.number.isRequired,
-  itemCountPerPage: React.PropTypes.number.isRequired,
 }

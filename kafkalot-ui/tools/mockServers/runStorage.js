@@ -8,7 +8,7 @@ import * as Util from './util'
 const db = Resource.STORAGE_DB
 const app = express()
 
-app.set('port', process.env.STORAGE_PORT || 3003);
+app.set('port', process.env.STORAGE_PORT || 3003)
 
 /** add CORS support */
 app.use(cors({
@@ -17,8 +17,8 @@ app.use(cors({
 }))
 
 /** add bodyParser */
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: false, }));
+app.use(bodyParser.json())
+app.use(bodyParser.urlencoded({ extended: false, }))
 
 app.get(`/${Resource.KEY_CONNECTORS}`,
   (req, res) => {

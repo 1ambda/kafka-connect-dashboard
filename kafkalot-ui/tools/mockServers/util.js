@@ -1,7 +1,7 @@
 export function sendErrorMessage(res, status, message) {
   res.status(status).json({
-    "error_code": status,
-    "message": message,
+    'error_code': status,
+    'message': message,
   })
 }
 
@@ -19,7 +19,7 @@ export function isArray(variable) {
 
 
 export function isEmptyObject(obj) {
-  return Object.keys(obj).length === 0 && JSON.stringify(obj) === JSON.stringify({});
+  return Object.keys(obj).length === 0 && JSON.stringify(obj) === JSON.stringify({})
 }
 
 

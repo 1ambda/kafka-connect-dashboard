@@ -1,7 +1,7 @@
 import React, { PropTypes, } from 'react'
 
-import FlatButton from 'material-ui/lib/flat-button'
-import Dialog from 'material-ui/lib/dialog'
+import FlatButton from 'material-ui/FlatButton'
+import Dialog from 'material-ui/Dialog'
 
 import { ItemProperty, } from '../../../reducers/ConnectorReducer/ItemState'
 import { CONFIRM_DIALOG_MODE, Property as DialogProperty, } from '../../../reducers/ConnectorReducer/ConfirmDialogState'
@@ -24,6 +24,13 @@ export default class ConfirmDialog extends React.Component {
     )
   }
 
+  constructor(props) {
+    super(props)
+
+    this.handleClose = this.handleClose.bind(this)
+    this.handleRemove = this.handleRemove.bind(this)
+  }
+
   handleClose() {
     const { closeConfirmDialog, } = this.props
     closeConfirmDialog()
@@ -43,14 +50,14 @@ export default class ConfirmDialog extends React.Component {
       (<FlatButton
           style={dialogStyle.button} labelStyle={dialogStyle.buttonLabel}
           key="remove" label="Remove"
-          primary onTouchTap={this.handleRemove.bind(this)} />) : null
+          primary onTouchTap={this.handleRemove} />) : null
 
 
     const buttons = [
       <FlatButton
         style={dialogStyle.button} labelStyle={dialogStyle.buttonLabel}
         secondary key="cancel" label="Cancel"
-        onTouchTap={this.handleClose.bind(this)} />,
+        onTouchTap={this.handleClose} />,
       submitButton,
     ]
 
@@ -61,7 +68,7 @@ export default class ConfirmDialog extends React.Component {
         title={title}
         actions={buttons}
         open modal={false}
-        onRequestClose={this.handleClose.bind(this)} />
+        onRequestClose={this.handleClose} />
     )
   }
 }

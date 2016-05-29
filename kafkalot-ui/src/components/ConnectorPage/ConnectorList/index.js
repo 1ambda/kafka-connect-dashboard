@@ -1,7 +1,7 @@
 import React, { PropTypes, } from 'react'
 
-import List from 'material-ui/lib/lists/list'
-import Divider from 'material-ui/lib/divider'
+import List from 'material-ui/List'
+import Divider from 'material-ui/Divider'
 
 import * as style from './style'
 import ConnectorItem from '../ConnectorItem'

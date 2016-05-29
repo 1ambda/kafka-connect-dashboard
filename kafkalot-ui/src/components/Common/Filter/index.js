@@ -1,5 +1,6 @@
 import React, { PropTypes, } from 'react'
-import TextField from 'material-ui/lib/text-field'
+import TextField from 'material-ui/TextField'
+import keycode from 'keycode'
 
 export default class Filter extends React.Component {
 
@@ -9,11 +10,17 @@ export default class Filter extends React.Component {
     floatingLabel: PropTypes.string.isRequired,
   }
 
+  constructor(props) {
+    super(props)
+
+    this.handleFilterChange = this.handleFilterChange.bind(this)
+  }
+
   handleFilterChange(event) {
     const { handler, } = this.props
     const filterKeyword = event.target.value.trim()
 
-    if (handler) handler(filterKeyword)
+    if (handler && (keycode(event) === 'enter')) handler(filterKeyword)
   }
 
   render() {
@@ -21,7 +28,7 @@ export default class Filter extends React.Component {
 
     return (
       <TextField inputStyle={style}
-                 onEnterKeyDown={this.handleFilterChange.bind(this)}
+                 onKeyDown={this.handleFilterChange}
                  floatingLabelText={floatingLabel || 'Insert Filter'} />
     )
   }

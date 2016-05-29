@@ -1,9 +1,6 @@
 import React, { PropTypes, } from 'react'
-import RaisedButton from 'material-ui/lib/raised-button'
-import Popover from 'material-ui/lib/popover/popover'
-import PopoverAnimationFromTop from 'material-ui/lib/popover/popover-animation-from-top'
-import DropDownMenu from 'material-ui/lib/DropDownMenu'
-import MenuItem from 'material-ui/lib/menus/menu-item'
+import RaisedButton from 'material-ui/RaisedButton'
+import {Popover, PopoverAnimationVertical,} from 'material-ui/Popover'
 
 import Filter from '../../Common/Filter'
 import Selector from '../../Common/Selector'
@@ -13,7 +10,6 @@ import { isRunning, } from '../../../reducers/ConnectorReducer/ItemState'
 import { Payload as SorterPayload, } from '../../../reducers/ConnectorReducer/SorterState'
 import { Payload as FilterPayload, } from '../../../reducers/ConnectorReducer/FilterState'
 import { Payload as StorageSelectorPayload, } from '../../../reducers/ConnectorReducer/StorageSelectorState'
-import * as URL from '../../../middlewares/url'
 import * as Page from '../../../constants/page'
 
 export default class ConnectorHeader extends React.Component {
@@ -44,6 +40,11 @@ export default class ConnectorHeader extends React.Component {
 
   constructor(props) {
     super(props)
+
+    this.handleCreateJob = this.handleCreateJob.bind(this)
+    this.handleFilterChange = this.handleFilterChange.bind(this)
+    this.handleSorterChange = this.handleSorterChange.bind(this)
+    this.handleStorageSelectorChange = this.handleStorageSelectorChange.bind(this)
   }
 
   handleCreateJob() {
@@ -80,7 +81,7 @@ export default class ConnectorHeader extends React.Component {
     const createButton = (
       <RaisedButton labelStyle={style.buttonLabel}
                     secondary label={"CREATE"}
-                    onTouchTap={this.handleCreateJob.bind(this)} />)
+                    onTouchTap={this.handleCreateJob} />)
 
     /** 2. draw summary */
     const summaryWithPopover = ConnectorHeader.createSummaryDOM(connectors, createButton)
@@ -95,17 +96,17 @@ export default class ConnectorHeader extends React.Component {
           {Page.ConnectorPageTitle}
         </div>
         <div>
-          <Filter handler={this.handleFilterChange.bind(this)}
+          <Filter handler={this.handleFilterChange}
                   floatingLabel={filterLabel}
                   style={style.filterInput} />
-          <Selector handler={this.handleStorageSelectorChange.bind(this)}
+          <Selector handler={this.handleStorageSelectorChange}
                     style={style.storageSelector}
                     labelStyle={style.storageSelectorLabel}
                     floatingLabel="Storage"
                     floatingLabelStyle={style.selectorFloatingLabel}
                     strategies={storageSelector.availableStorages}
                     currentStrategy={storageSelector.selectedStorage} />
-          <Selector handler={this.handleSorterChange.bind(this)}
+          <Selector handler={this.handleSorterChange}
                   style={style.selector}
                   labelStyle={style.selectorLabel}
                   floatingLabel="Sort by"
