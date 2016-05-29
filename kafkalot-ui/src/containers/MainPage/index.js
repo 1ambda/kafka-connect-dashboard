@@ -51,7 +51,6 @@ class MainPage extends React.Component {
 
 function mapStateToProps(state) {
   return {
-    jobs: state.job.items,
   }
 }
 

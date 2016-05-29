@@ -17,7 +17,6 @@ import * as CONFIG from '../../../constants/config'
 export default class NavBar extends React.Component {
 
   render() {
-
     return (
       <Toolbar style={style.navbar}>
         <ToolbarGroup firstChild float="left">

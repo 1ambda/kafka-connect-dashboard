@@ -145,7 +145,7 @@ export default class ConnectorItem extends React.Component {
     })
   }
 
-  handleItemClick() {
+  handleItemClick(event) {
     const { openEditorDialogToEdit, connector, } = this.props
 
     /** check current connector is readonly */
@@ -155,7 +155,14 @@ export default class ConnectorItem extends React.Component {
       [EditorDialogPayload.READONLY]: readonly,
     }
 
-    openEditorDialogToEdit(payload)
+
+    /**
+     * material-ui hack (0.15.0)
+     * - prevent open dialog when clicking `fold` button on connector items
+     */
+    if (!Array.isArray(event._dispatchInstances)) {
+      openEditorDialogToEdit(payload)
+    }
   }
 
   render() {
