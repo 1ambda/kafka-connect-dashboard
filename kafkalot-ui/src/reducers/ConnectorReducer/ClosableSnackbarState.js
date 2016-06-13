@@ -41,12 +41,11 @@ export const handler = handleActions({
 
     const message = payload[Payload.MESSAGE]
     const error = payload[Payload.ERROR]
-    const errorMessage = `${message} (${error.message}`
 
     Logger.error(message, error)
 
     return Object.assign({}, state, {
-      [Property.MESSAGE]: errorMessage,
+      [Property.MESSAGE]: message,
       [Property.SNACKBAR_MODE]: CLOSABLE_SNACKBAR_MODE.OPEN,
     })
   },

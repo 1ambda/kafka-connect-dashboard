@@ -10,9 +10,9 @@ import IconMenu from 'material-ui/IconMenu'
 import MoreVertIcon from 'material-ui/svg-icons/navigation/more-vert'
 import MenuItem from 'material-ui/MenuItem'
 
-import * as Page from '../../../constants/page'
+import * as Page from '../../../constants/Page'
 import * as style from './style.js'
-import * as CONFIG from '../../../constants/config'
+import * as CONFIG from '../../../constants/Config'
 
 export default class NavBar extends React.Component {
 

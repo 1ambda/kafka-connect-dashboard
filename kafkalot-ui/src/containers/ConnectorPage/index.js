@@ -6,14 +6,16 @@ import { bindActionCreators, } from 'redux'
 import ConnectorList from '../../components/ConnectorPage/ConnectorList'
 import ConnectorHeader from '../../components/ConnectorPage/ConnectorHeader'
 import Paginator from '../../components/Common/Paginator'
-import EditorDialog from '../../components/ConnectorPage/EditorDialog'
-import { EDITOR_DIALOG_MODE, } from '../../reducers/ConnectorReducer/EditorDialogState'
-import ConfirmDialog from '../../components/ConnectorPage/ConfirmDialog'
-import { CONFIRM_DIALOG_MODE, } from '../../reducers/ConnectorReducer/ConfirmDialogState'
-import { Payload as PaginatorPayload, } from '../../reducers/ConnectorReducer/PaginatorState'
-import Snackbar, { CLOSABLE_SNACKBAR_MODE, } from '../../components/Common/ClosableSnackbar'
+import RemoveDialog from '../../components/ConnectorPage/RemoveDialog'
+import { Payload as ConnectorListPayload, } from '../../reducers/ConnectorReducer/ConnectorListState'
+import Snackbar from '../../components/Common/ClosableSnackbar'
 
-import { ROOT, CONNECTOR, } from '../../constants/state'
+import { ConnectorListProperty, } from '../../reducers/ConnectorReducer/ConnectorListState'
+
+import ConfigEditor from '../../components/ConnectorPage/ConnectorConfigEditor'
+import CreateEditor from '../../components/ConnectorPage/ConnectorCreateEditor'
+
+import { ROOT, CONNECTOR, } from '../../constants/State'
 import Actions from '../../actions'
 import * as style from './style'
 
@@ -23,11 +25,13 @@ class ConnectorPage extends React.Component {
     connectors: PropTypes.array.isRequired,
     paginator: PropTypes.object.isRequired,
     filterKeyword: PropTypes.string.isRequired,
-    editorDialog: PropTypes.object.isRequired,
-    confirmDialog: PropTypes.object.isRequired,
+    sorter: PropTypes.string.isRequired,
+    tableHeaderChecked: PropTypes.bool.isRequired,
+    
     snackbar: PropTypes.object.isRequired,
-    sortingStrategy: PropTypes.object.isRequired,
-    storageSelector: PropTypes.object.isRequired,
+    configEditor: PropTypes.object.isRequired,
+    createEditor: PropTypes.object.isRequired,
+    removeDialog: PropTypes.object.isRequired,
   }
 
   constructor(props) {
@@ -38,18 +42,49 @@ class ConnectorPage extends React.Component {
 
   handlePageOffsetChange(newPageOffset) {
     const { actions, } = this.props
-    const payload = { [PaginatorPayload.NEW_PAGE_OFFSET]: newPageOffset, }
+    const payload = { [ConnectorListPayload.NEW_PAGE_OFFSET]: newPageOffset, }
 
     actions.changePageOffset(payload)
   }
 
+  createSnackbarAndDialogs() {
+    const {
+      actions, configEditor, createEditor, removeDialog, snackbar,
+    } = this.props
+
+    /** 3. draw dialogs, snackbar */
+    const configEditorDOM = (configEditor.opened) ?
+      (<ConfigEditor close={actions.closeConfigEditor}
+                     update={actions.updateConfig} {...configEditor} />) : null
+
+    const createEditorDOM = (createEditor.opened) ?
+      (<CreateEditor close={actions.closeCreateEditor}
+                     create={actions.createConnector} {...createEditor} />) : null
+
+    const removeDialogDOM = (removeDialog.opened) ?
+      (<RemoveDialog removeConnector={actions.removeConnector}
+                     closeRemoveDialog={actions.closeRemoveDialog} {...removeDialog} />) : null
+
+    const snackbarDOM = (<Snackbar {...snackbar} closeSnackbar={actions.closeSnackbar} />)
+
+    return (
+      <div>
+        {configEditorDOM}
+        {createEditorDOM}
+        {removeDialogDOM}
+        {snackbarDOM}
+      </div>
+    )
+  }
+
   render() {
     const {
-      actions, connectors, paginator, filterKeyword,
-      sortingStrategy, storageSelector,
-      editorDialog, confirmDialog, snackbar, } = this.props
+      actions, connectors, paginator, filterKeyword, sorter, tableHeaderChecked,
+    } = this.props
 
-    const { itemCountPerPage, currentPageOffset, currentItemOffset, } = paginator
+    const {
+      itemCountPerPage, currentPageOffset, currentItemOffset,
+    } = paginator
 
     /** 1. filter connectors */
     const filtered = connectors.filter(connector => {
@@ -60,33 +95,23 @@ class ConnectorPage extends React.Component {
     /** 2. select connectors to be curated */
     const sliced = filtered.slice(currentItemOffset, currentItemOffset + itemCountPerPage)
 
-    /** 3. draw dialogs, snackbar */
-    const editorDialogDOM = (EDITOR_DIALOG_MODE.CLOSE !== editorDialog.dialogMode) ?
-      (<EditorDialog closeEditorDialog={actions.closeEditorDialog}
-                     createConnector={actions.create}
-                     updateConnector={actions.update}
-                     {...editorDialog} />) : null
-
-    const confirmDialogDOM = (CONFIRM_DIALOG_MODE.CLOSE !== confirmDialog.dialogMode) ?
-      (<ConfirmDialog removeConnector={actions.remove}
-                      closeConfirmDialog={actions.closeConfirmDialog}
-                      {...confirmDialog} />) : null
-
-    const snackbarDOM = (CLOSABLE_SNACKBAR_MODE.CLOSE !== snackbar.snackbarMode) ?
-      (<Snackbar {...snackbar} closeHandler={actions.closeSnackbar} />) : null
-
     return (
       <div>
-        <ConnectorHeader sortingStrategy={sortingStrategy}
-                         storageSelector={storageSelector}
+        <ConnectorHeader sorter={sorter}
                          connectors={filtered}
-                         openEditorDialogToCreate={actions.openEditorDialogToCreate}
-                         filterConnector={actions.filter}
+                         startConnector={actions.startConnector}
+                         stopConnector={actions.stopConnector}
+                         openCreateEditor={actions.openCreateEditor}
+                         openRemoveDialog={actions.openRemoveDialog}
+                         changeFilterKeyword={actions.changeFilterKeyword}
                          filterKeyword={filterKeyword}
-                         sortConnector={actions.sort}
-                         changeStorage={actions.changeStorage}
-          />
-        <ConnectorList connectors={sliced} actions={actions} />
+                         changeSorter={actions.changeSorter} />
+
+        <ConnectorList connectors={sliced}
+                       actions={actions}
+                       toggleCurrentPageCheckboxes={actions.toggleCurrentPageCheckboxes}
+                       tableHeaderChecked={tableHeaderChecked} />
+
         <div className="center" style={style.paginator}>
           <Paginator itemCountPerPage={itemCountPerPage}
                      currentPageOffset={currentPageOffset}
@@ -94,9 +119,7 @@ class ConnectorPage extends React.Component {
                      totalItemCount={filtered.length}
                      handler={this.handlePageOffsetChange} />
         </div>
-        {editorDialogDOM}
-        {confirmDialogDOM}
-        {snackbarDOM}
+        {this.createSnackbarAndDialogs()}
       </div>
     )
   }
@@ -104,14 +127,17 @@ class ConnectorPage extends React.Component {
 
 function mapStateToProps(state) {
   return {
-    connectors: state[ROOT.CONNECTOR][CONNECTOR.ITEMS],
-    paginator: state[ROOT.CONNECTOR][CONNECTOR.PAGINATOR],
-    filterKeyword: state[ROOT.CONNECTOR][CONNECTOR.FILTER],
-    editorDialog: state[ROOT.CONNECTOR][CONNECTOR.EDITOR_DIALOG],
-    confirmDialog: state[ROOT.CONNECTOR][CONNECTOR.CONFIRM_DIALOG],
+    connectors: state[ROOT.CONNECTOR][CONNECTOR.CONNECTOR_LIST][ConnectorListProperty.CONNECTORS],
+    filterKeyword: state[ROOT.CONNECTOR][CONNECTOR.CONNECTOR_LIST][ConnectorListProperty.FILTER_KEYWORD],
+    sorter: state[ROOT.CONNECTOR][CONNECTOR.CONNECTOR_LIST][ConnectorListProperty.SORTER],
+    paginator: state[ROOT.CONNECTOR][CONNECTOR.CONNECTOR_LIST][ConnectorListProperty.PAGINATOR],
+    tableHeaderChecked: state[ROOT.CONNECTOR][CONNECTOR.CONNECTOR_LIST][ConnectorListProperty.TABLE_HEADER_CHECKED],
+
     snackbar: state[ROOT.CONNECTOR][CONNECTOR.SNACKBAR],
-    sortingStrategy: state[ROOT.CONNECTOR][CONNECTOR.SORTER],
-    storageSelector: state[ROOT.CONNECTOR][CONNECTOR.STORAGE_SELECTOR],
+    confirmDialog: state[ROOT.CONNECTOR][CONNECTOR.CONFIRM_DIALOG],
+    configEditor: state[ROOT.CONNECTOR][CONNECTOR.CONFIG_EDITOR],
+    createEditor: state[ROOT.CONNECTOR][CONNECTOR.CREATE_EDITOR],
+    removeDialog: state[ROOT.CONNECTOR][CONNECTOR.REMOVE_DIALOG],
   }
 }
 

@@ -1,9 +1,8 @@
 import fetch from 'isomorphic-fetch'
 import { take, put, call, fork, select, } from 'redux-saga/effects'
 
-import URL from './url'
-import * as Converter from './converter'
-import * as Selector from '../reducers/ConnectorReducer/selector'
+import URL from './Url'
+import * as Selector from '../reducers/ConnectorReducer/Selector'
 
 /**
  * low-level APIs
@@ -106,37 +105,36 @@ export function delay(millis) {
  * exception will be caught in watcher functions
  */
 
-export function* fetchAll(storageName) {
-  const storageConnectorsUrl = URL.getConnectorsUrl(storageName)
-  const storageConnectors = yield call(getJSON, storageConnectorsUrl)
+export function* fetchAllConnectorNames(storageName) {
+  const connectorsUrl = URL.getConnectorsUrl(storageName)
+  const connectorNames = yield call(getJSON, connectorsUrl)
 
-  if (!Array.isArray(storageConnectors))
-    throw new Error(`GET ${storageConnectorsUrl} didn't return an array, got ${storageConnectors}`)
+  if (!Array.isArray(connectorNames))
+    throw new Error(`GET ${connectorsUrl} didn't return an array, got ${connectorNames}`)
 
-  return Converter.createClientConnectors(storageConnectors)
-}
-
-export function* getStorageConnector(connectorName) {
-  const storageName = yield select(Selector.getSelectedStorage)
-  const connectorUrl = URL.getConnectorUrl(storageName, connectorName)
-
-  /** do not convert */
-  const storageConnector = yield call(getJSON, connectorUrl)
-
-  return storageConnector
+  return connectorNames 
 }
 
 export function* getConnector(connectorName) {
-  const storageConnector = yield call(getStorageConnector, connectorName)
-  return Converter.createClientConnector(storageConnector)
+  const storageName = yield select(Selector.getSelectedStorage)
+  const connectorUrl = URL.getConnectorUrl(storageName, connectorName)
+
+  const connector = yield call(getJSON, connectorUrl)
+  return connector 
 }
 
+export function* putConnectorConfig(connectorName, config) {
+  const storageName = yield select(Selector.getSelectedStorage)
+  const connectorConfigUrl = URL.getConnectorConfigUrl(storageName, connectorName)
+  
+  yield call(putJSON, connectorConfigUrl, config)
+}
 
 export function* postConnector(connector) {
   const storageName = yield select(Selector.getSelectedStorage)
   const connectorsUrl = URL.getConnectorsUrl(storageName)
 
-  yield call(postJSON, connectorsUrl, connector)
+  return yield call(postJSON, connectorsUrl, connector)
 }
 
 export function* deleteConnector(connectorName) {
@@ -146,20 +144,36 @@ export function* deleteConnector(connectorName) {
   yield call(deleteJSON, connectorsUrl)
 }
 
+
+export const KEY_OPERATION = 'operation'
+export const CONNECTOR_COMMAND = {
+  START: { [KEY_OPERATION]: 'start', },
+  STOP: { [KEY_OPERATION]: 'stop', },
+  ENABLE: { [KEY_OPERATION]: 'enable', },
+  DISABLE: { [KEY_OPERATION]: 'disable', },
+}
+
 export function* postConnectorCommand(connectorName, command) {
   const storageName = yield select(Selector.getSelectedStorage)
   const connectorCommandUrl = URL.getConnectorCommandUrl(storageName, connectorName)
-  const updated = yield call(postJSON, connectorCommandUrl, command)
-
-  return Converter.createClientConnector(updated)
+  
+  return yield call(postJSON, connectorCommandUrl, command)
 }
 
-export function* putConnectorMeta(connectorName, meta) {
-  const storageName = yield select(Selector.getSelectedStorage)
-  const connectorUrl = URL.getConnectorMetaUrl(storageName, connectorName)
-
-  const updated = yield call(putJSON, connectorUrl, meta)
-
-  return Converter.createClientConnector(updated)
+export function* disableConnector(connectorName) {
+  return yield call(postConnectorCommand, connectorName, CONNECTOR_COMMAND.DISABLE)
 }
+
+export function* enableConnector(connectorName) {
+  return yield call(postConnectorCommand, connectorName, CONNECTOR_COMMAND.ENABLE)
+}
+
+export function* startConnector(connectorName) {
+  return yield call(postConnectorCommand, connectorName, CONNECTOR_COMMAND.START)
+}
+
+export function* stopConnector(connectorName) {
+  return yield call(postConnectorCommand, connectorName, CONNECTOR_COMMAND.STOP)
+}
+
 

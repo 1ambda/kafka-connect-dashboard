@@ -1,4 +1,4 @@
-import { ClosableSnackbar, } from '../../../constants/theme'
+import { ClosableSnackbar, } from '../../../constants/Theme'
 
 export const snackbar = {
   fontWeight: 300,

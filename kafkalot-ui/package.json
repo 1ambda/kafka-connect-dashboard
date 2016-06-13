@@ -47,6 +47,7 @@
     "redux-saga": "0.10.4"
   },
   "devDependencies": {
+    "autoprefixer": "6.3.6",
     "babel-cli": "6.9.0",
     "babel-core": "6.9.0",
     "babel-eslint": "6.0.4",

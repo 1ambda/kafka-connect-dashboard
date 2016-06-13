@@ -1,24 +1,22 @@
 import { combineReducers, } from 'redux'
 import { handleActions, } from 'redux-actions'
 
-import * as ItemState from './ItemState'
-import * as PaginatorState from './PaginatorState'
-import * as FilterState from './FilterState'
-import * as SorterState from './SorterState'
-import * as EditorDialogState from './EditorDialogState'
-import * as ConfirmDialogState from './ConfirmDialogState'
+import * as ConnectorListState from './ConnectorListState'
+import * as RemoveDialogState from './RemoveDialogState'
 import * as ClosableSnackbarState from './ClosableSnackbarState'
 import * as StorageSelectorState from './StorageSelectorState'
 
-import { CONNECTOR, } from '../../constants/state'
+import * as ConfigEditorState from './ConfigEditorState'
+import * as CreateEditorState from './CreateEditorState'
+
+import { CONNECTOR, } from '../../constants/State'
 
 export default combineReducers({
   [CONNECTOR.STORAGE_SELECTOR]: StorageSelectorState.handler,
-  [CONNECTOR.ITEMS]: ItemState.handler,
-  [CONNECTOR.PAGINATOR]: PaginatorState.handler,
-  [CONNECTOR.FILTER]: FilterState.handler,
-  [CONNECTOR.SORTER]: SorterState.handler,
-  [CONNECTOR.EDITOR_DIALOG]: EditorDialogState.handler,
-  [CONNECTOR.CONFIRM_DIALOG]: ConfirmDialogState.handler,
+  [CONNECTOR.CONNECTOR_LIST]: ConnectorListState.handler,
+
   [CONNECTOR.SNACKBAR]: ClosableSnackbarState.handler,
+  [CONNECTOR.CONFIG_EDITOR]: ConfigEditorState.handler,
+  [CONNECTOR.CREATE_EDITOR]: CreateEditorState.handler,
+  [CONNECTOR.REMOVE_DIALOG]: RemoveDialogState.handler,
 })

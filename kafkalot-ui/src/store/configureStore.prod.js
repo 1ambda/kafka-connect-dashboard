@@ -3,14 +3,14 @@ import { routerReducer, } from 'react-router-redux'
 import createSagaMiddleware from 'redux-saga'
 
 import RootReducer from '../reducers'
-import sagas from '../middlewares/sagas'
+import sagas from '../middlewares/Saga'
 
 const sagaMiddleware = createSagaMiddleware()
 
 const middlewares = [sagaMiddleware,]
 
 export default function configureStore(initialState) {
-  var store = createStore(
+  const store = createStore(
     RootReducer,
     initialState,
     applyMiddleware(...middlewares)

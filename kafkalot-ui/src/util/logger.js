@@ -1,5 +1,4 @@
-
-import { NODE_ENV, } from '../constants/config'
+import { NODE_ENV, } from '../constants/Config'
 
 export function isLoggerDisabled() {
   return (NODE_ENV === 'test')

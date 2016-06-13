@@ -1,9 +1,9 @@
 import { createAction, handleActions, } from 'redux-actions'
 
-import * as URL from '../../middlewares/url'
+import * as URL from '../../middlewares/Url'
 
 export const ActionType = {
-  SELECT_STORAGE: 'SELECT_STORAGE',
+  SET_STORAGE: 'SET_STORAGE',
 }
 
 export const Payload = {
@@ -15,8 +15,8 @@ export const Property = {
   AVAILABLE_STORAGES: 'availableStorages',
 }
 
-export const Action = {
-  selectStorage: createAction(ActionType.SELECT_STORAGE),
+export const PrivateAction = {
+  setStorage: createAction(ActionType.SET_STORAGE),
 }
 
 export const INITIAL_STATE = {
@@ -25,7 +25,7 @@ export const INITIAL_STATE = {
 }
 
 export const handler = handleActions({
-  [ActionType.SELECT_STORAGE]: (state, { payload, }) => {
+  [ActionType.SET_STORAGE]: (state, { payload, }) => {
     return Object.assign({}, state, { [Property.SELECTED_STORAGE]: payload[Payload.STORAGE], })
   },
 

@@ -1,7 +1,7 @@
 import { combineReducers, } from 'redux'
 import { routerReducer, } from 'react-router-redux'
 
-import { ROOT, } from '../constants/state'
+import { ROOT, } from '../constants/State'
 import ConnectorReducer from './ConnectorReducer'
 
 const rootReducer = combineReducers({

@@ -9,7 +9,6 @@ import com.novus.salat._
 import com.novus.salat.global._
 import com.mongodb.casbah.Imports._
 import io.github.lambda.kafkalot.storage.exception.ErrorCode
-import io.github.lambda.kafkalot.storage.util.JsonUtil
 
 /**
   * StorageConnector including the stringified `config` field
@@ -22,7 +21,7 @@ case class PersistedStorageConnector(name: String,
                                      _meta: StorageConnectorMeta) {
 
   def toStorageConnector: StorageConnector = {
-    val jsonConfig = JsonUtil.convertStringToJsonObject(config)
+    val jsonConfig = decode[JsonObject](config).valueOr(throw _)
     StorageConnector(name, jsonConfig, _meta)
   }
 }
@@ -79,13 +78,13 @@ object StorageConnectorDao {
     }
   }
 
-  def delete(sc: StorageConnector): Future[StorageConnector] = {
+  def delete(connectorName: String): Future[Boolean] = {
     Future {
-      val query = createSelectQuery(sc)
+      val query = createSelectQuery(connectorName)
       val result = collection.remove(query)
 
       if (result.getN < 1) throw new RuntimeException(ErrorCode.STORAGE_CONNECTOR_DOES_NOT_EXIST)
-      else sc
+      else true
     }
   }
 

@@ -4,12 +4,14 @@ export const ROOT = {
 }
 
 export const CONNECTOR = {
-  ITEMS: 'items',
+  CONNECTOR_LIST: 'connectorList',
   PAGINATOR: 'paginator',
   FILTER: 'filterKeyword',
-  EDITOR_DIALOG: 'editorDialog',
+  REMOVE_DIALOG: 'removeDialog',
   CONFIRM_DIALOG: 'confirmDialog',
-  SORTER: 'sortingStrategy',
+  SORTER: 'sorter',
   SNACKBAR: 'snackbar',
   STORAGE_SELECTOR: 'storageSelector',
+  CONFIG_EDITOR: 'configEditor',
+  CREATE_EDITOR: 'createEditor',
 }

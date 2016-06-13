@@ -1,9 +1,6 @@
 import { expect, } from 'chai'
 import { fork, take, call, put, select, } from 'redux-saga/effects'
 
-import * as API from '../api'
-import * as Converter from '../converter'
-
 describe('api', () => {
   describe('High-level APIs', () => {
 

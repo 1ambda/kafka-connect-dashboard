@@ -16,7 +16,7 @@ class App extends React.Component {
           <NavBar />
           <br/>
           <div className="row">
-            <div className="col s12 m8 l6 offset-m2 offset-l3">
+            <div className="col s12 m10 l10 offset-m1 offset-l1">
               {this.props.children}
             </div>
           </div>

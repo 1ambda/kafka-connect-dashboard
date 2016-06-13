@@ -1,7 +1,6 @@
-import { STORAGES, } from '../constants/config'
+import { STORAGES, } from '../constants/Config'
 
 export const URL_BASE = 'connectors'
-export const URL_POSTFIX_META = '_meta'
 
 export const STORAGE_PROPERTY = { name: 'name', address: 'address', }
 
@@ -28,10 +27,6 @@ export function _buildConnectorUrl(storageName, connectorName) {
   return `${storageAddress}/${URL_BASE}${postfix}`
 }
 
-export function _buildConnectorCommandUrl(storageName, connectorName) {
-  return `${_buildConnectorUrl(storageName, connectorName)}/command`
-}
-
 /** exposed functions, use ENV variables (injected by webpack) */
 export default {
   getConnectorsUrl: (storageName) => {
@@ -42,11 +37,11 @@ export default {
     return _buildConnectorUrl(storageName, connectorName)
   },
 
-  getConnectorCommandUrl: (storageName, connectorName) => {
-    return _buildConnectorCommandUrl(storageName, connectorName)
+  getConnectorConfigUrl: (storageName, connectorName) => {
+    return `${_buildConnectorUrl(storageName, connectorName)}/config`
   },
-
-  getConnectorMetaUrl: (storageName, connectorName) => {
-    return `${_buildConnectorUrl(storageName, connectorName)}/${URL_POSTFIX_META}`
+  
+  getConnectorCommandUrl: (storageName, connectorName) => {
+    return `${_buildConnectorUrl(storageName, connectorName)}/command`
   },
 }

@@ -3,16 +3,40 @@ import React, { PropTypes, } from 'react'
 import FlatButton from 'material-ui/FlatButton'
 import Dialog from 'material-ui/Dialog'
 
-import { ItemProperty, } from '../../../reducers/ConnectorReducer/ItemState'
-import { CONFIRM_DIALOG_MODE, Property as DialogProperty, } from '../../../reducers/ConnectorReducer/ConfirmDialogState'
-import * as dialogStyle from './style'
+import { ConnectorProperty, } from '../../reducers/ConnectorReducer/ConnectorListState'
+import {
+  CONFIRM_DIALOG_MODE, Property as DialogProperty,
+} from '../../reducers/ConnectorReducer/ConfirmDialogState'
+
+const dialogStyle = {
+  title: {
+    fontWeight: 300,
+    fontSize: 18,
+    padding: '50px 0px 0px 20px',
+  },
+
+  name: {
+    fontWeight: 500,
+    color: '#1e88e5',
+  },
+
+  button: {
+    marginRight: 15,
+    marginBottom: 15,
+  },
+
+  buttonLabel: {
+    fontWeight: 300,
+  },
+}
 
 export default class ConfirmDialog extends React.Component {
   static propTypes = {
     connector: PropTypes.object.isRequired,
     dialogMode: PropTypes.string.isRequired,
     closeConfirmDialog: PropTypes.func.isRequired,
-    removeConnector: PropTypes.func.isRequired,
+    submitEnable: PropTypes.bool.isRequired,
+    submitHandler: PropTypes.func.isRequired,
   }
 
   static createTitle(element) {
@@ -28,7 +52,7 @@ export default class ConfirmDialog extends React.Component {
     super(props)
 
     this.handleClose = this.handleClose.bind(this)
-    this.handleRemove = this.handleRemove.bind(this)
+    this.handleSubmit = this.handleSubmit.bind(this)
   }
 
   handleClose() {
@@ -36,7 +60,7 @@ export default class ConfirmDialog extends React.Component {
     closeConfirmDialog()
   }
 
-  handleRemove() {
+  handleSubmit() {
     const { removeConnector, connector, closeConfirmDialog, } = this.props
 
     removeConnector({ [DialogProperty.CONNECTOR]: connector, })
@@ -49,7 +73,7 @@ export default class ConfirmDialog extends React.Component {
     const submitButton = (CONFIRM_DIALOG_MODE.REMOVE === dialogMode) ?
       (<FlatButton
           style={dialogStyle.button} labelStyle={dialogStyle.buttonLabel}
-          key="remove" label="Remove"
+          key="submit" label="Submit"
           primary onTouchTap={this.handleRemove} />) : null
 
 
@@ -61,7 +85,7 @@ export default class ConfirmDialog extends React.Component {
       submitButton,
     ]
 
-    const title = ConfirmDialog.createTitle(connector[ItemProperty.name])
+    const title = ConfirmDialog.createTitle(connector[ConnectorProperty.NAME])
 
     return (
       <Dialog

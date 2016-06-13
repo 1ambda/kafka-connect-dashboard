@@ -6,12 +6,12 @@ export const CONFIRM_DIALOG_MODE = {
 }
 
 export const ActionType = {
-  OPEN_CONFIRM_DIALOG_TO_REMOVE: 'OPEN_CONFIRM_DIALOG_TO_REMOVE',
+  OPEN_CONFIRM_DIALOG: 'OPEN_CONFIRM_DIALOG',
   CLOSE_CONFIRM_DIALOG: 'CLOSE_CONFIRM_DIALOG',
 }
 
 export const Action = {
-  openConfirmDialogToRemove: createAction(ActionType.OPEN_CONFIRM_DIALOG_TO_REMOVE),
+  openConfirmDialogToRemove: createAction(ActionType.OPEN_CONFIRM_DIALOG),
   closeConfirmDialog: createAction(ActionType.CLOSE_CONFIRM_DIALOG),
 }
 
@@ -30,7 +30,7 @@ const INITIAL_STATE = {
 }
 
 export const handler = handleActions({
-  [ActionType.OPEN_CONFIRM_DIALOG_TO_REMOVE]: (state, { payload, }) => {
+  [ActionType.OPEN_CONFIRM_DIALOG]: (state, { payload, }) => {
     return Object.assign({}, state, {
       [Property.CONNECTOR]: payload[Payload.CONNECTOR],
       [Property.DIALOG_MODE]: CONFIRM_DIALOG_MODE.REMOVE,

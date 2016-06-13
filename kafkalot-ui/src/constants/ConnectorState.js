@@ -1,0 +1,8 @@
+export const ConnectorState = {
+  RUNNING: 'RUNNING',
+  UNASSIGNED: 'UNASSIGNED',
+  PAUSED: 'PAUSED',
+  FAILED: 'FAILED',
+  REGISTERED: 'REGISTERED',
+  DISABLED: 'DISABLED',
+}
