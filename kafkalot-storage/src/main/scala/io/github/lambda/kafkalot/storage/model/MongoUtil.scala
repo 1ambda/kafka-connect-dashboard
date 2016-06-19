@@ -1,12 +1,14 @@
 package io.github.lambda.kafkalot.storage.model
 
+import io.github.lambda.kafkalot.storage.ApplicationConfig
+
 
 object MongoUtil {
   import com.mongodb.casbah.Imports._
 
-  val MONGO_HOST = "localhost" // TODO: config
-  val MONGO_PORT = 27017 // TODO: config
-  val MONGO_DB_NAME = "kafkalot-local" // TODO: config
+  val MONGO_HOST = ApplicationConfig.mongoHost
+  val MONGO_PORT = ApplicationConfig.mongoPort
+  val MONGO_DB_NAME = ApplicationConfig.mongoDatabase
 
   lazy val mongoClient = MongoClient(MONGO_HOST, MONGO_PORT)
   lazy val mongoDb = mongoClient(MONGO_DB_NAME)

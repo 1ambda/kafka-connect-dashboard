@@ -127,12 +127,12 @@ object StorageApi {
   def createBadRequest(errorCode: String): Output[Nothing] =
     BadRequest(new RuntimeException(errorCode))
 
-  val api: Service[Request, Response] =
+  val api =
     (getConnectors :+:
       getConnector :+:
       putConnectorConfig :+:
       postConnector :+:
       deleteConnector :+:
       handlePostConnectorCommand
-      ).toService
+      )
 }

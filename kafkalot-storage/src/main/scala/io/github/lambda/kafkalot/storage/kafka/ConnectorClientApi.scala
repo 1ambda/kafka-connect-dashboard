@@ -11,6 +11,7 @@ import io.circe._
 import io.circe.generic.auto._
 import io.circe.jawn._
 import io.circe.syntax._
+import io.github.lambda.kafkalot.storage.ApplicationConfig
 import io.github.lambda.kafkalot.storage.exception.ErrorCode
 import io.github.lambda.kafkalot.storage.model.{StorageConnector, StorageConnectorMeta}
 import org.jboss.netty.handler.codec.http.HttpHeaders
@@ -19,17 +20,19 @@ object ConnectorClientApi {
 
   val CONTAINER_HOST = "localhost" // TODO config
   val CONTAINER_PORT = "8083" // TODO config
+
+  val connectorUrl = ApplicationConfig.connectorClusterUrl
   val RESOURCE_CONNECTORS = "connectors"
   val RESOURCE_CONFIG = "config"
   val RESOURCE_STATUS = "status"
 
-  val client = Http.client.newService(s"${CONTAINER_HOST}:${CONTAINER_PORT}")
+  val client = Http.client.newService(connectorUrl)
 
   def buildConnectorsUrl(): String =
-    s"http://${CONTAINER_HOST}:${CONTAINER_PORT}/${RESOURCE_CONNECTORS}"
+    s"http://${connectorUrl}/${RESOURCE_CONNECTORS}"
 
   def buildConnectorUrl(name: String): String =
-    s"http://${CONTAINER_HOST}:${CONTAINER_PORT}/${RESOURCE_CONNECTORS}/${name}"
+    s"${buildConnectorsUrl()}/${name}"
 
   def buildConnectorStatusUrl(name: String): String =
     s"${buildConnectorUrl(name)}/${RESOURCE_STATUS}"

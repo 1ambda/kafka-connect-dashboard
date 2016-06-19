@@ -5,7 +5,7 @@ const envPaginatorItemCount = process.env.KAFKALOT_PAGINATOR_ITEM_COUNT
 /** exposed variables, should be stringified if it is string */
 export const STORAGES = (envStorages === void 0) ?
   JSON.stringify([
-    { name: 'kafka-rest', address: 'http://localhost:8081', },
+    { name: 'kafkalot-storage', address: 'http://localhost:3003', },
   ]) : envStorages /** envContainer is already stringified */
 
 

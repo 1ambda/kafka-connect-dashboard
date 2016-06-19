@@ -1,5 +1,5 @@
 export const defaultStorages = [
-  { name: 'kafka-rest', address: 'http://localhost:3003', },
+  { name: 'kafka-storage', address: 'http://localhost:3003', },
 ]
 
 /** exposed variables, should be stringified if it is string */
