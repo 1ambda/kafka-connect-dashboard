@@ -32,7 +32,7 @@ Kafkalot consist of 2 subprojects
 ```shell
 $ # configure `conf/application.conf`, `conf/logback.xml` before starting storage
 
-$ cd dist/storage
+$ cd kafkalot/storage
 $ ./bin/kafkalot-storage
 ```
 
@@ -47,7 +47,7 @@ Serve static files in `dist/ui` in your web server
 For example, (prepare [browser-sync](https://www.browsersync.io/) globally before executing this command)
  
 ```shell
-$ cd dist/ui
+$ cd kafkalot/ui
 $ browser-sync start --server --files "*.*"
 ```
 
@@ -59,7 +59,7 @@ $ browser-sync start --server --files "*.*"
 ### Build
 
 ```shell
-$ ./build.sh
+$ ./build.sh ${VERSION_NO}  # e.g 0.0.1
 ```
  
 ### Test
