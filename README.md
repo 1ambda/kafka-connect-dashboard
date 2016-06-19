@@ -40,7 +40,7 @@ $ ./bin/kafkalot-storage
 
 - **Web Server** is required
 
-Serve static files in `dist/ui` in your web server
+Serve static files in `kafkalot/ui` in your web server
 
 <br/>
 
@@ -62,15 +62,13 @@ $ browser-sync start --server --files "*.*"
 $ ./build.sh ${VERSION_NO}  # e.g 0.0.1
 ```
  
-### Test
-
-#### kafkalot-storage
+### Test: kafkalot-storage
 
 ```shell
 $ sbt "project kafkalot-storage" "test"
 ```
 
-#### kafkalot-ui
+### Test: kafkalot-ui
 
 ```shell
 $ cd kafkalot-ui
