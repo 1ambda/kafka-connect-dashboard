@@ -42,13 +42,9 @@ class KafkaConnectClientSpec extends TestSuite {
   }
                        """
 
-
     val jsonConfig: JsonObject = parse(config).getOrElse(Json.Null).asObject.get
     val startJsonConfig = parse(startConfig).getOrElse(Json.Null)
     val name = "kafka-connect-console-sink-143"
-
-//    val result = Await.result(startConnector(startJsonConfig))
-//    println(result)
   }
 
 }

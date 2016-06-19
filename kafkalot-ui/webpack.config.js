@@ -4,6 +4,7 @@ import ExtractTextPlugin from 'extract-text-webpack-plugin'
 
 import { ENV_DEV, ENV_PROD, ENV_TEST, } from './tools/env'
 import { GLOBAL_VARIABLES, } from './tools/config'
+import { OUTPUT_DIR, } from './tools/buildConfig'
 
 const getPlugins = function (env) {
   const plugins = [
@@ -55,9 +56,6 @@ const getPostcssPlugins = function (env) {
     }),
     require('postcss-reporter')({
       clearMessages: true,
-    }),
-    require('autoprefixer')({
-      browsers: browsers,
     }),
     require('postcss-import')(),
   ]
@@ -125,7 +123,7 @@ function getConfig(env) {
     entry: getEntry(env),
     target: env === ENV_TEST? 'node' : 'web',
     output: {
-      path: __dirname + '/dist',
+      path: OUTPUT_DIR,
       publicPath: '',
       filename: 'bundle.js',
     },
@@ -135,8 +133,6 @@ function getConfig(env) {
     plugins: getPlugins(env),
     module: { loaders: getLoaders(env), },
     postcss: getPostcssPlugins(),
-
-    /** logging */
 
     /** suppress error shown in console, so it has to be set to false */
     quiet: false,
