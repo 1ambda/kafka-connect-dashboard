@@ -14,7 +14,7 @@ Centralize your [kafka-connect](http://kafka.apache.org/documentation.html#conne
 
 ## Usage
 
-Download [the latest release]() and unzip it 
+Download [the latest release](https://github.com/1ambda/kafka-connect-dashboard/releases) and unzip it 
 
 <br/>
 
@@ -27,6 +27,7 @@ Kafkalot consist of 2 subprojects
 
 - **Java 8+** is required
 - **Mongo 3.10+** is required
+- **Kafka connector cluster** is required
 
 ```shell
 $ # configure `conf/application.conf`, `conf/logback.xml` before starting storage
