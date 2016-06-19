@@ -1,6 +1,6 @@
 import { STORAGES, } from '../constants/Config'
 
-export const URL_BASE = 'connectors'
+export const URL_BASE = 'api/v1/connectors'
 
 export const STORAGE_PROPERTY = { name: 'name', address: 'address', }
 

@@ -88,23 +88,20 @@ object ConnectorClientApi {
     val reqGetConnector = createGetRequest(new URL(buildConnectorUrl(name)))
     val reqGetConnectorStatus = createGetRequest(new URL(buildConnectorStatusUrl(name)))
 
-    val fConnector = client(reqGetConnector).map { response =>
-      if (response.getStatusCode() != 200 /** OK */ )
-        throw new RuntimeException(ErrorCode.FAILED_TO_GET_CONNECTOR)
+    /** iterate future sequentially to wait for updating connectorStatus in connect cluster */
+    for {
+      connector <- client(reqGetConnector).map { response =>
+        if (response.getStatusCode() != 200 /** OK */ )
+          throw new RuntimeException(ErrorCode.FAILED_TO_GET_CONNECTOR)
 
-      decode[Connector](response.getContentString()).valueOr(throw _)
-    }
-
-    val fConnectorStatus = client(reqGetConnectorStatus).map { response =>
+        decode[Connector](response.getContentString()).valueOr(throw _)
+      }
+      connectorStatus <- client(reqGetConnectorStatus).map { response =>
       if (response.getStatusCode() != 200 /** OK */ )
         throw new RuntimeException(ErrorCode.FAILED_TO_GET_CONNECTOR_STATUS)
 
       decode[ConnectorStatus](response.getContentString()).valueOr(throw _)
-    }
-
-    for {
-      connector <- fConnector
-      connectorStatus <- fConnectorStatus
+      }
     } yield {
       ExportedConnector(
         connector.name,
@@ -179,4 +176,3 @@ case class RawConnector(name: String,
     StorageConnector(name, config, StorageConnectorMeta(true, Nil))
   }
 }
-

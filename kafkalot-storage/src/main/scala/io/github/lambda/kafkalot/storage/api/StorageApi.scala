@@ -19,9 +19,11 @@ import io.github.lambda.kafkalot.storage.model._
 
 object StorageApi {
 
-  val END_POINT = "connectors"
-  val RESOURCE_CONFIG = "config"
-  val RESOURCE_COMMAND = "command"
+  val RES_API = "api"
+  val RES_API_VERSION = "v1"
+  val RES_CONNECTORS = "connectors"
+  val RES_CONFIG = "config"
+  val RES_COMMAND = "command"
 
   val RawConnectorExtractor: Endpoint[RawConnector] =
     body.as[RawConnector]
@@ -44,7 +46,7 @@ object StorageApi {
     }
 
   val getConnectors: Endpoint[List[String]] =
-    get(END_POINT) mapOutputAsync { _ =>
+    get(RES_API :: RES_API_VERSION :: RES_CONNECTORS) mapOutputAsync { _ =>
       StorageConnectorDao.getAll().map { scs =>
         Ok(scs.map(sc => sc.name))
       } rescue {
@@ -53,7 +55,7 @@ object StorageApi {
     }
 
   val getConnector: Endpoint[ExportedConnector] =
-    get(END_POINT :: string) mapAsync { connectorName: String =>
+    get(RES_API :: RES_API_VERSION :: RES_CONNECTORS :: string) mapAsync { connectorName: String =>
       StorageConnectorDao.get(connectorName)
     } mapOutput { scOption: Option[StorageConnector] =>
       scOption match {
@@ -65,7 +67,7 @@ object StorageApi {
     }
 
   val putConnectorConfig: Endpoint[ExportedConnector] =
-    put(END_POINT :: string :: RESOURCE_CONFIG :: StorageConnectorConfigExtractor) mapAsync {
+    put(RES_API :: RES_API_VERSION :: RES_CONNECTORS :: string :: RES_CONFIG :: StorageConnectorConfigExtractor) mapAsync {
       case connectorName :: config :: HNil =>
       StorageConnectorDao.get(connectorName).map { scOption => (scOption, config) }
     } mapOutputAsync {
@@ -77,7 +79,7 @@ object StorageApi {
     }
 
   val postConnector: Endpoint[ExportedConnector] =
-    post(END_POINT :: RawConnectorExtractor) { (c: RawConnector) =>
+    post(RES_API :: RES_API_VERSION :: RES_CONNECTORS :: RawConnectorExtractor) { (c: RawConnector) =>
       StorageConnectorDao.insert(c.toInitialStorageConnector) map { inserted =>
         Created(inserted.toStoppedExportedConnector) } rescue {
         case e: Exception =>
@@ -86,7 +88,7 @@ object StorageApi {
     }
 
   val deleteConnector: Endpoint[Boolean] =
-    delete(END_POINT :: string) mapAsync { connectorName: String =>
+    delete(RES_API :: RES_API_VERSION :: RES_CONNECTORS :: string) mapAsync { connectorName: String =>
       StorageConnectorDao.get(connectorName)
     } mapOutputAsync { scOption: Option[StorageConnector] =>
       scOption match {
@@ -102,7 +104,7 @@ object StorageApi {
     }
 
   val handlePostConnectorCommand: Endpoint[ExportedConnector] =
-    post(END_POINT :: string :: RESOURCE_COMMAND :: ConnectorCommandExtractor) {
+    post(RES_API :: RES_API_VERSION :: RES_CONNECTORS :: string :: RES_COMMAND :: ConnectorCommandExtractor) {
       (name: String, command: ConnectorCommand) =>
         val f = StorageConnectorDao.get(name) map { scOption => (scOption, command) }
         Ok(f)

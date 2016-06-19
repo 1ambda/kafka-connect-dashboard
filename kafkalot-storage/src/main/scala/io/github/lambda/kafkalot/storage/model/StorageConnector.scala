@@ -64,7 +64,9 @@ case class StorageConnector(name: String,
   def handleCommand(command: ConnectorCommand): Future[ExportedConnector] = {
     command.operation match {
       case ConnectorCommand.OPERATION_START =>
-        start flatMap { _ => toExportedConnector }
+        start flatMap { res =>
+          toExportedConnector
+        }
       case ConnectorCommand.OPERATION_STOP =>
         stop map { _ => toStoppedExportedConnector }
       case ConnectorCommand.OPERATION_ENABLE =>
