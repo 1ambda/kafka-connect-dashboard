@@ -83,6 +83,8 @@ export function isRegisteredState(state) { return state === ConnectorState.REGIS
 export function isDisabledState(state) { return state === ConnectorState.DISABLED }
 export function isWorkingState(state) { return (!isRegisteredState(state) && !isDisabledState(state)) }
 
+export function isFailedConnector(connector) { return isFailedState(connector[ConnectorProperty.STATE]) }
+export function isPausedConnector(connector) { return isPausedState(connector[ConnectorProperty.STATE]) }
 export function isRunningConnector(connector) { return isRunningState(connector[ConnectorProperty.STATE]) }
 export function isRegisteredConnector(connector) { return isRegisteredState(connector[ConnectorProperty.STATE]) }
 export function isDisabledConnector(connector) { return isDisabledState(connector[ConnectorProperty.STATE]) }

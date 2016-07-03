@@ -101,6 +101,9 @@ class ConnectorPage extends React.Component {
                          connectors={filtered}
                          startConnector={actions.startConnector}
                          stopConnector={actions.stopConnector}
+                         restartConnector={actions.restartConnector}
+                         pauseConnector={actions.pauseConnector}
+                         resumeConnector={actions.resumeConnector}
                          openCreateEditor={actions.openCreateEditor}
                          openRemoveDialog={actions.openRemoveDialog}
                          changeFilterKeyword={actions.changeFilterKeyword}

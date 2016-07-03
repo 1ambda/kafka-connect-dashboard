@@ -1,11 +1,12 @@
-const CommandButtonLeftMargin = 10
+const CommandButtonLeftMargin = 15
 
 export const CommandButton = {
   RightButton: { marginLeft: CommandButtonLeftMargin, float: 'right', },
-  StartStopButton: { marginLeft: CommandButtonLeftMargin, },
-  StartStopButtonColor: '#546e7a',
-  ButotnLabel: { fontWeight: 300, color: '#f5f5f5', },
+  ExecuteButton: { marginLeft: CommandButtonLeftMargin, },
+  ExecuteButtonColor: '#546e7a',
+  ButtonLabel: { fontWeight: 300, color: '#f5f5f5', },
   Container: { fontSize: 15, fontWeight: 300, marginTop: 30, },
+  Selector: { width: 100, top: 5, },
 }
 
 export const title = { fontSize: 30, fontWeight: 100, marginTop: 10, }

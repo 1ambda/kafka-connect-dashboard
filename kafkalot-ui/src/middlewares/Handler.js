@@ -5,7 +5,9 @@ import {
   PrivateAction as ConnectorPrivateAction,
   Payload as ConnectorPayload,
   ConnectorProperty,
-  isRunningConnector, isRegisteredConnector, isDisabledConnector, isEmptyName,
+  isRunningConnector, isFailedConnector, isPausedConnector,
+  isRegisteredConnector, isDisabledConnector,
+  isEmptyName,
 } from '../reducers/ConnectorReducer/ConnectorListState'
 
 import {
@@ -281,7 +283,8 @@ export function* handleDisableConnector(action) {
     if (isEmptyName(name)) throw new Error(ErrorCode.EMPTY_NAME)
     
     const existing = yield select(Selector.findConnector, name)
-    if (!isRegisteredConnector(existing)) throw new Error(ErrorCode.CANNOT_DISABLE_CONNECTOR)
+    if (!isRegisteredConnector(existing))
+      throw new Error(`${ErrorCode.CONNECTOR_COMMAND_FAILED} (DISABLE)`)
 
     const disabled = yield call(API.disableConnector, name)
     yield put(ConnectorPrivateAction.setConnector({ ...disabled, }))
@@ -304,7 +307,8 @@ export function* handleEnableConnector(action) {
     if (isEmptyName(name)) throw new Error(ErrorCode.EMPTY_NAME)
     
     const existing = yield select(Selector.findConnector, name)
-    if (!isDisabledConnector(existing)) throw new Error(ErrorCode.CANNOT_ENABLE_CONNECTOR)
+    if (!isDisabledConnector(existing))
+      throw new Error(`${ErrorCode.CONNECTOR_COMMAND_FAILED} (ENABLE)`)
 
     const enabled = yield call(API.enableConnector, name)
     yield put(ConnectorPrivateAction.setConnector({ ...enabled, }))
@@ -331,7 +335,7 @@ export function* handleStartConnector() {
       const name = c[ConnectorProperty.NAME]
 
       try {
-        if (!isRegisteredConnector(c)) throw new Error(ErrorCode.CANNOT_START_CONNECTOR)
+        if (!isRegisteredConnector(c)) throw new Error(ErrorCode.CONNECTOR_COMMAND_FAILED)
         const started = yield call(API.startConnector, name)
         yield put(ConnectorPrivateAction.setConnector({ ...started, }))
       } catch (e) {
@@ -341,7 +345,7 @@ export function* handleStartConnector() {
 
     /** logging failed connectors */
     if (failedConnectorNames.length !== 0) {
-      throw new Error(`${ErrorCode.CANNOT_START_ALL_SELECTED_CONNECTORS} (${failedConnectorNames.join(', ')})`)
+      throw new Error(`${ErrorCode.CONNECTOR_COMMAND_FAILED} (START): ${failedConnectorNames.join(', ')}`)
     }
 
   } catch (error) {
@@ -365,7 +369,7 @@ export function* handleStopConnector() {
       const name = c[ConnectorProperty.NAME]
 
       try {
-        if (!isRunningConnector(c)) throw new Error(ErrorCode.CANNOT_STOP_CONNECTOR)
+        if (!isRunningConnector(c)) throw new Error(ErrorCode.CONNECTOR_COMMAND_FAILED)
         const stopped = yield call(API.stopConnector, name)
         yield put(ConnectorPrivateAction.setConnector({ ...stopped, }))
       } catch (e) {
@@ -375,12 +379,114 @@ export function* handleStopConnector() {
 
     /** logging failed connectors */
     if (failedConnectorNames.length !== 0) {
-      throw new Error(`${ErrorCode.CANNOT_STOP_ALL_SELECTED_CONNECTORS} (${failedConnectorNames.join(', ')})`)
+      throw new Error(`${ErrorCode.CONNECTOR_COMMAND_FAILED} (STOP): ${failedConnectorNames.join(', ')}`)
     }
 
   } catch (error) {
     yield put(SnackbarAction.openErrorSnackbar({
       [SnackbarPayload.MESSAGE]: 'Failed to stop connectors',
+      [SnackbarPayload.ERROR]: error,
+    }))
+  }
+}
+
+export function* handleRestartConnector() {
+  try {
+    const checkedConnectors = yield select(Selector.getCheckedConnectors)
+    if (checkedConnectors.length === 0) throw new Error(ErrorCode.NO_SELECTED_CONNECTORS)
+
+    const failedConnectorNames = []
+
+    /** restart connectors while handling errors caused from each connector */
+    for(let i = 0; i < checkedConnectors.length; i++) {
+      const c = checkedConnectors[i]
+      const name = c[ConnectorProperty.NAME]
+
+      try {
+        if (!(isFailedConnector(c) || isRunningConnector(c))) throw new Error(ErrorCode.CONNECTOR_COMMAND_FAILED)
+        const restarted = yield call(API.restartConnector, name)
+        yield put(ConnectorPrivateAction.setConnector({ ...restarted, }))
+      } catch (e) {
+        failedConnectorNames.push(name)
+      }
+    }
+
+    /** logging failed connectors */
+    if (failedConnectorNames.length !== 0) {
+      throw new Error(`${ErrorCode.CONNECTOR_COMMAND_FAILED} (RESTART): ${failedConnectorNames.join(', ')}`)
+    }
+
+  } catch (error) {
+    yield put(SnackbarAction.openErrorSnackbar({
+      [SnackbarPayload.MESSAGE]: 'Failed to restart connectors',
+      [SnackbarPayload.ERROR]: error,
+    }))
+  }
+}
+
+export function* handlePauseConnector() {
+  try {
+    const checkedConnectors = yield select(Selector.getCheckedConnectors)
+    if (checkedConnectors.length === 0) throw new Error(ErrorCode.NO_SELECTED_CONNECTORS)
+
+    const failedConnectorNames = []
+
+    /** pause connectors while handling errors caused from each connector */
+    for(let i = 0; i < checkedConnectors.length; i++) {
+      const c = checkedConnectors[i]
+      const name = c[ConnectorProperty.NAME]
+
+      try {
+        if (!isRunningConnector(c)) throw new Error(ErrorCode.CONNECTOR_COMMAND_FAILED)
+        const paused = yield call(API.pauseConnector, name)
+        yield put(ConnectorPrivateAction.setConnector({ ...paused, }))
+      } catch (e) {
+        failedConnectorNames.push(name)
+      }
+    }
+
+    /** logging failed connectors */
+    if (failedConnectorNames.length !== 0) {
+      throw new Error(`${ErrorCode.CONNECTOR_COMMAND_FAILED} (PAUSE): ${failedConnectorNames.join(', ')}`)
+    }
+
+  } catch (error) {
+    yield put(SnackbarAction.openErrorSnackbar({
+      [SnackbarPayload.MESSAGE]: 'Failed to pause connectors',
+      [SnackbarPayload.ERROR]: error,
+    }))
+  }
+}
+
+export function* handleResumeConnector() {
+  try {
+    const checkedConnectors = yield select(Selector.getCheckedConnectors)
+    if (checkedConnectors.length === 0) throw new Error(ErrorCode.NO_SELECTED_CONNECTORS)
+
+    const failedConnectorNames = []
+
+    /** resume connectors while handling errors caused from each connector */
+    for(let i = 0; i < checkedConnectors.length; i++) {
+      const c = checkedConnectors[i]
+      const name = c[ConnectorProperty.NAME]
+
+      try {
+        if (!isPausedConnector(c)) throw new Error(ErrorCode.CONNECTOR_COMMAND_FAILED)
+        const resumed = yield call(API.resumeConnector, name)
+        yield put(ConnectorPrivateAction.setConnector({ ...resumed, }))
+      } catch (e) {
+        failedConnectorNames.push(name)
+      }
+    }
+
+    /** logging failed connectors */
+    if (failedConnectorNames.length !== 0) {
+      throw new Error(`${ErrorCode.CONNECTOR_COMMAND_FAILED} (RESUME): ${failedConnectorNames.join(', ')}`)
+    }
+
+  } catch (error) {
+    yield put(SnackbarAction.openErrorSnackbar({
+      [SnackbarPayload.MESSAGE]: 'Failed to resume connectors',
       [SnackbarPayload.ERROR]: error,
     }))
   }

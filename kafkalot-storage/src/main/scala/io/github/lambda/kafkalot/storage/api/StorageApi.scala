@@ -32,16 +32,14 @@ object StorageApi {
   val ConnectorCommandExtractor: Endpoint[ConnectorCommand] =
     body.as[ConnectorCommand] mapOutput { command: ConnectorCommand =>
       command.operation match {
-        case ConnectorCommand.OPERATION_START =>
-          Ok(command)
-        case ConnectorCommand.OPERATION_DISABLE =>
-          Ok(command)
-        case ConnectorCommand.OPERATION_ENABLE =>
-          Ok(command)
-        case ConnectorCommand.OPERATION_STOP =>
-          Ok(command)
-        case _ =>
-          createBadRequest(ErrorCode.INVALID_CONNECTOR_COMMAND_OPERATION)
+        case ConnectorCommand.OPERATION_START => Ok(command)
+        case ConnectorCommand.OPERATION_DISABLE => Ok(command)
+        case ConnectorCommand.OPERATION_ENABLE => Ok(command)
+        case ConnectorCommand.OPERATION_STOP => Ok(command)
+        case ConnectorCommand.OPERATION_RESTART => Ok(command)
+        case ConnectorCommand.OPERATION_PAUSE => Ok(command)
+        case ConnectorCommand.OPERATION_RESUME => Ok(command)
+        case _ => createBadRequest(ErrorCode.INVALID_CONNECTOR_COMMAND_OPERATION)
       }
     }
 

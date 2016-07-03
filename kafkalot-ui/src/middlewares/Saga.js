@@ -20,6 +20,9 @@ export const ActionType = {
   REQUEST_TO_ENABLE_CONNECTOR: 'REQUEST_TO_ENABLE_CONNECTOR',
   REQUEST_TO_START_CONNECTOR: 'REQUEST_TO_START_CONNECTOR',
   REQUEST_TO_STOP_CONNECTOR: 'REQUEST_TO_STOP_CONNECTOR',
+  REQUEST_TO_RESTART_CONNECTOR: 'REQUEST_TO_RESTART_CONNECTOR',
+  REQUEST_TO_PAUSE_CONNECTOR: 'REQUEST_TO_PAUSE_CONNECTOR',
+  REQUEST_TO_RESUME_CONNECTOR: 'REQUEST_TO_RESUME_CONNECTOR',
 }
 
 export const Action = {
@@ -34,6 +37,9 @@ export const Action = {
   enableConnector: createAction(ActionType.REQUEST_TO_ENABLE_CONNECTOR),
   startConnector: createAction(ActionType.REQUEST_TO_START_CONNECTOR),
   stopConnector: createAction(ActionType.REQUEST_TO_STOP_CONNECTOR),
+  restartConnector: createAction(ActionType.REQUEST_TO_RESTART_CONNECTOR),
+  pauseConnector: createAction(ActionType.REQUEST_TO_PAUSE_CONNECTOR),
+  resumeConnector: createAction(ActionType.REQUEST_TO_RESUME_CONNECTOR),
 }
 
 export function* watchFetchConnector() {
@@ -106,6 +112,27 @@ export function* watchStopConnector() {
   )
 }
 
+export function* watchRestartConnector() {
+  yield* takeEvery(
+    ActionType.REQUEST_TO_RESTART_CONNECTOR,
+    Handler.handleRestartConnector
+  )
+}
+
+export function* watchPauseConnector() {
+  yield* takeEvery(
+    ActionType.REQUEST_TO_PAUSE_CONNECTOR,
+    Handler.handlePauseConnector
+  )
+}
+
+export function* watchResumeConnector() {
+  yield* takeEvery(
+    ActionType.REQUEST_TO_RESUME_CONNECTOR,
+    Handler.handleResumeConnector
+  )
+}
+
 export default function* root() {
   yield [
     fork(Handler.initialize),
@@ -119,5 +146,8 @@ export default function* root() {
     fork(watchEnableConnector),
     fork(watchStartConnector),
     fork(watchStopConnector),
+    fork(watchRestartConnector),
+    fork(watchPauseConnector),
+    fork(watchResumeConnector),
   ]
 }

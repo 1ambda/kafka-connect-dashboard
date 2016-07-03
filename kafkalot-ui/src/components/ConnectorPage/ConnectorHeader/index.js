@@ -1,10 +1,14 @@
 import React, { PropTypes, } from 'react'
 import RaisedButton from 'material-ui/RaisedButton'
 import {Popover, PopoverAnimationVertical,} from 'material-ui/Popover'
+import SelectField from 'material-ui/SelectField'
+import MenuItem from 'material-ui/MenuItem'
 
 import { Payload as ConnectorListPayload, } from '../../../reducers/ConnectorReducer/ConnectorListState'
 import { AvailableSorters, } from '../../../constants/Sorter'
 import * as Page from '../../../constants/Page'
+
+import { ConnectorCommand, } from '../../../constants/ConnectorCommand'
 
 import Filter from '../../Common/Filter'
 import Selector from '../../Common/Selector'
@@ -15,6 +19,9 @@ export default class ConnectorHeader extends React.Component {
     connectors: PropTypes.array.isRequired,
     startConnector: PropTypes.func.isRequired,
     stopConnector: PropTypes.func.isRequired,
+    restartConnector: PropTypes.func.isRequired,
+    pauseConnector: PropTypes.func.isRequired,
+    resumeConnector: PropTypes.func.isRequired,
     openCreateEditor: PropTypes.func.isRequired,
     openRemoveDialog: PropTypes.func.isRequired,
 
@@ -46,26 +53,38 @@ export default class ConnectorHeader extends React.Component {
   constructor(props) {
     super(props)
 
+    this.state = { currentCommand: ConnectorCommand.START, }
+
     this.handleFilterChange = this.handleFilterChange.bind(this)
     this.handleSorterChange = this.handleSorterChange.bind(this)
     this.handleCreate = this.handleCreate.bind(this)
-    this.handleRemove = this.handleRemove.bind(this)
-    this.handleStart = this.handleStart.bind(this)
-    this.handleStop = this.handleStop.bind(this)
+    
+    this.handleCommandChange = this.handleCommandChange.bind(this)
+    this.handleCommandExecute = this.handleCommandExecute.bind(this)
   }
 
-  handleStart() {
-    const { startConnector, } = this.props
-    startConnector()
+  handleCommandChange(event, key, payload) {
+    this.setState({ currentCommand: payload,}) // eslint-disable-line react/no-set-state
   }
-  
-  handleStop() {
-    const { stopConnector, } = this.props
-    stopConnector()
-  }
-  
-  handleRemove() {
-    
+
+  handleCommandExecute() {
+    const { 
+      startConnector, 
+      stopConnector,
+      restartConnector,
+      pauseConnector,
+      resumeConnector, 
+    } = this.props
+    const { currentCommand, } = this.state
+
+    switch (currentCommand) {
+      case ConnectorCommand.START: startConnector(); break
+      case ConnectorCommand.STOP: stopConnector(); break
+      case ConnectorCommand.RESTART: restartConnector(); break
+      case ConnectorCommand.PAUSE: pauseConnector(); break
+      case ConnectorCommand.RESUME: resumeConnector();  break
+      default:
+    }
   }
   
   handleCreate() {
@@ -89,25 +108,30 @@ export default class ConnectorHeader extends React.Component {
 
   createCommandButtonsDOM() {
     const { openRemoveDialog, } = this.props
+    const { currentCommand, } = this.state
 
     return (
       <div style={style.CommandButton.Container}>
+        <SelectField value={currentCommand} style={style.CommandButton.Selector}
+                     onChange={this.handleCommandChange}>
+          <MenuItem value={ConnectorCommand.START} primaryText={ConnectorCommand.START} />
+          <MenuItem value={ConnectorCommand.STOP} primaryText={ConnectorCommand.STOP} />
+          <MenuItem value={ConnectorCommand.RESTART} primaryText={ConnectorCommand.RESTART} />
+          <MenuItem value={ConnectorCommand.PAUSE} primaryText={ConnectorCommand.PAUSE} />
+          <MenuItem value={ConnectorCommand.RESUME} primaryText={ConnectorCommand.RESUME} />
+        </SelectField>
 
-        <RaisedButton style={style.CommandButton.StartStopButton}
-                      backgroundColor={style.CommandButton.StartStopButtonColor}
-                      labelStyle={style.CommandButton.ButotnLabel} label={"START"}
-                      onTouchTap={this.handleStart} />
-
-        <RaisedButton style={style.CommandButton.StartStopButton} secondary
-                      labelStyle={style.CommandButton.ButotnLabel} label={"STOP"}
-                      onTouchTap={this.handleStop} />
+        <RaisedButton style={style.CommandButton.ExecuteButton}
+                      backgroundColor={style.CommandButton.ExecuteButtonColor}
+                      labelStyle={style.CommandButton.ButtonLabel} label={"EXECUTE"}
+                      onTouchTap={this.handleCommandExecute} />
 
         <RaisedButton style={style.CommandButton.RightButton} secondary
-                      labelStyle={style.CommandButton.ButotnLabel} label={"REMOVE"}
+                      labelStyle={style.CommandButton.ButtonLabel} label={"REMOVE"}
                       onTouchTap={openRemoveDialog} />
 
         <RaisedButton style={style.CommandButton.RightButton} primary
-                      labelStyle={style.CommandButton.ButotnLabel} label={"CREATE"}
+                      labelStyle={style.CommandButton.ButtonLabel} label={"CREATE"}
                       onTouchTap={this.handleCreate} />
 
         <div style={{clear: 'both',}}></div>

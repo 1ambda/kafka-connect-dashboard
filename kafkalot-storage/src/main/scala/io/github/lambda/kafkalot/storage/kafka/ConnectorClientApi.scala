@@ -18,27 +18,20 @@ import org.jboss.netty.handler.codec.http.HttpHeaders
 
 object ConnectorClientApi {
 
-  val CONTAINER_HOST = "localhost" // TODO config
-  val CONTAINER_PORT = "8083" // TODO config
-
   val connectorUrl = ApplicationConfig.connectorClusterUrl
-  val RESOURCE_CONNECTORS = "connectors"
-  val RESOURCE_CONFIG = "config"
-  val RESOURCE_STATUS = "status"
 
   val client = Http.client.newService(connectorUrl)
 
-  def buildConnectorsUrl(): String =
-    s"http://${connectorUrl}/${RESOURCE_CONNECTORS}"
-
-  def buildConnectorUrl(name: String): String =
+  def buildConnectorsUrl() =
+    s"http://${connectorUrl}/connectors"
+  def buildConnectorUrl(name: String) =
     s"${buildConnectorsUrl()}/${name}"
-
-  def buildConnectorStatusUrl(name: String): String =
-    s"${buildConnectorUrl(name)}/${RESOURCE_STATUS}"
-
-  def buildConnectorConfigUrl(name: String): String =
-    s"${buildConnectorUrl(name)}/${RESOURCE_CONFIG}"
+  def buildConnectorCommandUrl(name: String, command: String) =
+    s"${buildConnectorsUrl()}/${name}/${command}"
+  def buildConnectorStatusUrl(name: String) =
+    s"${buildConnectorUrl(name)}/status"
+  def buildConnectorConfigUrl(name: String) =
+    s"${buildConnectorUrl(name)}/config"
 
   def getPreBuildJsonHeaderRequest() = {
     RequestBuilder().setHeader(
@@ -59,10 +52,22 @@ object ConnectorClientApi {
       .buildPut(Buf.Utf8(payload.toString))
   }
 
+  def createEmptyPutRequest(url: URL): Request = {
+    getPreBuildJsonHeaderRequest()
+      .url(url)
+      .buildPut(Buf.Empty)
+  }
+
   def createPostRequest(url: URL, payload: Json): Request = {
     getPreBuildJsonHeaderRequest()
       .url(url)
       .buildPost(Buf.Utf8(payload.toString))
+  }
+
+  def createEmptyPostRequest(url: URL): Request = {
+    getPreBuildJsonHeaderRequest()
+      .url(url)
+      .buildPost(Buf.Empty)
   }
 
   def deleteConnector(name: String): Future[Boolean] = {
@@ -130,7 +135,7 @@ object ConnectorClientApi {
     }
   }
 
-  def startConnector(rawConnector: RawConnector): Future[JsonObject] = {
+  def start(rawConnector: RawConnector): Future[JsonObject] = {
     val request = createPostRequest(
       new URL(buildConnectorsUrl()),
       rawConnector.asJson
@@ -144,12 +149,51 @@ object ConnectorClientApi {
     }
   }
 
-  def stopConnector(rawConnector: RawConnector): Future[Int] = {
+  def stop(rawConnector: RawConnector): Future[Int] = {
     val request = createDeleteRequest(new URL(buildConnectorUrl(rawConnector.name)))
 
     client(request).map { response =>
       if (response.getStatusCode() != 204 /** NO CONTENT */ )
         throw new RuntimeException(ErrorCode.FAILED_TO_STOP_CONNECTOR)
+
+      response.getStatusCode()
+    }
+  }
+
+  def restart(rawConnector: RawConnector): Future[Int] = {
+    val request = createEmptyPostRequest(
+      new URL(buildConnectorCommandUrl(rawConnector.name, "restart"))
+    )
+
+    client(request).map { response =>
+      if (response.getStatusCode() != 204 /** NO CONTENT */ )
+        throw new RuntimeException(ErrorCode.FAILED_TO_RESTART_CONNECTOR)
+
+      response.getStatusCode()
+    }
+  }
+
+  def pause(rawConnector: RawConnector): Future[Int] = {
+    val request = createEmptyPutRequest(
+      new URL(buildConnectorCommandUrl(rawConnector.name, "pause"))
+    )
+
+    client(request).map { response =>
+      if (response.getStatusCode() != 202 /** ACCEPTED */ )
+        throw new RuntimeException(ErrorCode.FAILED_TO_PAUSE_CONNECTOR)
+
+      response.getStatusCode()
+    }
+  }
+
+  def resume(rawConnector: RawConnector): Future[Int] = {
+    val request = createEmptyPutRequest(
+      new URL(buildConnectorCommandUrl(rawConnector.name, "resume"))
+    )
+
+    client(request).map { response =>
+      if (response.getStatusCode() != 202 /** ACCEPTED */ )
+        throw new RuntimeException(ErrorCode.FAILED_TO_PAUSE_CONNECTOR)
 
       response.getStatusCode()
     }

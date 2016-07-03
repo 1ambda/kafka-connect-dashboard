@@ -58,23 +58,40 @@ case class StorageConnector(name: String,
     } /** else */
   }
 
-  def stop: Future[Int] = ConnectorClientApi.stopConnector(toRawConnector)
-  def start: Future[JsonObject] = ConnectorClientApi.startConnector(toRawConnector)
-
   def handleCommand(command: ConnectorCommand): Future[ExportedConnector] = {
     command.operation match {
       case ConnectorCommand.OPERATION_START =>
-        start flatMap { res =>
+        ConnectorClientApi.start(toRawConnector) flatMap { res =>
           toExportedConnector
         }
+
       case ConnectorCommand.OPERATION_STOP =>
-        stop map { _ => toStoppedExportedConnector }
+        ConnectorClientApi.stop(toRawConnector) map { _ =>
+          toStoppedExportedConnector
+        }
+
+      case ConnectorCommand.OPERATION_RESTART =>
+        ConnectorClientApi.restart(toRawConnector) flatMap { _ =>
+          toExportedConnector
+        }
+
+      case ConnectorCommand.OPERATION_PAUSE =>
+        ConnectorClientApi.pause(toRawConnector) flatMap { _ =>
+          toExportedConnector
+        }
+
+      case ConnectorCommand.OPERATION_RESUME =>
+        ConnectorClientApi.resume(toRawConnector) flatMap { _ =>
+          toExportedConnector
+        }
+
       case ConnectorCommand.OPERATION_ENABLE =>
         val updatedMeta = _meta.copy(enabled = true)
         val updated = this.copy(_meta = updatedMeta)
         StorageConnectorDao.update(updated) map { persisted =>
           persisted.toStoppedExportedConnector
         }
+
       case ConnectorCommand.OPERATION_DISABLE =>
         val updatedMeta = _meta.copy(enabled = false)
         val updated = this.copy(_meta = updatedMeta)

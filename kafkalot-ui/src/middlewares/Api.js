@@ -149,6 +149,9 @@ export const KEY_OPERATION = 'operation'
 export const CONNECTOR_COMMAND = {
   START: { [KEY_OPERATION]: 'start', },
   STOP: { [KEY_OPERATION]: 'stop', },
+  RESTART: { [KEY_OPERATION]: 'restart', },
+  PAUSE: { [KEY_OPERATION]: 'pause', },
+  RESUME: { [KEY_OPERATION]: 'resume', },
   ENABLE: { [KEY_OPERATION]: 'enable', },
   DISABLE: { [KEY_OPERATION]: 'disable', },
 }
@@ -176,4 +179,14 @@ export function* stopConnector(connectorName) {
   return yield call(postConnectorCommand, connectorName, CONNECTOR_COMMAND.STOP)
 }
 
+export function* restartConnector(connectorName) {
+  return yield call(postConnectorCommand, connectorName, CONNECTOR_COMMAND.RESTART)
+}
 
+export function* pauseConnector(connectorName) {
+  return yield call(postConnectorCommand, connectorName, CONNECTOR_COMMAND.PAUSE)
+}
+
+export function* resumeConnector(connectorName) {
+  return yield call(postConnectorCommand, connectorName, CONNECTOR_COMMAND.RESUME)
+}
