@@ -20,21 +20,8 @@ object Application extends App {
 
   // TODO: gradeful shutdown
   Await.ready(
-    Http.server.serve(s":${ApplicationConfig.port}",
+    Http.server.serve(s":${Configuration.app.port}",
     corsFilter andThen service)
   )
 }
 
-object ApplicationConfig {
-  val conf = ConfigFactory.load()
-
-  /** validate config on startup time */
-  val port = conf.getString("kafkalot.storage.app.port")
-  private val connectorClusterHost = conf.getString("kafkalot.storage.connector.clusterHost")
-  private val connectorClusterPort = conf.getString("kafkalot.storage.connector.clusterPort")
-  val connectorClusterUrl = s"${connectorClusterHost}:${connectorClusterPort}"
-
-  val mongoHost = conf.getString("kafkalot.storage.mongo.host")
-  val mongoPort = conf.getInt("kafkalot.storage.mongo.port")
-  val mongoDatabase = conf.getString("kafkalot.storage.mongo.db")
-}

@@ -1,14 +1,14 @@
 package io.github.lambda.kafkalot.storage.model
 
-import io.github.lambda.kafkalot.storage.ApplicationConfig
+import io.github.lambda.kafkalot.storage.Configuration
 
 
 object MongoUtil {
   import com.mongodb.casbah.Imports._
 
-  val MONGO_HOST = ApplicationConfig.mongoHost
-  val MONGO_PORT = ApplicationConfig.mongoPort
-  val MONGO_DB_NAME = ApplicationConfig.mongoDatabase
+  val MONGO_HOST = Configuration.mongo.host
+  val MONGO_PORT = Configuration.mongo.port
+  val MONGO_DB_NAME = Configuration.mongo.db
 
   lazy val mongoClient = MongoClient(MONGO_HOST, MONGO_PORT)
   lazy val mongoDb = mongoClient(MONGO_DB_NAME)

@@ -11,14 +11,15 @@ import io.circe._
 import io.circe.generic.auto._
 import io.circe.jawn._
 import io.circe.syntax._
-import io.github.lambda.kafkalot.storage.ApplicationConfig
+import io.github.lambda.kafkalot.storage.Configuration
 import io.github.lambda.kafkalot.storage.exception.ErrorCode
 import io.github.lambda.kafkalot.storage.model.{StorageConnector, StorageConnectorMeta}
 import org.jboss.netty.handler.codec.http.HttpHeaders
 
 object ConnectorClientApi {
 
-  val connectorUrl = ApplicationConfig.connectorClusterUrl
+  val connectorUrl =
+    s"${Configuration.connector.clusterHost}:${Configuration.connector.clusterPort}"
 
   val client = Http.client.newService(connectorUrl)
 
