@@ -7,19 +7,19 @@ services:
     image: kafkalot/kafkalot-storage
     links:
       - mongo
+    ports:
+      - "3003"
     environment:
-     - KAFKALOT_STORAGE_CONNECTOR_CLUSTERHOST=localhost
-     - KAFKALOT_STORAGE_CONNECTOR_CLUSTERPORT=8083
+     - KAFKALOT_STORAGE_CONNECTOR_CLUSTERHOST=${KAFKALOT_STORAGE_CONNECTOR_CLUSTERHOST}
+     - KAFKALOT_STORAGE_CONNECTOR_CLUSTERPORT=${KAFKALOT_STORAGE_CONNECTOR_CLUSTERPORT}
      - KAFKALOT_STORAGE_APP_PORT=3003
      - KAFKALOT_STORAGE_MONGO_HOST=mongo
      - KAFKALOT_STORAGE_MONGO_PORT=27017
      - KAFKALOT_STORAGE_MONGO_DB=kafkalot-local
-    ports:
-     - "32702:3003"
 
   ui:
     image: kafkalot/kafkalot-ui
     links:
      - storage
     ports:
-     - "32701:80"
+     - "80"

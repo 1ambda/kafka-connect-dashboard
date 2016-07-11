@@ -6,24 +6,40 @@ Centralize your [kafka-connect](http://kafka.apache.org/documentation.html#conne
 
 - supports connect 0.10.0.0+
 
-<br/>
-
 ## Demo
 
 ![DEMO](https://raw.githubusercontent.com/1ambda/kafka-connect-dashboard/screenshot/screenshots/kafkalot-demo.png)
 
 ## Usage
 
-Download [the latest release](https://github.com/1ambda/kafka-connect-dashboard/releases) and unzip it 
-
-<br/>
-
 Kafkalot consist of 2 subprojects
 
 - *kafkalot-storage* (API Server): persist configurations of connects and handling commands (start, validate, etc)  
 - *kafkalot-ui* (SPA): provides view for managing connectors easily 
 
-### Running kafkalot-storage
+### with Docker
+
+```
+$ mkdir kafkalot-compose && cd kafkalot-compose
+$ wget https://raw.githubusercontent.com/1ambda/kafka-connect-dashboard/master/docker-compose.yml
+$ wget https://raw.githubusercontent.com/1ambda/kafka-connect-dashboard/master/with-kafka.yml
+
+# if you have a connector cluster
+$ KAFKALOT_STORAGE_CONNECTOR_CLUSTERHOST=$CLUSTER_HOST \ 
+  KAFKALOT_STORAGE_CONNECTOR_CLUSTERPORT=$CLUSTER_PORT \  
+  docker-compose up
+  
+# if you do not have a connector cluster, kafka, zookeeper
+$ docker-compose -f docker-compose.yml -f with-kafka.yml
+```
+
+See [docker-compose.yml](https://github.com/1ambda/kafka-connect-dashboard/blob/master/docker-compose.yml) and [with-kafka.yml](https://github.com/1ambda/kafka-connect-dashboard/blob/master/with-kafka.yml)
+ 
+### without Docker 
+
+Download [the latest release](https://github.com/1ambda/kafka-connect-dashboard/releases) and unzip it 
+
+#### 1. Running kafkalot
 
 - **Java 8+** is required
 - **Mongo 3.10+** is required
@@ -36,7 +52,7 @@ $ cd kafkalot/storage
 $ ./bin/kafkalot-storage
 ```
 
-### Running kafkalot-ui
+#### 2. Running kafkalot-ui
 
 - **Web Server** is required
 
@@ -51,15 +67,23 @@ $ cd kafkalot/ui
 $ browser-sync start --server --files "*.*"
 ```
 
+<br/>
+
 ## Development
 
 - **NodeJS 5.0.0+** is required
 - **Java 8+** is required
 
-### Build
+### Build: Zip
 
 ```shell
 $ ./build.sh ${VERSION_NO}  # e.g 0.0.1
+```
+
+### Build: Docker Image
+
+```shell
+$ sbt docker 
 ```
  
 ### Test: kafkalot-storage

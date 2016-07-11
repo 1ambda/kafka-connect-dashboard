@@ -1,5 +1,7 @@
 /** project setting */
 
+val DockerNamespace = "1ambda"
+
 lazy val commonSettings = Seq(
     organization := "kafkalot",
     resolvers ++= Seq(
@@ -39,12 +41,13 @@ lazy val PROJECT_STORAGE = Project("kafkalot-storage", file("kafkalot-storage"))
         from("java:8")
         entryPoint(s"$targetDir/bin/${executableScriptName.value}")
         copy(appDir, targetDir)
+        expose(3003)
       }
     }
     , imageNames in docker := Seq(
-      ImageName(s"${organization.value}/${name.value}:latest"),
+      ImageName(s"${DockerNamespace}/${name.value}:latest"),
       ImageName(
-        namespace = Some(organization.value),
+        namespace = Some(DockerNamespace),
         repository = name.value,
         tag = Some("v" + version.value)
       )
@@ -79,12 +82,13 @@ lazy val PROJECT_UI = Project("kafkalot-ui", file("kafkalot-ui"))
         from("nginx:1.10.1")
         copy(appDir, targetAppDir)
         copy(nginxConf, targetConfDir)
+        expose(80)
       }
     }
     , imageNames in docker := Seq(
-      ImageName(s"${organization.value}/${name.value}:latest"),
+      ImageName(s"${DockerNamespace}/${name.value}:latest"),
       ImageName(
-        namespace = Some(organization.value),
+        namespace = Some(DockerNamespace),
         repository = name.value,
         tag = Some("v" + version.value)
       )

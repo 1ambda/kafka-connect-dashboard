@@ -1,0 +1,34 @@
+version: '2'
+services:
+  zk:
+    image: 31z4/zookeeper:3.4.8
+
+  kafka:
+    image: ches/kafka
+    links:
+      - zk
+    environment:
+      KAFKA_BROKER_ID: 0
+      KAFKA_ADVERTISED_HOST_NAME: kafka
+      KAFKA_ADVERTISED_PORT: 9092
+      ZOOKEEPER_CONNECTION_STRING: zk:2181
+      ZOOKEEPER_CHROOT: /brokers-0
+
+  connect:
+    image: 1ambda/kafka-connect
+    links:
+      - kafka
+    ports:
+      - "8083"
+    environment:
+      CONNECT_BOOTSTRAP_SERVERS: kafka:9092
+      CONNECT_GROUP_ID: connect-cluster-A
+
+  storage:
+    links:
+      - connect
+    environment:
+     - KAFKALOT_STORAGE_CONNECTOR_CLUSTERHOST=connect
+     - KAFKALOT_STORAGE_CONNECTOR_CLUSTERPORT=8083
+
+
