@@ -1,4 +1,4 @@
-package io.github.lambda.kafkalot.storage.security
+package kafkalot.storage.security
 
 import com.twitter.finagle.{Service, SimpleFilter}
 import com.twitter.finagle.http.filter.Cors

@@ -1,4 +1,4 @@
-package io.github.lambda.kafkalot.storage.api
+package kafkalot.storage.api
 
 case class ConnectorCommand(operation: String)
 

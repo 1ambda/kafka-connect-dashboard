@@ -1,6 +1,6 @@
-package io.github.lambda.kafkalot.storage.model
+package kafkalot.storage.model
 
-import io.github.lambda.kafkalot.storage.Configuration
+import kafkalot.storage.Configuration
 
 
 object MongoUtil {

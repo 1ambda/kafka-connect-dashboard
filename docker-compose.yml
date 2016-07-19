@@ -4,7 +4,7 @@ services:
     image: mongo:3.2.0
 
   storage:
-    image: kafkalot/kafkalot-storage
+    image: 1ambda/kafkalot-storage
     links:
       - mongo
     ports:
@@ -18,7 +18,7 @@ services:
      - KAFKALOT_STORAGE_MONGO_DB=kafkalot-local
 
   ui:
-    image: kafkalot/kafkalot-ui
+    image: 1ambda/kafkalot-ui
     links:
      - storage
     ports:

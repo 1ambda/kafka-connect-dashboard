@@ -1,4 +1,4 @@
-package io.github.lambda.kafkalot.storage.kafka
+package kafkalot.storage.kafka
 
 import java.net.URL
 
@@ -11,9 +11,9 @@ import io.circe._
 import io.circe.generic.auto._
 import io.circe.jawn._
 import io.circe.syntax._
-import io.github.lambda.kafkalot.storage.Configuration
-import io.github.lambda.kafkalot.storage.exception.ErrorCode
-import io.github.lambda.kafkalot.storage.model.{StorageConnector, StorageConnectorMeta}
+import kafkalot.storage.exception.ErrorCode
+import kafkalot.storage.model.{StorageConnector, StorageConnectorMeta}
+import kafkalot.storage.Configuration
 import org.jboss.netty.handler.codec.http.HttpHeaders
 
 object ConnectorClientApi {

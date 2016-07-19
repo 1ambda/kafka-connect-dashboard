@@ -1,4 +1,4 @@
-package io.github.lambda.kafkalot.storage.api
+package kafkalot.storage.api
 
 import com.twitter.finagle.Service
 import com.twitter.finagle.http.{Request, Response}
@@ -13,9 +13,9 @@ import io.circe.syntax._
 import io.circe.jawn._
 import cats.data.Xor
 import shapeless._
-import io.github.lambda.kafkalot.storage.exception.ErrorCode
-import io.github.lambda.kafkalot.storage.kafka.{ConnectorState, ExportedConnector, RawConnector}
-import io.github.lambda.kafkalot.storage.model._
+import kafkalot.storage.exception.ErrorCode
+import kafkalot.storage.kafka.{ConnectorState, ExportedConnector, RawConnector}
+import kafkalot.storage.model._
 
 object StorageApi {
 

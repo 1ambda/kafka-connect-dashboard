@@ -1,4 +1,4 @@
-package io.github.lambda.kafkalot.storage.model
+package kafkalot.storage.model
 
 import io.circe._
 import io.circe.generic.auto._
@@ -6,9 +6,9 @@ import io.circe.jawn._
 import io.circe.syntax._
 import cats.data.Xor
 import com.twitter.util.Future
-import io.github.lambda.kafkalot.storage.api.ConnectorCommand
-import io.github.lambda.kafkalot.storage.exception.ErrorCode
-import io.github.lambda.kafkalot.storage.kafka.{ConnectorClientApi, ConnectorState, ExportedConnector, RawConnector}
+import kafkalot.storage.api.ConnectorCommand
+import kafkalot.storage.exception.ErrorCode
+import kafkalot.storage.kafka.{ConnectorClientApi, ConnectorState, ExportedConnector, RawConnector}
 
 case class StorageConnectorMeta(enabled: Boolean,
                                 tags: List[String])

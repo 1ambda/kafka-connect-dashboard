@@ -1,4 +1,4 @@
-package io.github.lambda.kafkalot.storage
+package kafkalot.storage
 
 import com.typesafe.config.ConfigFactory
 

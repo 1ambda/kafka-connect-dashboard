@@ -26,7 +26,7 @@ lazy val PROJECT_STORAGE = Project("kafkalot-storage", file("kafkalot-storage"))
     version := "0.0.1"
     , scalaVersion := "2.11.8"
     , libraryDependencies ++= Dep.STORAGE.value
-    , mainClass in Compile := Some("io.github.lambda.kafkalot.storage.Application")
+    , mainClass in Compile := Some("kafkalot.storage.Application")
     , mappings in Universal += { (resourceDirectory in Compile).value / "application.conf" -> "conf/application.conf" }
     , bashScriptExtraDefines += """addJava "-Dconfig.file=${app_home}/../conf/application.conf""""
     , mappings in Universal += { (resourceDirectory in Compile).value / "logback.xml" -> "conf/logback.xml" }
@@ -39,8 +39,8 @@ lazy val PROJECT_STORAGE = Project("kafkalot-storage", file("kafkalot-storage"))
 
       new Dockerfile {
         from("java:8")
-        entryPoint(s"$targetDir/bin/${executableScriptName.value}")
         copy(appDir, targetDir)
+        entryPoint(s"$targetDir/bin/${executableScriptName.value}")
         expose(3003)
       }
     }
@@ -74,7 +74,6 @@ lazy val PROJECT_UI = Project("kafkalot-ui", file("kafkalot-ui"))
     , dockerfile in docker := {
       val appDir: File = file(baseDirectory.value.getParent + "/dist/ui")
       val targetAppDir = "/usr/share/nginx/html"
-      
       val nginxConf: File = baseDirectory.value / "resource" / "nginx" / "default.conf"
       val targetConfDir = "/etc/nginx/conf.d/"
 

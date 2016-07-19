@@ -1,15 +1,15 @@
-package io.github.lambda.kafkalot.storage.api
+package kafkalot.storage.api
 
 import java.net.URL
 
-import io.github.lambda.TestSuite
 import io.circe._
 import io.circe.generic.auto._
 import io.circe.jawn._
 import io.circe.syntax._
 import cats.data.Xor
 import com.twitter.util.Await
-import io.github.lambda.kafkalot.storage.kafka.ConnectorClientApi
+import kafkalot.storage.TestSuite
+import kafkalot.storage.kafka.ConnectorClientApi
 
 
 class KafkaConnectClientSpec extends TestSuite {
