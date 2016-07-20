@@ -1,7 +1,7 @@
-const THEME_DEFAULT = '#546e7a'
+export const ThemeDefaultColor = '#546e7a'
 
 export const NavBarColors = {
-  backgroundColor: THEME_DEFAULT,
+  backgroundColor: ThemeDefaultColor,
   textColor: '#f5f5f5',
   iconMenuColor: '#f5f5f5',
 }
@@ -16,7 +16,7 @@ export const ConnectorItemColors = {
 }
 
 export const ClosableSnackbar = {
-  backgroundColor: THEME_DEFAULT,
+  backgroundColor: ThemeDefaultColor,
 }
 
 export const ConnectorList = {

@@ -1,6 +1,6 @@
 import { createAction, handleActions, } from 'redux-actions'
 
-import * as Logger from '../../util/logger'
+import * as Logger from '../../util/Logger'
 
 import { CLOSABLE_SNACKBAR_MODE, } from '../../components/Common/ClosableSnackbar'
 

@@ -6,6 +6,7 @@ import JSONEditor from 'jsoneditor/dist/jsoneditor.min.js'
 import FlatButton from 'material-ui/FlatButton'
 import Dialog from 'material-ui/Dialog'
 
+import { ThemeDefaultColor, } from '../../constants/Theme'
 import { JsonEditorMode, } from '../../constants/EditorMode'
 import { ConnectorProperty, } from '../../reducers/ConnectorReducer/ConnectorListState'
 
@@ -14,6 +15,7 @@ const dialogStyle = {
   title : { fontWeight: 300, },
   button : { marginRight: 15, marginBottom: 15, },
   buttonLabel : { fontWeight: 300, },
+  validateButtonLabel: { fontWeight: 300, color: ThemeDefaultColor},
 }
 
 const ELEM_ID_EDITOR_DIALOG = 'config-editor'
@@ -49,6 +51,7 @@ export default class ConnectorConfigEditor extends React.Component {
      */
     this.state = { editor: null, isJSONChanged: false, }
 
+    this.handleValidate = this.handleValidate.bind(this)
     this.handleClose = this.handleClose.bind(this)
     this.handleUpdate = this.handleUpdate.bind(this)
     this.handleEditorError = this.handleEditorError.bind(this)
@@ -107,9 +110,8 @@ export default class ConnectorConfigEditor extends React.Component {
     console.error(`JSONEditor: ${err}`) /** TODO 500 page */
   }
 
-  handleClose() {
-    const { close, } = this.props
-    close()
+  handleValidate() {
+    console.log('validate')
   }
 
   handleUpdate() {
@@ -124,11 +126,21 @@ export default class ConnectorConfigEditor extends React.Component {
     }
   }
 
+  handleClose() {
+    const { close, } = this.props
+    close()
+  }
+
   render() {
     const { readonly, name, } = this.props
     const { isJSONChanged, } = this.state
 
     const buttons = [
+      <FlatButton
+        style={dialogStyle.button}
+        labelStyle={dialogStyle.validateButtonLabel}
+        key="validate" label="Validate"
+        onTouchTap={this.handleValidate} />,
       <FlatButton labelStyle={dialogStyle.buttonLabel}
                   style={dialogStyle.button}
                   primary disabled={readonly === true || !isJSONChanged}
