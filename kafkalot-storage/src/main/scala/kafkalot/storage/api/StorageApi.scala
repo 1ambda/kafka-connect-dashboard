@@ -10,7 +10,7 @@ import io.circe.parser._
 import io.circe.syntax._
 import io.circe.jawn._
 import shapeless._
-import kafkalot.storage.exception.{ConnectorPluginNotFoundException, ErrorCode}
+import kafkalot.storage.exception.{ConnectorPluginNotFoundException, ConnectorPluginValidationFailed, ErrorCode}
 import kafkalot.storage.kafka._
 import kafkalot.storage.model._
 
@@ -132,6 +132,12 @@ object StorageApi extends LazyLogging {
         sc.handleCommand(command) map { ec: ExportedConnector =>
           Ok(ec)
         } rescue {
+          case e: ConnectorPluginNotFoundException =>
+            logger.error(s"Invalid Connector Class ${e.message}")
+            Future { BadRequest(e) }
+          case e: ConnectorPluginValidationFailed =>
+            logger.error(s"Invalid Connector Config ${e.message}")
+            Future { BadRequest(e) }
           case e: Exception =>
             logger.error("Failed to handle command", e)
             Future { BadRequest(e) }

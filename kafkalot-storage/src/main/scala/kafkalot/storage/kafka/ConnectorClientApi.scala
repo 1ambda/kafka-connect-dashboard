@@ -10,7 +10,7 @@ import io.circe._
 import io.circe.generic.auto._
 import io.circe.jawn._
 import io.circe.syntax._
-import kafkalot.storage.exception.{ConnectorPluginNotFoundException, ErrorCode}
+import kafkalot.storage.exception.{ConnectorPluginNotFoundException, ConnectorPluginValidationFailed, ErrorCode, RawConnectorHasNoConnectorClassField}
 import kafkalot.storage.model.{StorageConnector, StorageConnectorMeta}
 import kafkalot.storage.Configuration
 import org.jboss.netty.handler.codec.http.HttpHeaders
@@ -133,27 +133,45 @@ object ConnectorClientApi {
   }
 
   def start(rawConnector: RawConnector): Future[JsonObject] = {
-    val request = createPostRequest(
-      new URL(buildConnectorsUrl()),
-      rawConnector.asJson
-    )
+    rawConnector.getConnectorClass match {
+      case None =>
+        Future.exception(new RawConnectorHasNoConnectorClassField(rawConnector.name))
 
-    client(request).map { response =>
-      if (response.getStatusCode() != 201 /** CREATED */ )
-        throw new RuntimeException(ErrorCode.FAILED_TO_START_CONNECTOR)
+      case Some(connectorClass) =>
+        validateConnectorPlugin(connectorClass, rawConnector.config.asJson) map { validationResult =>
+          if (validationResult.error_count > 0) throw new ConnectorPluginValidationFailed(connectorClass)
+        } flatMap { _ =>
+          val request = createPostRequest(new URL(buildConnectorsUrl()), rawConnector.asJson)
 
-      decode[JsonObject](response.getContentString()).valueOr(throw _)
+          client(request).map { response =>
+            if (response.getStatusCode() != 201 /** CREATED */ )
+              throw new RuntimeException(ErrorCode.FAILED_TO_START_CONNECTOR)
+
+            decode[JsonObject](response.getContentString()).valueOr(throw _)
+          }
+        }
     }
   }
 
   def stop(rawConnector: RawConnector): Future[Int] = {
-    val request = createDeleteRequest(new URL(buildConnectorUrl(rawConnector.name)))
+    rawConnector.getConnectorClass match {
+      case None =>
+        Future.exception(new RawConnectorHasNoConnectorClassField(rawConnector.name))
 
-    client(request).map { response =>
-      if (response.getStatusCode() != 204 /** NO CONTENT */ )
-        throw new RuntimeException(ErrorCode.FAILED_TO_STOP_CONNECTOR)
+      case Some(connectorClass) =>
+        validateConnectorPlugin(connectorClass, rawConnector.config.asJson) map { validationResult =>
+          if (validationResult.error_count > 0) throw new ConnectorPluginValidationFailed(connectorClass)
 
-      response.getStatusCode()
+        } flatMap { _ =>
+          val request = createDeleteRequest(new URL(buildConnectorUrl(rawConnector.name)))
+
+          client(request).map { response =>
+            if (response.getStatusCode() != 204 /** NO CONTENT */ )
+              throw new RuntimeException(ErrorCode.FAILED_TO_STOP_CONNECTOR)
+
+            response.getStatusCode()
+          }
+        }
     }
   }
 
@@ -264,5 +282,9 @@ case class RawConnector(name: String,
                         config: JsonObject) {
   def toInitialStorageConnector: StorageConnector = {
     StorageConnector(name, config, StorageConnectorMeta(true, Nil))
+  }
+
+  def getConnectorClass: Option[String] = {
+    config.asJson.hcursor.get[String]("connector.class").toOption
   }
 }
