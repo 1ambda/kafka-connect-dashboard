@@ -71,9 +71,14 @@ const getLoaders = function (env) {
       include: path.join(__dirname, 'src'),
       loaders: ['babel', 'eslint',],
     },
-    { /** globally used css */
+    { /** globally used css in node_modules */
       test: /(\.css)$/,
       include: [ path.join(__dirname, 'node_modules'), ],
+      loaders: ['style', 'css?sourceMap&importLoaders=1', 'postcss',],
+    },
+    { /** globally used css in src */
+      test: /global\.css/,
+      include: [ path.join(__dirname, 'src'), /** global css only */ ],
       loaders: ['style', 'css?sourceMap&importLoaders=1', 'postcss',],
     },
     {
@@ -99,18 +104,18 @@ const getLoaders = function (env) {
 
   if (env === ENV_PROD) {
     loaders.push({
-        test: /(\.css)$/,
-        include: path.join(__dirname, 'src'),
-        loader: ExtractTextPlugin.extract(['style', 'css?sourceMap&module&importLoaders=1', 'postcss',]),
-      }
-    )
+      test: /(\.css)$/,
+      include: path.join(__dirname, 'src'),
+      exclude: /global\.css/,
+      loader: ExtractTextPlugin.extract(['style', 'css?sourceMap&module&importLoaders=1', 'postcss',]),
+    })
   } else {
     loaders.push({
-        test: /(\.css)$/,
-        include: path.join(__dirname, 'src'),
-        loaders: ['style', 'css?sourceMap&module&importLoaders=1', 'postcss',],
-      }
-    )
+      test: /(\.css)$/,
+      include: path.join(__dirname, 'src'),
+      exclude: /global\.css/,
+      loaders: ['style', 'css?sourceMap&module&importLoaders=1', 'postcss',],
+    })
   }
 
   return loaders

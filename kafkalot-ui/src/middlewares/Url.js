@@ -1,6 +1,8 @@
 import { STORAGES, } from '../constants/Config'
 
-export const URL_BASE = 'api/v1/connectors'
+export const URL_BASE = 'api/v1'
+export const URL_BASE_CONNECTORS = `${URL_BASE}/connectors`
+export const URL_BASE_CONNECTOR_PLUGINS = `${URL_BASE}/connector-plugins`
 
 export const STORAGE_PROPERTY = { name: 'name', address: 'address', }
 
@@ -24,7 +26,14 @@ export function _buildConnectorUrl(storageName, connectorName) {
   const postfix = (connectorName === void 0) ? '' : `/${connectorName}`
   const storageAddress = _getStorageAddress(STORAGES, storageName)
 
-  return `${storageAddress}/${URL_BASE}${postfix}`
+  return `${storageAddress}/${URL_BASE_CONNECTORS}${postfix}`
+}
+
+export function _buildConnectorPluginsUrl(storageName, connectorClass) {
+  const postfix = (connectorClass === void 0) ? '' : `/${connectorClass}`
+  const storageAddress = _getStorageAddress(STORAGES, storageName)
+
+  return `${storageAddress}/${URL_BASE_CONNECTOR_PLUGINS}${postfix}`
 }
 
 /** exposed functions, use ENV variables (injected by webpack) */
@@ -44,4 +53,17 @@ export default {
   getConnectorCommandUrl: (storageName, connectorName) => {
     return `${_buildConnectorUrl(storageName, connectorName)}/command`
   },
+
+  getConnectorPluginsUrl: (storageName) => {
+    return `${_buildConnectorPluginsUrl(storageName)}`
+  },
+
+  getConnectorPluginsSchemaUrl: (storageName, connectorClass) => {
+    return `${_buildConnectorPluginsUrl(storageName, connectorClass)}/schema`
+  },
+
+  getConnectorPluginsValidateUrl: (storageName, connectorClass) => {
+    return `${_buildConnectorPluginsUrl(storageName, connectorClass)}/validate`
+  },
+
 }

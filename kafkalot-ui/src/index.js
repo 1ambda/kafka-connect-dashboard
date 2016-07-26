@@ -14,7 +14,7 @@ import routes from './routes'
 import configureStore from './store/configureStore'
 
 /** import global css (element only, not class) */
-import './styles/styles.css'
+import './global.css'
 
 const store = configureStore()
 const history = syncHistoryWithStore(browserHistory, store)

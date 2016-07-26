@@ -1,18 +1,10 @@
 export const ThemeDefaultColor = '#546e7a'
+export const White = '#f5f5f5'
 
 export const NavBarColors = {
   backgroundColor: ThemeDefaultColor,
-  textColor: '#f5f5f5',
-  iconMenuColor: '#f5f5f5',
-}
-
-export const ConnectorItemColors = {
-  runningSpin: '#00bcd4',
-  waitingSpin: '#4db6ac',
-  activeRemoveIcon: '#ffe57f',
-  inactiveRemoveIcon: '#bdbdbd',
-  activeJobCommandColor: 'rgba(0, 0, 0, 0.87)',
-  inactiveJobCommandColor: '#cfd8dc',
+  textColor: White,
+  iconMenuColor: White,
 }
 
 export const ClosableSnackbar = {
@@ -20,15 +12,11 @@ export const ClosableSnackbar = {
 }
 
 export const ConnectorList = {
-  Header: '#f5f5f5',
+  Header: White,
 }
 
 export const ConnectorTaskItem = {
   TraceButton: '#607d8b',
-}
-
-export const CommandButton = {
-  StartStopButton: '#607d8b',
 }
 
 export const ConnectorStateColor = {
@@ -38,5 +26,18 @@ export const ConnectorStateColor = {
   Unassigned: '#ce93d8',
   Registered: '#4db6ac',
   Disabled: '#b0bec5',
+}
+
+export const ConnectorEditor = {
+  validationButton: ThemeDefaultColor,
+  disabledValidationButton: 'rgba(0, 0, 0, 0.298039)',
+  titleSchemaChipBgColor: '#039be5', /** light-blue darken-1 */
+  titleSchemaChipLabelColor: White,
+  titleNoSchemaChipBgColor: '#f4511e', /** deep-orange darken-1 */
+  titleNoSchemaChipLabelColor: White,
+  titleErrorChipBgColor: '#e53935', /** #e53935 red darken-1 */
+  titleErrorChipLabelColor: White,
+  titleNoErrorChipBgColor: '#546e7a', /** blue-grey darken-1 */
+  titleNoErrorChipLabelColor: White,
 }
 

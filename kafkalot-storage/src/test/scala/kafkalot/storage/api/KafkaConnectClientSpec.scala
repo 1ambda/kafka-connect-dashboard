@@ -6,8 +6,6 @@ import io.circe._
 import io.circe.generic.auto._
 import io.circe.jawn._
 import io.circe.syntax._
-import cats.data.Xor
-import com.twitter.util.Await
 import kafkalot.storage.TestSuite
 import kafkalot.storage.kafka.ConnectorClientApi
 

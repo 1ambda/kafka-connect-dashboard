@@ -7,11 +7,13 @@ export const CONNECTOR = {
   CONNECTOR_LIST: 'connectorList',
   PAGINATOR: 'paginator',
   FILTER: 'filterKeyword',
-  REMOVE_DIALOG: 'removeDialog',
   CONFIRM_DIALOG: 'confirmDialog',
   SORTER: 'sorter',
-  SNACKBAR: 'snackbar',
   STORAGE_SELECTOR: 'storageSelector',
+
+  CONFIG_SCHEMA: 'configSchema',
   CONFIG_EDITOR: 'configEditor',
   CREATE_EDITOR: 'createEditor',
+  REMOVE_DIALOG: 'removeDialog',
+  SNACKBAR: 'snackbar',
 }

@@ -11,7 +11,14 @@ import {
 } from '../reducers/ConnectorReducer/ConnectorListState'
 
 import {
+  PrivateAction as ConfigSchemaPrivateAction,
+  Payload as ConfigSchemaPayload,
+} from '../reducers/ConnectorReducer/ConfigSchemaState'
+
+import {
   Action as CreateEditorAction,
+  PrivateAction as CreateEditorPrivateAction,
+  Payload as CreateEditorPayload,
 } from '../reducers/ConnectorReducer/CreateEditorState'
 
 import {
@@ -33,6 +40,8 @@ import {
 
 
 import { Code as ErrorCode, } from '../constants/Error'
+import * as SchemaUtil from '../util/SchemaUtil'
+import * as Logger from '../util/Logger'
 import * as API from './Api'
 import * as Selector from '../reducers/ConnectorReducer/Selector'
 
@@ -65,7 +74,7 @@ export function* initialize() {
 
     /** logging failed connectors */
     if (failedConnectorNames.length !== 0)
-      throw new Error(`${ErrorCode.CANNOT_STOP_ALL_SELECTED_CONNECTORS} (${failedConnectorNames.join(', ')})`)
+      throw new Error(`${ErrorCode.CANNOT_FETCH_ALL_CONNECTORS} (${failedConnectorNames.join(', ')})`)
 
   } catch (error) {
     yield put(SnackbarAction.openErrorSnackbar({
@@ -110,22 +119,117 @@ export function* handleOpenConfigEditor(action) {
 
     /** update */
     yield call(updateConnector, name)
-
     const updated = yield select(Selector.findConnector, name)
+
+    const connectorClass = SchemaUtil.extractConnectorClassFromConfig(name, updated[ConnectorProperty.CONFIG])
+    const connectorSchema = yield call(API.getConnectorPluginsConfigSchema, connectorClass)
+
     let readonly = true
 
     if (isRegisteredConnector(updated)) readonly = false
 
+    /** open config editor */
     yield put(ConfigEditorPrivateAction.succeededToOpenConfigEditor({
       [ConfigEditorPayload.NAME]: name,
       [ConfigEditorPayload.READONLY]: readonly,
       [ConfigEditorPayload.CONFIG]: updated[ConnectorProperty.CONFIG],
     }))
 
+    /** set initial schema */
+    yield put(ConfigSchemaPrivateAction.succeededToSetConfigSchemaOnly({
+      [ConfigSchemaPayload.CONFIG_SCHEMA]: connectorSchema,
+    }))
+
   } catch (error) {
     yield put(SnackbarAction.openErrorSnackbar({
-        [SnackbarPayload.MESSAGE]: `Failed to fetchConfig '${name}'`,
+        [SnackbarPayload.MESSAGE]: `Failed to fetch config '${name}'`,
         [SnackbarPayload.ERROR]: error,
+    }))
+  }
+}
+
+export function* handleOpenCreateEditor(action) {
+  const { payload, } = action
+
+  try {
+
+    /** get available connectors */
+    const availableConnectors = yield call(API.getConnectorPlugins)
+
+    /** open create editor */
+    yield put(CreateEditorPrivateAction.succeedToOpenCreateEditor({
+      [CreateEditorPayload.AVAILABLE_CONNECTORS]: availableConnectors,
+    }))
+
+    /** set initial schema */
+    yield put(ConfigSchemaPrivateAction.succeededToSetConfigSchemaOnly({
+      [ConfigSchemaPayload.CONFIG_SCHEMA]: SchemaUtil.defaultConnectorConfigSchema,
+    }))
+
+  } catch (error) {
+    yield put(SnackbarAction.openErrorSnackbar({
+      [SnackbarPayload.MESSAGE]: `Failed to open CreateEditor '${name}'`,
+      [SnackbarPayload.ERROR]: error,
+    }))
+  }
+}
+
+export function* handleChangeSelectedConnectorClass(action) {
+  const { payload, } = action
+  let connectorClass = undefined
+
+  try {
+    connectorClass = payload[CreateEditorPayload.SELECTED_CONNECTOR_CLASS]
+
+    const connectorSchema = yield call(API.getConnectorPluginsConfigSchema, connectorClass)
+
+    yield put(CreateEditorPrivateAction.succeedToChangeSelectedConnectorClass({
+      [CreateEditorPayload.SELECTED_CONNECTOR_CLASS]: connectorClass,
+    }))
+
+    /** set configSchema */
+    yield put(ConfigSchemaPrivateAction.succeededToSetConfigSchemaOnly({
+      [ConfigSchemaPayload.CONFIG_SCHEMA]: connectorSchema,
+    }))
+
+  } catch (error) {
+    yield put(SnackbarAction.openErrorSnackbar({
+      [SnackbarPayload.MESSAGE]: `Failed to change selected connector class '${connectorClass}'`,
+      [SnackbarPayload.ERROR]: error,
+    }))
+  }
+}
+
+export function* handleValidateConnectorConfig(action) {
+  const { payload, } = action
+  let connectorClass = undefined
+
+  try {
+    connectorClass = payload[ConfigSchemaPayload.CONNECTOR_CLASS]
+    const connectorConfig = payload[ConfigSchemaPayload.CONNECTOR_CONFIG]
+    let connectorSchema = yield call(API.getConnectorPluginsConfigSchema, connectorClass)
+    let errorMessages = yield call(API.validateConnectorConfig, connectorClass, connectorConfig)
+
+    if (errorMessages.length > 0) {
+      errorMessages.map(message => Logger.warn(`SCHEMA ERROR: ${message} (${connectorClass})`) )
+    }
+
+    /** set configSchema and errorMessages */
+    yield put(ConfigSchemaPrivateAction.succeededToValidateConfig({
+      [ConfigSchemaPayload.CONFIG_SCHEMA]: connectorSchema,
+      [ConfigSchemaPayload.ERROR_MESSAGES]: errorMessages,
+    }))
+
+    /** change connectorClass in createEditor */
+    yield put(CreateEditorPrivateAction.succeedToChangeSelectedConnectorClass({
+      [CreateEditorPayload.SELECTED_CONNECTOR_CLASS]: connectorClass,
+    }))
+
+  } catch (error) {
+    yield put(SnackbarAction.openErrorSnackbar({
+      [SnackbarPayload.MESSAGE]: `
+    }Failed to validate config for '${connectorClass}'`,
+      [SnackbarPayload.ERROR]: error,
     }))
   }
 }
@@ -198,18 +302,19 @@ export function* handleUpdateConfig(action) {
 export function* handleCreateConnector(action) {
   const { payload, } = action
 
-  let connector = null
+  let config = null
   let name = null
 
   try {
-    connector = payload[ConnectorPayload.CONNECTOR]
-    name = connector[ConnectorProperty.NAME]
+    name = payload[CreateEditorPayload.CONNECTOR_NAME]
+    config = payload[CreateEditorPayload.CONNECTOR_CONFIG]
+
     if (isEmptyName(name)) throw new Error(ErrorCode.EMPTY_NAME)
 
     const existing = yield select(Selector.findConnector, name)
     if (existing) throw new Error(ErrorCode.DUPLICATE_NAME)
 
-    const created = yield call(API.postConnector, connector, name)
+    const created = yield call(API.postConnector, config, name)
 
     /** add to redux state */
     yield put(ConnectorPrivateAction.addCreatedConnector({

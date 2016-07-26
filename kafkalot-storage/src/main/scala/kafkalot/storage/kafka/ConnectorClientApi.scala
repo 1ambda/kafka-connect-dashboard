@@ -2,7 +2,6 @@ package kafkalot.storage.kafka
 
 import java.net.URL
 
-import cats.data.Xor
 import com.twitter.finagle.Http
 import com.twitter.finagle.http._
 import com.twitter.io.Buf
@@ -11,7 +10,7 @@ import io.circe._
 import io.circe.generic.auto._
 import io.circe.jawn._
 import io.circe.syntax._
-import kafkalot.storage.exception.ErrorCode
+import kafkalot.storage.exception.{ConnectorPluginNotFoundException, ErrorCode}
 import kafkalot.storage.model.{StorageConnector, StorageConnectorMeta}
 import kafkalot.storage.Configuration
 import org.jboss.netty.handler.codec.http.HttpHeaders
@@ -23,16 +22,13 @@ object ConnectorClientApi {
 
   val client = Http.client.newService(connectorUrl)
 
-  def buildConnectorsUrl() =
-    s"http://${connectorUrl}/connectors"
-  def buildConnectorUrl(name: String) =
-    s"${buildConnectorsUrl()}/${name}"
-  def buildConnectorCommandUrl(name: String, command: String) =
-    s"${buildConnectorsUrl()}/${name}/${command}"
-  def buildConnectorStatusUrl(name: String) =
-    s"${buildConnectorUrl(name)}/status"
-  def buildConnectorConfigUrl(name: String) =
-    s"${buildConnectorUrl(name)}/config"
+  def buildConnectorsUrl() = s"http://${connectorUrl}/connectors"
+  def buildConnectorUrl(name: String) = s"${buildConnectorsUrl()}/${name}"
+  def buildConnectorCommandUrl(name: String, command: String) = s"${buildConnectorsUrl()}/${name}/${command}"
+  def buildConnectorStatusUrl(name: String) = s"${buildConnectorUrl(name)}/status"
+  def buildConnectorConfigUrl(name: String) = s"${buildConnectorUrl(name)}/config"
+  def buildConnectorPluginsUrl() = s"http://${connectorUrl}/connector-plugins"
+  def buildConnectorPluginsValidateUrl(name: String) = s"${buildConnectorPluginsUrl()}/${name}/config/validate"
 
   def getPreBuildJsonHeaderRequest() = {
     RequestBuilder().setHeader(
@@ -197,6 +193,52 @@ object ConnectorClientApi {
         throw new RuntimeException(ErrorCode.FAILED_TO_PAUSE_CONNECTOR)
 
       response.getStatusCode()
+    }
+  }
+
+  def getConnectorPlugins(): Future[Json] = {
+    val request = createGetRequest(
+      new URL(buildConnectorPluginsUrl())
+    )
+
+    client(request).map { response =>
+      if (response.getStatusCode() != 200 /** OK */ )
+        throw new RuntimeException(ErrorCode.FAILED_TO_GET_CONNECTOR_PLUGINS)
+
+      /** just proxy */
+      decode[Json](response.getContentString()).valueOr(throw _)
+    }
+  }
+
+  def getConnectorPluginJSONSchema(connectorClass: String): Future[JSONSchema] = {
+    val request = createPutRequest(
+      new URL(buildConnectorPluginsValidateUrl(connectorClass)),
+      JsonObject.empty.asJson /** send empty json object to get schema only */
+    )
+
+    client(request).map { response =>
+      if (response.getStatusCode() != 200 /** OK */ )
+        throw new ConnectorPluginNotFoundException(connectorClass)
+
+      /** convert validation result to JSONSchema */
+      val v = decode[PluginValidation](response.getContentString()).valueOr(throw _)
+      v.toJSONSchema
+    }
+  }
+
+  def validateConnectorPlugin(connectorClass: String, config: Json): Future[ConnectorConfigValidationResult] = {
+    val request = createPutRequest(
+      new URL(buildConnectorPluginsValidateUrl(connectorClass)),
+      config
+    )
+
+    client(request).map { response =>
+      if (response.getStatusCode() != 200 /** OK */ )
+        throw new ConnectorPluginNotFoundException(connectorClass)
+
+      /** just proxy */
+      val v = decode[PluginValidation](response.getContentString()).valueOr(throw _)
+      v.toValidationResult()
     }
   }
 }

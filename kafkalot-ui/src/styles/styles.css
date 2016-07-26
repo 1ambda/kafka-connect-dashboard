@@ -1,9 +1,0 @@
-/** disable materialize input box-shadow */
-input[type=text]:focus:not:([read-only]) {
-  box-shadow: none;
-}
-
-/** ignore materialize table width */
-table {
-  width: inherit;
-}

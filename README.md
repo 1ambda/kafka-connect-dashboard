@@ -5,6 +5,8 @@
 Centralize your [kafka-connect](http://kafka.apache.org/documentation.html#connect) instances 
 
 - supports connect 0.10.0.0+
+- **real-time** config validation using [JSON Schema](http://json-schema.org/)
+- config management with [JSONEditor](https://github.com/josdejong/jsoneditor)
 
 ## Demo
 

@@ -6,8 +6,8 @@ export function isLoggerDisabled() {
 
 export const Tag = {
   ERROR: '[ERROR]',
-  WARN: '[WARN]',
-  INFO: '[INFO]',
+  WARN: '[WARN] ',
+  INFO: '[INFO] ',
 }
 
 export function error(message, error) {

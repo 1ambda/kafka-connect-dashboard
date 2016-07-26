@@ -1,9 +1,7 @@
 package kafkalot.storage.api
 
-import com.twitter.finagle.Service
-import com.twitter.finagle.http.{Request, Response}
-import com.twitter.logging.Logger
 import com.twitter.util.Future
+import com.typesafe.scalalogging.LazyLogging
 import io.finch._
 import io.finch.circe._
 import io.circe._
@@ -11,19 +9,20 @@ import io.circe.generic.auto._
 import io.circe.parser._
 import io.circe.syntax._
 import io.circe.jawn._
-import cats.data.Xor
 import shapeless._
-import kafkalot.storage.exception.ErrorCode
-import kafkalot.storage.kafka.{ConnectorState, ExportedConnector, RawConnector}
+import kafkalot.storage.exception.{ConnectorPluginNotFoundException, ErrorCode}
+import kafkalot.storage.kafka._
 import kafkalot.storage.model._
 
-object StorageApi {
+object StorageApi extends LazyLogging {
 
   val RES_API = "api"
   val RES_API_VERSION = "v1"
   val RES_CONNECTORS = "connectors"
   val RES_CONFIG = "config"
   val RES_COMMAND = "command"
+  val RES_CONNECTOR_PLUGINS = "connector-plugins"
+  val RES_VALIDATE = "validate"
 
   val RawConnectorExtractor: Endpoint[RawConnector] =
     body.as[RawConnector]
@@ -39,7 +38,9 @@ object StorageApi {
         case ConnectorCommand.OPERATION_RESTART => Ok(command)
         case ConnectorCommand.OPERATION_PAUSE => Ok(command)
         case ConnectorCommand.OPERATION_RESUME => Ok(command)
-        case _ => createBadRequest(ErrorCode.INVALID_CONNECTOR_COMMAND_OPERATION)
+        case _ =>
+          logger.error(s"Invalid command type ${command.operation}")
+          BadRequest(new RuntimeException(ErrorCode.INVALID_CONNECTOR_COMMAND_OPERATION))
       }
     }
 
@@ -48,7 +49,9 @@ object StorageApi {
       StorageConnectorDao.getAll().map { scs =>
         Ok(scs.map(sc => sc.name))
       } rescue {
-        case e: Exception => Future { InternalServerError(e) }
+        case e: Exception =>
+          logger.error("Failed to get all connectors", e)
+          Future { InternalServerError(e) }
       }
     }
 
@@ -57,7 +60,9 @@ object StorageApi {
       StorageConnectorDao.get(connectorName)
     } mapOutput { scOption: Option[StorageConnector] =>
       scOption match {
-        case None => NotFound(new RuntimeException(ErrorCode.FAILED_TO_GET_CONNECTOR))
+        case None =>
+          logger.error("Can't get a connector which does not exist")
+          NotFound(new RuntimeException(ErrorCode.FAILED_TO_GET_CONNECTOR))
         case Some(sc) => Ok(sc)
       }
     } mapAsync { sc: StorageConnector =>
@@ -71,8 +76,11 @@ object StorageApi {
     } mapOutputAsync {
       case (scOption, config) =>
         scOption match {
-          case None => Future { createBadRequest(ErrorCode.FAILED_TO_GET_CONNECTOR) }
-          case Some(sc) => sc.updateConfig(config).map { Ok(_) }
+          case None =>
+            logger.error("Can't update a connector which does not exist")
+            Future { NotFound(new RuntimeException(ErrorCode.FAILED_TO_GET_CONNECTOR)) }
+          case Some(sc) =>
+            sc.updateConfig(config).map { Ok(_) }
         }
     }
 
@@ -81,7 +89,8 @@ object StorageApi {
       StorageConnectorDao.insert(c.toInitialStorageConnector) map { inserted =>
         Created(inserted.toStoppedExportedConnector) } rescue {
         case e: Exception =>
-          Future { Conflict(e) } // TODO branch CreatedFailedException
+          logger.error("Failed to create connector", e)
+          Future { BadRequest(e) } // TODO branch CreatedFailedException
       }
     }
 
@@ -90,12 +99,16 @@ object StorageApi {
       StorageConnectorDao.get(connectorName)
     } mapOutputAsync { scOption: Option[StorageConnector] =>
       scOption match {
-        case None => Future { NotFound(new RuntimeException(ErrorCode.CANNOT_DELETE_UNKNOWN_CONNECTOR)) }
+        case None =>
+          logger.error("Can't delete a connector which does not exist")
+          Future { NotFound(new RuntimeException(ErrorCode.CANNOT_DELETE_UNKNOWN_CONNECTOR)) }
         case Some(sc) => sc.toExportedConnector.map { ec => Ok(ec) }
       }
     } mapOutputAsync { ec: ExportedConnector =>
-      if (ec.state != ConnectorState.REGISTERED)
+      if (ec.state != ConnectorState.REGISTERED) {
+        logger.error("Can't delete connector which is not in REGISTERED state")
         Future { BadRequest(new RuntimeException(ErrorCode.CANNOT_DELETE_NOT_REGISTERED_CONNECTOR)) }
+      }
       else {
         StorageConnectorDao.delete(ec.name).map { Ok(_) }
       }
@@ -109,7 +122,9 @@ object StorageApi {
     } mapOutput {
       case (scOption, command) =>
         scOption match {
-          case None => createBadRequest(ErrorCode.FAILED_TO_GET_CONNECTOR)
+          case None =>
+            logger.error("Can't command to a connector which does not exist")
+            BadRequest(new RuntimeException(ErrorCode.FAILED_TO_GET_CONNECTOR))
           case Some(sc) => Ok((sc, command))
         }
     } mapOutputAsync {
@@ -117,20 +132,62 @@ object StorageApi {
         sc.handleCommand(command) map { ec: ExportedConnector =>
           Ok(ec)
         } rescue {
-          case e: Exception => Future { BadRequest(e) }
+          case e: Exception =>
+            logger.error("Failed to handle command", e)
+            Future { BadRequest(e) }
         }
     }
 
+  val getConnectorPlugins: Endpoint[Json] =
+    get(RES_API :: RES_API_VERSION :: RES_CONNECTOR_PLUGINS) mapOutputAsync { _ =>
+      ConnectorClientApi.getConnectorPlugins() map {
+        Ok(_)
+      } rescue {
+        case e: Exception =>
+          logger.error("Failed to get connector plugins", e)
+          Future { InternalServerError(e) }
+      }
+    }
 
-  def createBadRequest(errorCode: String): Output[Nothing] =
-    BadRequest(new RuntimeException(errorCode))
+  val getConnectorPluginsJSONSchema: Endpoint[JSONSchema] =
+    get(RES_API :: RES_API_VERSION :: RES_CONNECTOR_PLUGINS :: string :: "schema") mapOutputAsync {
+      case connectorClass =>
+        ConnectorClientApi.getConnectorPluginJSONSchema(connectorClass) map { jsonSchema =>
+          Ok(jsonSchema)
+        } rescue {
+          case e: ConnectorPluginNotFoundException =>
+            logger.error(s"Requested connector class does not exist (${e.message})")
+            Future { BadRequest(e) }
+          case e: Exception =>
+            logger.error("Failed to get connector plugin schema", e)
+            Future { InternalServerError(e) }
+        }
+    }
+
+  val handlePutConnectorConfigValidation: Endpoint[ConnectorConfigValidationResult] =
+    put(RES_API :: RES_API_VERSION :: RES_CONNECTOR_PLUGINS :: string :: RES_VALIDATE :: body.as[Json]) mapOutputAsync {
+      case connectorClass :: config :: HNil =>
+        ConnectorClientApi.validateConnectorPlugin(connectorClass, config) map { validationResult =>
+          Ok(validationResult)
+        } rescue {
+          case e: ConnectorPluginNotFoundException =>
+            logger.error(s"Requested connector class does not exist (${e.message})")
+            Future { BadRequest(e) }
+          case e: Exception =>
+            logger.error("Failed to validate connector config", e)
+            Future { InternalServerError(e) }
+        }
+    }
 
   val api =
-    (getConnectors :+:
-      getConnector :+:
-      putConnectorConfig :+:
-      postConnector :+:
-      deleteConnector :+:
-      handlePostConnectorCommand
+    (getConnectors
+      :+: getConnector
+      :+: putConnectorConfig
+      :+: postConnector
+      :+: deleteConnector
+      :+: handlePostConnectorCommand
+      :+: getConnectorPlugins
+      :+: handlePutConnectorConfigValidation
+      :+: getConnectorPluginsJSONSchema
       )
 }

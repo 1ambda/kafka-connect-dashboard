@@ -2,6 +2,8 @@ import fetch from 'isomorphic-fetch'
 import { take, put, call, fork, select, } from 'redux-saga/effects'
 
 import URL from './Url'
+import { Code as ErrorCode, } from '../constants/Error'
+import * as Logger from '../util/Logger'
 import * as Selector from '../reducers/ConnectorReducer/Selector'
 
 /**
@@ -130,9 +132,11 @@ export function* putConnectorConfig(connectorName, config) {
   yield call(putJSON, connectorConfigUrl, config)
 }
 
-export function* postConnector(connector) {
+export function* postConnector(config, name) {
   const storageName = yield select(Selector.getSelectedStorage)
   const connectorsUrl = URL.getConnectorsUrl(storageName)
+
+  const connector = { name, config, } // TODO: assembly in server
 
   return yield call(postJSON, connectorsUrl, connector)
 }
@@ -144,6 +148,8 @@ export function* deleteConnector(connectorName) {
   yield call(deleteJSON, connectorsUrl)
 }
 
+
+/** command related */
 
 export const KEY_OPERATION = 'operation'
 export const CONNECTOR_COMMAND = {
@@ -189,4 +195,54 @@ export function* pauseConnector(connectorName) {
 
 export function* resumeConnector(connectorName) {
   return yield call(postConnectorCommand, connectorName, CONNECTOR_COMMAND.RESUME)
+}
+
+/** connector plugins related */
+
+export function* getConnectorPlugins() {
+  const storageName = yield select(Selector.getSelectedStorage)
+  const url = URL.getConnectorPluginsUrl(storageName)
+
+  const connectorPlugins = yield call(getJSON, url)
+
+  // TODO return class name only in STORAGE
+  return connectorPlugins.map(connectorPlugin => connectorPlugin.class)
+}
+
+export function* getConnectorPluginsConfigSchema(connectorClass) {
+  let schema = undefined
+
+  const storageName = yield select(Selector.getSelectedStorage)
+  const url = URL.getConnectorPluginsSchemaUrl(storageName, connectorClass)
+
+  try {
+    /** get available connector plugins */
+    schema = yield call(getJSON, url)
+  } catch (error) {
+    Logger.warn(`${ErrorCode.CANNOT_FIND_CONNECTOR_PLUGINS} (${connectorClass})`)
+    return undefined
+  }
+
+  return schema
+}
+
+export function* validateConnectorConfig(connectorClass, connectorConfig) {
+  let errorMessages = []
+
+  const storageName = yield select(Selector.getSelectedStorage)
+  const url = URL.getConnectorPluginsValidateUrl(storageName, connectorClass)
+
+  try {
+    /** put connector config and get validation result */
+    const validationResult = yield call(putJSON, url, connectorConfig)
+
+    if (validationResult.error_messages && Array.isArray(validationResult.error_messages))
+      errorMessages = validationResult.error_messages
+
+  } catch (error) {
+    Logger.warn(`${ErrorCode.CANNOT_FIND_CONNECTOR_PLUGINS} (${connectorClass})`)
+    return undefined
+  }
+
+  return errorMessages
 }

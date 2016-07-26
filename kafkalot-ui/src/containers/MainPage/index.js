@@ -50,8 +50,7 @@ class MainPage extends React.Component {
 }
 
 function mapStateToProps(state) {
-  return {
-  }
+  return { /** nothing to map */ }
 }
 
 function mapDispatchToProps(dispatch) {

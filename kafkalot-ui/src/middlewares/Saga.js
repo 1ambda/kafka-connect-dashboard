@@ -11,6 +11,9 @@ import * as Handler from './Handler'
 export const ActionType = {
   FETCH_CONNECTOR: 'FETCH_CONNECTOR',
   REQUEST_TO_OPEN_CONFIG_EDITOR: 'REQUEST_TO_OPEN_CONFIG_EDITOR',
+  REQUEST_TO_OPEN_CREATE_EDITOR: 'REQUEST_TO_OPEN_CREATE_EDITOR',
+  REQUEST_TO_CHANGE_SELECTED_CONNECTOR_CLASS: 'REQUEST_TO_CHANGE_SELECTED_CONNECTOR_CLASS',
+  REQUEST_TO_VALIDATE_CONNECTOR_CONFIG: 'REQUEST_TO_VALIDATE_CONNECTOR_CONFIG',
   REQUEST_TO_OPEN_REMOVE_DIALOG: 'REQUEST_TO_OPEN_REMOVE_DIALOG',
   REQUEST_TO_UPDATE_CONFIG: 'REQUEST_TO_UPDATE_CONFIG',
   REQUEST_TO_CREATE_CONNECTOR: 'REQUEST_TO_CREATE_CONNECTOR',
@@ -28,6 +31,9 @@ export const ActionType = {
 export const Action = {
   fetchConnector: createAction(ActionType.FETCH_CONNECTOR),
   openConfigEditor: createAction(ActionType.REQUEST_TO_OPEN_CONFIG_EDITOR),
+  openCreateEditor: createAction(ActionType.REQUEST_TO_OPEN_CREATE_EDITOR),
+  changeSelectedConnectorClass: createAction(ActionType.REQUEST_TO_CHANGE_SELECTED_CONNECTOR_CLASS),
+  validateConnectorConfig: createAction(ActionType.REQUEST_TO_VALIDATE_CONNECTOR_CONFIG),
   openRemoveDialog: createAction(ActionType.REQUEST_TO_OPEN_REMOVE_DIALOG),
   updateConfig: createAction(ActionType.REQUEST_TO_UPDATE_CONFIG),
   createConnector: createAction(ActionType.REQUEST_TO_CREATE_CONNECTOR),
@@ -44,93 +50,83 @@ export const Action = {
 
 export function* watchFetchConnector() {
   yield* takeEvery(
-    ActionType.FETCH_CONNECTOR,
-    Handler.handleFetchConnector
-  )
+    ActionType.FETCH_CONNECTOR, Handler.handleFetchConnector)
 }
 
 export function* watchOpenConfigEditor() {
   yield* takeEvery(
-    ActionType.REQUEST_TO_OPEN_CONFIG_EDITOR,
-    Handler.handleOpenConfigEditor
-  )
+    ActionType.REQUEST_TO_OPEN_CONFIG_EDITOR, Handler.handleOpenConfigEditor)
+}
+
+export function* watchOpenCreateEditor() {
+  yield* takeEvery(
+    ActionType.REQUEST_TO_OPEN_CREATE_EDITOR, Handler.handleOpenCreateEditor)
+}
+
+export function* watchChangeSelectedConnectorClass() {
+  yield* takeEvery(
+    ActionType.REQUEST_TO_CHANGE_SELECTED_CONNECTOR_CLASS, Handler.handleChangeSelectedConnectorClass)
+}
+
+export function* watchValidateConnectorConfig() {
+  yield* takeEvery(
+    ActionType.REQUEST_TO_VALIDATE_CONNECTOR_CONFIG,
+    Handler.handleValidateConnectorConfig)
 }
 
 export function* watchOpenRemoveDialog() {
   yield* takeEvery(
-    ActionType.REQUEST_TO_OPEN_REMOVE_DIALOG,
-    Handler.handleOpenRemoveDialog
-  )
+    ActionType.REQUEST_TO_OPEN_REMOVE_DIALOG, Handler.handleOpenRemoveDialog)
 }
 
 export function* watchUpdateConfig() {
   yield* takeEvery(
-    ActionType.REQUEST_TO_UPDATE_CONFIG,
-    Handler.handleUpdateConfig
-  )
+    ActionType.REQUEST_TO_UPDATE_CONFIG, Handler.handleUpdateConfig)
 }
 
 export function* watchRemoveConnector() {
   yield* takeEvery(
-    ActionType.REQUEST_TO_REMOVE_CONNECTOR,
-    Handler.handleRemove,
-  )
+    ActionType.REQUEST_TO_REMOVE_CONNECTOR, Handler.handleRemove,)
 }
 
 export function* watchCreateConnector() {
   yield* takeEvery(
-    ActionType.REQUEST_TO_CREATE_CONNECTOR,
-    Handler.handleCreateConnector
-  )
+    ActionType.REQUEST_TO_CREATE_CONNECTOR, Handler.handleCreateConnector)
 }
 
 export function* watchDisableConnector() {
   yield* takeEvery(
-    ActionType.REQUEST_TO_DISABLE_CONNECTOR,
-    Handler.handleDisableConnector
-  )
+    ActionType.REQUEST_TO_DISABLE_CONNECTOR, Handler.handleDisableConnector)
 }
 
 export function* watchEnableConnector() {
   yield* takeEvery(
-    ActionType.REQUEST_TO_ENABLE_CONNECTOR,
-    Handler.handleEnableConnector
-  )
+    ActionType.REQUEST_TO_ENABLE_CONNECTOR, Handler.handleEnableConnector)
 }
 
 export function* watchStartConnector() {
   yield* takeEvery(
-    ActionType.REQUEST_TO_START_CONNECTOR,
-    Handler.handleStartConnector
-  )
+    ActionType.REQUEST_TO_START_CONNECTOR, Handler.handleStartConnector)
 }
 
 export function* watchStopConnector() {
   yield* takeEvery(
-    ActionType.REQUEST_TO_STOP_CONNECTOR,
-    Handler.handleStopConnector
-  )
+    ActionType.REQUEST_TO_STOP_CONNECTOR, Handler.handleStopConnector)
 }
 
 export function* watchRestartConnector() {
   yield* takeEvery(
-    ActionType.REQUEST_TO_RESTART_CONNECTOR,
-    Handler.handleRestartConnector
-  )
+    ActionType.REQUEST_TO_RESTART_CONNECTOR, Handler.handleRestartConnector)
 }
 
 export function* watchPauseConnector() {
   yield* takeEvery(
-    ActionType.REQUEST_TO_PAUSE_CONNECTOR,
-    Handler.handlePauseConnector
-  )
+    ActionType.REQUEST_TO_PAUSE_CONNECTOR, Handler.handlePauseConnector)
 }
 
 export function* watchResumeConnector() {
   yield* takeEvery(
-    ActionType.REQUEST_TO_RESUME_CONNECTOR,
-    Handler.handleResumeConnector
-  )
+    ActionType.REQUEST_TO_RESUME_CONNECTOR, Handler.handleResumeConnector)
 }
 
 export default function* root() {
@@ -138,6 +134,11 @@ export default function* root() {
     fork(Handler.initialize),
     fork(watchFetchConnector),
     fork(watchOpenConfigEditor),
+    fork(watchOpenCreateEditor),
+    fork(watchChangeSelectedConnectorClass),
+
+    fork(watchValidateConnectorConfig),
+
     fork(watchOpenRemoveDialog),
     fork(watchUpdateConfig),
     fork(watchCreateConnector),

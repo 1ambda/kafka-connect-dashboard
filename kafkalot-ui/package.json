@@ -17,8 +17,8 @@
     "build": "npm run build:js",
     "test": "cross-env NODE_ENV=test mocha --reporter progress --compilers js:babel-core/register --recursive \"./src/**/*.spec.js\" --require ignore-styles",
     "test:watch": "npm run test -- --watch",
-    "coverage:open": "cross-env NODE_ENV=test  istanbul cover node_modules/.bin/_mocha -- -u exports --compilers js:babel-register --recursive \"./src/**/*.spec.js\" --require ignore-styles && open ./coverage/lcov-report/index.html",
-    "coverage:coverall": "cross-env NODE_ENV=test  istanbul cover node_modules/.bin/_mocha -- -u exports --compilers js:babel-register --recursive \"./src/**/*.spec.js\" --require ignore-styles --report lcovonly -- && cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js && rm -rf ./coverage"
+    "coverage:open": "cross-env NODE_ENV=test istanbul cover node_modules/.bin/_mocha -- -u exports --compilers js:babel-register --recursive \"./src/**/*.spec.js\" --require ignore-styles && open ./coverage/lcov-report/index.html",
+    "coverage:coverall": "cross-env NODE_ENV=test istanbul cover node_modules/.bin/_mocha -- -u exports --compilers js:babel-register --recursive \"./src/**/*.spec.js\" --require ignore-styles --report lcovonly -- && cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js && rm -rf ./coverage"
   },
   "author": "1ambda@gmail.com",
   "license": "Apache-2.0",

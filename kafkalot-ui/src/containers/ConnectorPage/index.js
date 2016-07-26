@@ -27,11 +27,12 @@ class ConnectorPage extends React.Component {
     filterKeyword: PropTypes.string.isRequired,
     sorter: PropTypes.string.isRequired,
     tableHeaderChecked: PropTypes.bool.isRequired,
-    
-    snackbar: PropTypes.object.isRequired,
+
+    configSchema: PropTypes.object.isRequired,
     configEditor: PropTypes.object.isRequired,
     createEditor: PropTypes.object.isRequired,
     removeDialog: PropTypes.object.isRequired,
+    snackbar: PropTypes.object.isRequired,
   }
 
   constructor(props) {
@@ -49,21 +50,27 @@ class ConnectorPage extends React.Component {
 
   createSnackbarAndDialogs() {
     const {
-      actions, configEditor, createEditor, removeDialog, snackbar,
+      actions, configSchema, configEditor, createEditor, removeDialog, snackbar,
     } = this.props
 
     /** 3. draw dialogs, snackbar */
     const configEditorDOM = (configEditor.opened) ?
       (<ConfigEditor close={actions.closeConfigEditor}
-                     update={actions.updateConfig} {...configEditor} />) : null
+                     update={actions.updateConfig}
+                     validateConnectorConfig={actions.validateConnectorConfig}
+                     {...configEditor} {...configSchema} />) : null
 
     const createEditorDOM = (createEditor.opened) ?
       (<CreateEditor close={actions.closeCreateEditor}
-                     create={actions.createConnector} {...createEditor} />) : null
+                     create={actions.createConnector}
+                     changeSelectedConnectorClass={actions.changeSelectedConnectorClass}
+                     validateConnectorConfig={actions.validateConnectorConfig}
+                     {...createEditor} {...configSchema} />) : null
 
     const removeDialogDOM = (removeDialog.opened) ?
       (<RemoveDialog removeConnector={actions.removeConnector}
-                     closeRemoveDialog={actions.closeRemoveDialog} {...removeDialog} />) : null
+                     closeRemoveDialog={actions.closeRemoveDialog}
+                     {...removeDialog} />) : null
 
     const snackbarDOM = (<Snackbar {...snackbar} closeSnackbar={actions.closeSnackbar} />)
 
@@ -136,11 +143,11 @@ function mapStateToProps(state) {
     paginator: state[ROOT.CONNECTOR][CONNECTOR.CONNECTOR_LIST][ConnectorListProperty.PAGINATOR],
     tableHeaderChecked: state[ROOT.CONNECTOR][CONNECTOR.CONNECTOR_LIST][ConnectorListProperty.TABLE_HEADER_CHECKED],
 
-    snackbar: state[ROOT.CONNECTOR][CONNECTOR.SNACKBAR],
-    confirmDialog: state[ROOT.CONNECTOR][CONNECTOR.CONFIRM_DIALOG],
+    configSchema: state[ROOT.CONNECTOR][CONNECTOR.CONFIG_SCHEMA],
     configEditor: state[ROOT.CONNECTOR][CONNECTOR.CONFIG_EDITOR],
     createEditor: state[ROOT.CONNECTOR][CONNECTOR.CREATE_EDITOR],
     removeDialog: state[ROOT.CONNECTOR][CONNECTOR.REMOVE_DIALOG],
+    snackbar: state[ROOT.CONNECTOR][CONNECTOR.SNACKBAR],
   }
 }
 
