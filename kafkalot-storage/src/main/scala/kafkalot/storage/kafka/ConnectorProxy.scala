@@ -10,7 +10,7 @@ import io.circe._
 import io.circe.generic.auto._
 import io.circe.jawn._
 import io.circe.syntax._
-import kafkalot.storage.exception.{ConnectorPluginNotFoundException, ConnectorPluginValidationFailed, ErrorCode, RawConnectorHasNoConnectorClassField}
+import kafkalot.storage.exception._
 import kafkalot.storage.model.{StorageConnector, StorageConnectorMeta}
 import kafkalot.storage.Configuration
 import org.jboss.netty.handler.codec.http.HttpHeaders
@@ -72,7 +72,7 @@ object ConnectorClientApi {
 
     client(request).map { response =>
       if (response.getStatusCode() != 200 /** OK */ )
-        throw new RuntimeException(ErrorCode.FAILED_TO_DELETE_CONNECTOR)
+        throw new FailedToDeleteConnectorFromCluster(s"Failed to delete connector from cluster (${name})")
 
       true
     }
@@ -83,7 +83,7 @@ object ConnectorClientApi {
 
     client(request).map { response =>
       if (response.getStatusCode() != 200 /** OK */ )
-        throw new RuntimeException(ErrorCode.FAILED_TO_GET_CONNECTORS)
+        throw new FailedToGetConnectorsFromCluster("Failed to get connectors from cluster")
 
       decode[List[String]](response.getContentString()).valueOr(throw _)
     }
@@ -97,13 +97,14 @@ object ConnectorClientApi {
     for {
       connector <- client(reqGetConnector).map { response =>
         if (response.getStatusCode() != 200 /** OK */ )
-          throw new RuntimeException(ErrorCode.FAILED_TO_GET_CONNECTOR)
+          throw new FailedToGetConnectorFromCluster(s"Failed to get connector ${name} from cluster")
 
         decode[Connector](response.getContentString()).valueOr(throw _)
       }
+
       connectorStatus <- client(reqGetConnectorStatus).map { response =>
       if (response.getStatusCode() != 200 /** OK */ )
-        throw new RuntimeException(ErrorCode.FAILED_TO_GET_CONNECTOR_STATUS)
+        throw new FailedToGetConnectorsFromCluster("Failed to get connectors from cluster")
 
       decode[ConnectorStatus](response.getContentString()).valueOr(throw _)
       }
@@ -126,7 +127,7 @@ object ConnectorClientApi {
 
     client(request).map { response =>
       if (response.getStatusCode() != 200 /** OK */ )
-        throw new RuntimeException(ErrorCode.FAILED_TO_UPDATE_CONNECTOR_CONFIG)
+        throw new FailedToUpdateConnectorConfig(s"Failed to update connector config (${rawConnector.name})")
 
       decode[JsonObject](response.getContentString()).valueOr(throw _)
     }
@@ -145,7 +146,7 @@ object ConnectorClientApi {
 
           client(request).map { response =>
             if (response.getStatusCode() != 201 /** CREATED */ )
-              throw new RuntimeException(ErrorCode.FAILED_TO_START_CONNECTOR)
+              throw new FailedToStartConnector(s"Failed to start connector (${rawConnector.name})")
 
             decode[JsonObject](response.getContentString()).valueOr(throw _)
           }
@@ -167,7 +168,7 @@ object ConnectorClientApi {
 
           client(request).map { response =>
             if (response.getStatusCode() != 204 /** NO CONTENT */ )
-              throw new RuntimeException(ErrorCode.FAILED_TO_STOP_CONNECTOR)
+              throw new FailedToStopConnector(s"Failed to stop connector (${rawConnector.name})")
 
             response.getStatusCode()
           }
@@ -182,7 +183,7 @@ object ConnectorClientApi {
 
     client(request).map { response =>
       if (response.getStatusCode() != 204 /** NO CONTENT */ )
-        throw new RuntimeException(ErrorCode.FAILED_TO_RESTART_CONNECTOR)
+        throw new FailedToRestartConnector(s"Failed to restart connector (${rawConnector.name})")
 
       response.getStatusCode()
     }
@@ -195,7 +196,7 @@ object ConnectorClientApi {
 
     client(request).map { response =>
       if (response.getStatusCode() != 202 /** ACCEPTED */ )
-        throw new RuntimeException(ErrorCode.FAILED_TO_PAUSE_CONNECTOR)
+        throw new FailedToPauseConnector(s"Failed to pause connector (${rawConnector.name})")
 
       response.getStatusCode()
     }
@@ -208,7 +209,7 @@ object ConnectorClientApi {
 
     client(request).map { response =>
       if (response.getStatusCode() != 202 /** ACCEPTED */ )
-        throw new RuntimeException(ErrorCode.FAILED_TO_PAUSE_CONNECTOR)
+        throw new FailedToResumeConnector(s"Failed to resume connector (${rawConnector.name})")
 
       response.getStatusCode()
     }
@@ -221,7 +222,7 @@ object ConnectorClientApi {
 
     client(request).map { response =>
       if (response.getStatusCode() != 200 /** OK */ )
-        throw new RuntimeException(ErrorCode.FAILED_TO_GET_CONNECTOR_PLUGINS)
+        throw new FailedToGetConnectorPlugins("Failed to resume connector")
 
       /** just proxy */
       decode[Json](response.getContentString()).valueOr(throw _)
@@ -236,7 +237,7 @@ object ConnectorClientApi {
 
     client(request).map { response =>
       if (response.getStatusCode() != 200 /** OK */ )
-        throw new ConnectorPluginNotFoundException(connectorClass)
+        throw new ConnectorPluginNotFoundException(s"Can't find connector plugin (${connectorClass})")
 
       /** convert validation result to JSONSchema */
       val v = decode[PluginValidation](response.getContentString()).valueOr(throw _)
@@ -252,7 +253,7 @@ object ConnectorClientApi {
 
     client(request).map { response =>
       if (response.getStatusCode() != 200 /** OK */ )
-        throw new ConnectorPluginNotFoundException(connectorClass)
+        throw new ConnectorPluginNotFoundException(s"Can't find connector plugin (${connectorClass})")
 
       /** just proxy */
       val v = decode[PluginValidation](response.getContentString()).valueOr(throw _)

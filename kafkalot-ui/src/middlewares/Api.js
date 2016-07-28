@@ -30,15 +30,14 @@ function handleJsonResponse(url, method, promise) {
     .then(response => {
       let error = undefined
       if (response.status >= 300)
-        error = new Error(`${method} ${url}, status: ${response.status}`)
+        error = true
 
       return response.text().then(text => {
-        return { error, text, }
+        return { url, method, status: response.status, text, error, }
       })
     })
-    .then(parsed => {
-      const { error, text, } = parsed
-      if (error) throw new Error(`${error.message}, body: ${text}`)
+    .then(({ url, method, status, text, error, }) => {
+      if (error) throw new Error(text)
 
       return JSON.parse(text)
     })

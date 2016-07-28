@@ -45,7 +45,7 @@ export const handler = handleActions({
     Logger.error(message, error)
 
     return Object.assign({}, state, {
-      [Property.MESSAGE]: message,
+      [Property.MESSAGE]: error.message,
       [Property.SNACKBAR_MODE]: CLOSABLE_SNACKBAR_MODE.OPEN,
     })
   },

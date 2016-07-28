@@ -7,7 +7,7 @@ import io.circe.syntax._
 import cats.data.Xor
 import com.twitter.util.Future
 import kafkalot.storage.api.ConnectorCommand
-import kafkalot.storage.exception.ErrorCode
+import kafkalot.storage.exception.{InvalidStorageConnectorCommand, InvalidStorageConnectorState}
 import kafkalot.storage.kafka.{ConnectorClientApi, ConnectorState, ExportedConnector, RawConnector}
 
 case class StorageConnectorMeta(enabled: Boolean,
@@ -40,19 +40,15 @@ case class StorageConnector(name: String,
 
   def updateConfig(config: JsonObject): Future[ExportedConnector] = {
     if (!_meta.enabled) {
-      Future.exception(new RuntimeException(ErrorCode.CANNOT_UPDATE_DISABLED_CONNECTOR_CONFIG))
+      Future.exception(new InvalidStorageConnectorState(s"Cannot update disabled connector config (${name})"))
     } else {
       ConnectorClientApi.getConnector(name) map { ec =>
-        throw new RuntimeException(ErrorCode.CANNOT_UPDATE_RUNNING_CONNECTOR_CONFIG  )
+        throw new InvalidStorageConnectorState(s"Cannot update running connector config (${name})")
       } rescue {
-        // TODO match Exception type instead of error message
-        case e: Exception => e.getMessage match {
-          case ErrorCode.CANNOT_CREATE_RUNNING_CONNECTOR =>
-            Future.exception(e)
-          case _ =>
-            StorageConnectorDao.update(this.copy(config = config)).map {
-              _.toStoppedExportedConnector
-            }
+        case e: InvalidStorageConnectorState =>
+          Future.exception(e)
+        case _ => StorageConnectorDao.update(this.copy(config = config)).map {
+          _.toStoppedExportedConnector
         }
       } /** rescue */
     } /** else */
@@ -99,7 +95,7 @@ case class StorageConnector(name: String,
           persisted.toStoppedExportedConnector
         }
       case _ =>
-        Future.exception(new RuntimeException(ErrorCode.UNSUPPORTED_CONNECTOR_OPERATION))
+        Future.exception(new InvalidStorageConnectorCommand(s"Invalid storage connector command ${command.operation}"))
     }
   }
 

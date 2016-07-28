@@ -1,6 +1,7 @@
 package kafkalot.storage.api
 
 import com.twitter.util.Future
+import com.twitter.finagle.http
 import com.typesafe.scalalogging.LazyLogging
 import io.finch._
 import io.finch.circe._
@@ -10,7 +11,7 @@ import io.circe.parser._
 import io.circe.syntax._
 import io.circe.jawn._
 import shapeless._
-import kafkalot.storage.exception.{ConnectorPluginNotFoundException, ConnectorPluginValidationFailed, ErrorCode}
+import kafkalot.storage.exception._
 import kafkalot.storage.kafka._
 import kafkalot.storage.model._
 
@@ -39,8 +40,8 @@ object StorageApi extends LazyLogging {
         case ConnectorCommand.OPERATION_PAUSE => Ok(command)
         case ConnectorCommand.OPERATION_RESUME => Ok(command)
         case _ =>
-          logger.error(s"Invalid command type ${command.operation}")
-          BadRequest(new RuntimeException(ErrorCode.INVALID_CONNECTOR_COMMAND_OPERATION))
+          logger.error(s"Invalid storage command type ${command.operation}")
+          BadRequest(new InvalidStorageConnectorCommand(s"Invalid storage command type ${command.operation}"))
       }
     }
 
@@ -61,8 +62,8 @@ object StorageApi extends LazyLogging {
     } mapOutput { scOption: Option[StorageConnector] =>
       scOption match {
         case None =>
-          logger.error("Can't get a connector which does not exist")
-          NotFound(new RuntimeException(ErrorCode.FAILED_TO_GET_CONNECTOR))
+          logger.error("Can't get a connector which does not exist in storage")
+          NotFound(new NoSuchConnectorInStorage("Can't get a connector which does not exist in storage"))
         case Some(sc) => Ok(sc)
       }
     } mapAsync { sc: StorageConnector =>
@@ -77,8 +78,8 @@ object StorageApi extends LazyLogging {
       case (scOption, config) =>
         scOption match {
           case None =>
-            logger.error("Can't update a connector which does not exist")
-            Future { NotFound(new RuntimeException(ErrorCode.FAILED_TO_GET_CONNECTOR)) }
+            logger.error("Can't update a connector which does not exist in storage")
+            Future { NotFound(new NoSuchConnectorInStorage("Can't update a connector which does not exist in storage")) }
           case Some(sc) =>
             sc.updateConfig(config).map { Ok(_) }
         }
@@ -100,14 +101,14 @@ object StorageApi extends LazyLogging {
     } mapOutputAsync { scOption: Option[StorageConnector] =>
       scOption match {
         case None =>
-          logger.error("Can't delete a connector which does not exist")
-          Future { NotFound(new RuntimeException(ErrorCode.CANNOT_DELETE_UNKNOWN_CONNECTOR)) }
+          logger.error("Can't delete a connector which does not exist in storage")
+          Future { NotFound(new NoSuchConnectorInStorage("Can't delete a connector which does not exist in storage")) }
         case Some(sc) => sc.toExportedConnector.map { ec => Ok(ec) }
       }
     } mapOutputAsync { ec: ExportedConnector =>
       if (ec.state != ConnectorState.REGISTERED) {
-        logger.error("Can't delete connector which is not in REGISTERED state")
-        Future { BadRequest(new RuntimeException(ErrorCode.CANNOT_DELETE_NOT_REGISTERED_CONNECTOR)) }
+        logger.error(s"Can't delete connector which is not in REGISTERED state (${ec.name})")
+        Future { BadRequest(new InvalidStorageConnectorState(s"Can't delete connector which is not in REGISTERED state (${ec.name})")) }
       }
       else {
         StorageConnectorDao.delete(ec.name).map { Ok(_) }
@@ -123,8 +124,8 @@ object StorageApi extends LazyLogging {
       case (scOption, command) =>
         scOption match {
           case None =>
-            logger.error("Can't command to a connector which does not exist")
-            BadRequest(new RuntimeException(ErrorCode.FAILED_TO_GET_CONNECTOR))
+            logger.error("Can't command to a connector which does not exist in storage")
+            NotFound(new NoSuchConnectorInStorage("Can't command to a connector which does not exist in storage"))
           case Some(sc) => Ok((sc, command))
         }
     } mapOutputAsync {

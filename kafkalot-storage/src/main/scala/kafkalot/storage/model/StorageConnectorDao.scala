@@ -8,7 +8,7 @@ import com.twitter.util.Future
 import com.novus.salat._
 import com.novus.salat.global._
 import com.mongodb.casbah.Imports._
-import kafkalot.storage.exception.ErrorCode
+import kafkalot.storage.exception.{CannotCreateDuplicatedConnector, NoSuchConnectorInStorage}
 
 /**
   * StorageConnector including the stringified `config` field
@@ -51,11 +51,10 @@ object StorageConnectorDao {
   }
 
   def insert(sc: StorageConnector): Future[StorageConnector] = {
-
     get(sc.name) map { scOption: Option[StorageConnector] =>
       scOption match {
         case Some(_) =>
-          throw new RuntimeException(ErrorCode.STORAGE_CONNECTOR_ALREADY_EXISTS)
+          throw new CannotCreateDuplicatedConnector(s"Cannot create duplicated connector (s${sc.name})")
         case None =>
           val dbo = convertStorageConnectorToDBObject(sc)
           collection.insert(dbo)
@@ -73,7 +72,7 @@ object StorageConnectorDao {
           collection.update(query, dbo, upsert = true)
           sc
         case None =>
-          throw new RuntimeException(ErrorCode.STORAGE_CONNECTOR_DOES_NOT_EXIST)
+          throw new NoSuchConnectorInStorage(s"Cannot update non-exist connector in storage (${sc.name})")
       }
     }
   }
@@ -83,7 +82,8 @@ object StorageConnectorDao {
       val query = createSelectQuery(connectorName)
       val result = collection.remove(query)
 
-      if (result.getN < 1) throw new RuntimeException(ErrorCode.STORAGE_CONNECTOR_DOES_NOT_EXIST)
+      if (result.getN < 1)
+        throw new NoSuchConnectorInStorage(s"Cannot delete non-exist connector in storage (${connectorName})")
       else true
     }
   }
