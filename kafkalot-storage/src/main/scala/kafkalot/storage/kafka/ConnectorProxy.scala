@@ -10,10 +10,11 @@ import io.circe._
 import io.circe.generic.auto._
 import io.circe.jawn._
 import io.circe.syntax._
-import kafkalot.storage.exception._
-import kafkalot.storage.model.{StorageConnector, StorageConnectorMeta}
-import kafkalot.storage.Configuration
 import org.jboss.netty.handler.codec.http.HttpHeaders
+
+import kafkalot.storage.exception._
+import kafkalot.storage.model.{StorageConnector, StorageConnectorDao, StorageConnectorMeta}
+import kafkalot.storage.Configuration
 
 object ConnectorClientApi {
 
@@ -25,6 +26,7 @@ object ConnectorClientApi {
   def buildConnectorsUrl() = s"http://${connectorUrl}/connectors"
   def buildConnectorUrl(name: String) = s"${buildConnectorsUrl()}/${name}"
   def buildConnectorCommandUrl(name: String, command: String) = s"${buildConnectorsUrl()}/${name}/${command}"
+  def buildConnectorTaskCommandUrl(name: String, taskId: Int, command: String) = s"${buildConnectorsUrl()}/${name}/tasks/${taskId}/${command}"
   def buildConnectorStatusUrl(name: String) = s"${buildConnectorUrl(name)}/status"
   def buildConnectorConfigUrl(name: String) = s"${buildConnectorUrl(name)}/config"
   def buildConnectorPluginsUrl() = s"http://${connectorUrl}/connector-plugins"
@@ -105,8 +107,7 @@ object ConnectorClientApi {
       connectorStatus <- client(reqGetConnectorStatus).map { response =>
       if (response.getStatusCode() != 200 /** OK */ )
         throw new FailedToGetConnectorsFromCluster("Failed to get connectors from cluster")
-
-      decode[ConnectorStatus](response.getContentString()).valueOr(throw _)
+        decode[ConnectorStatus](response.getContentString()).valueOr(throw _)
       }
     } yield {
       ExportedConnector(
@@ -189,6 +190,30 @@ object ConnectorClientApi {
     }
   }
 
+  def getConnectorTask(connectorName: String, taskId: Int): Future[ConnectorTask] = {
+    getConnector(connectorName) map { ec: ExportedConnector =>
+      if (taskId >= ec.tasks.length)
+        throw new TaskIdDoesNotExist(s"Task id ${taskId} does not exist on ${connectorName} (tasks.length: ${ec.tasks.length})")
+
+      ec.tasks(taskId)
+    }
+  }
+
+  def restartTask(rawConnector: RawConnector, taskId: Int): Future[ConnectorTask] = {
+    val connectorName = rawConnector.name
+
+    val req = createEmptyPostRequest(
+      new URL(buildConnectorTaskCommandUrl(connectorName, taskId, "restart"))
+    )
+
+    client(req).map { response =>
+      if (response.getStatusCode() != 204 /** NO CONTENT */ )
+        throw new FailedToRestartConnectorTask(s"Failed to restart connector task (${connectorName}, ${taskId})")
+    } flatMap { _ =>
+      getConnectorTask(connectorName, taskId)
+    }
+  }
+
   def pause(rawConnector: RawConnector): Future[Int] = {
     val request = createEmptyPutRequest(
       new URL(buildConnectorCommandUrl(rawConnector.name, "pause"))
@@ -263,7 +288,7 @@ object ConnectorClientApi {
 }
 
 case class Connector(name: String, config: JsonObject)
-case class ConnectorTask(state: String, id: Int, worker_id: String)
+case class ConnectorTask(state: String, id: Int, worker_id: String, trace: Option[String] = None)
 case class ConnectorState(state: String, worker_id: String)
 case class ConnectorStatus(name: String, connector: ConnectorState, tasks: List[ConnectorTask])
 
@@ -272,12 +297,6 @@ object ConnectorState {
   val REGISTERED = "REGISTERED"
   val DISABLED = "DISABLED"
 }
-
-case class ExportedConnector(name: String,
-                             state: String,
-                             config: JsonObject,
-                             tasks: List[ConnectorTask],
-                             _meta: Option[StorageConnectorMeta])
 
 case class RawConnector(name: String,
                         config: JsonObject) {

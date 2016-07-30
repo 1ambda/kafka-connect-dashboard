@@ -8,6 +8,7 @@ import com.twitter.util.Future
 import com.novus.salat._
 import com.novus.salat.global._
 import com.mongodb.casbah.Imports._
+import com.typesafe.scalalogging.LazyLogging
 import kafkalot.storage.exception.{CannotCreateDuplicatedConnector, NoSuchConnectorInStorage}
 
 /**
@@ -26,7 +27,7 @@ case class PersistedStorageConnector(name: String,
   }
 }
 
-object StorageConnectorDao {
+object StorageConnectorDao extends LazyLogging {
   import MongoUtil._
 
   val COLLECTION_NAME_CONNECTOR = "connector"
@@ -51,7 +52,10 @@ object StorageConnectorDao {
   }
 
   def insert(sc: StorageConnector): Future[StorageConnector] = {
-    get(sc.name) map { scOption: Option[StorageConnector] =>
+    Future {
+      val query = createSelectQuery(sc.name)
+      collection.findOne(query) map { convertDBObjectToStorageConnector(_) }
+    } map { scOption: Option[StorageConnector] =>
       scOption match {
         case Some(_) =>
           throw new CannotCreateDuplicatedConnector(s"Cannot create duplicated connector (s${sc.name})")
@@ -64,7 +68,10 @@ object StorageConnectorDao {
   }
 
   def update(sc: StorageConnector): Future[StorageConnector] = {
-    get(sc.name) map { scOption: Option[StorageConnector] =>
+    Future {
+      val query = createSelectQuery(sc.name)
+      collection.findOne(query) map { convertDBObjectToStorageConnector(_) }
+    } map { scOption: Option[StorageConnector] =>
       scOption match {
         case Some(_) =>
           val query = createSelectQuery(sc)
@@ -88,13 +95,17 @@ object StorageConnectorDao {
     }
   }
 
-  def get(sc: StorageConnector): Future[Option[StorageConnector]] =
-    get(sc.name)
-
-  def get(name: String): Future[Option[StorageConnector]] = {
+  def get(name: String): Future[StorageConnector] = {
     Future {
       val query = createSelectQuery(name)
       collection.findOne(query) map { convertDBObjectToStorageConnector(_) }
+    } map { optSc: Option[StorageConnector] =>
+      optSc match {
+        case None =>
+          logger.error("Can't get a connector which does not exist in storage")
+          throw new NoSuchConnectorInStorage("Can't get a connector which does not exist in storage")
+        case Some(sc) => sc
+      }
     }
   }
 
