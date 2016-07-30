@@ -17,15 +17,16 @@ export function isEmptyName(name) {
 }
 
 export const ActionType = {
-  ADD_FETCHED_CONNECTOR: 'ADD_FETCHED_CONNECTOR',
-  SET_CONNECTOR_PROPERTY: 'SET_CONNECTOR_PROPERTY',
-  ADD_CREATED_CONNECTOR: 'ADD_CREATED_CONNECTOR',
-  REMOVE_DELETED_CONNECTOR: 'REMOVE_DELETED_CONNECTOR',
-  SET_CHECKED: 'SET_CHECKED',
-  CHANGE_FILTER_KEYWORD: 'CHANGE_FILTER_KEYWORD',
-  CHANGE_PAGE_OFFSET: 'CHANGE_PAGE_OFFSET',
-  CHANGE_SORTER: 'CHANGE_SORTER',
-  TOGGLE_CURRENT_PAGE_CHECKBOXES: 'TOGGLE_CURRENT_PAGE_CHECKBOXES',
+  ADD_FETCHED_CONNECTOR: 'CONNECTOR/ADD_FETCHED_CONNECTOR',
+  SET_CONNECTOR_PROPERTY: 'CONNECTOR/SET_CONNECTOR_PROPERTY',
+  SET_CONNECTOR_TASKS: 'CONNECTOR/SET_CONNECTOR_TASKS',
+  ADD_CREATED_CONNECTOR: 'CONNECTOR/ADD_CREATED_CONNECTOR',
+  REMOVE_DELETED_CONNECTOR: 'CONNECTOR/REMOVE_DELETED_CONNECTOR',
+  SET_CHECKED: 'CONNECTOR/SET_CHECKED',
+  CHANGE_FILTER_KEYWORD: 'CONNECTOR/CHANGE_FILTER_KEYWORD',
+  CHANGE_PAGE_OFFSET: 'CONNECTOR/CHANGE_PAGE_OFFSET',
+  CHANGE_SORTER: 'CONNECTOR/CHANGE_SORTER',
+  TOGGLE_CURRENT_PAGE_CHECKBOXES: 'CONNECTOR/TOGGLE_CURRENT_PAGE_CHECKBOXES',
 }
 
 export const Action = {
@@ -40,6 +41,7 @@ export const Action = {
 
 export const PrivateAction = {
   setConnector: createAction(ActionType.SET_CONNECTOR_PROPERTY),
+  setConnectorTasks: createAction(ActionType.SET_CONNECTOR_TASKS),
   addCreatedConnector: createAction(ActionType.ADD_CREATED_CONNECTOR),
   removeDeletedConnector: createAction(ActionType.REMOVE_DELETED_CONNECTOR),
   addFetchedConnector: createAction(ActionType.ADD_FETCHED_CONNECTOR),
@@ -73,6 +75,7 @@ export const ConnectorTaskProperty = {
   ID: 'id',
   WORKER_ID: 'worker_id',
   STATE: 'state',
+  TRACE: 'trace',
 }
 
 export function isRunningState(state) { return state === ConnectorState.RUNNING }
@@ -150,6 +153,26 @@ export const handler = handleActions({
           [ConnectorProperty.NAME]: name,
           [ConnectorProperty.STATE]: payload[ConnectorProperty.STATE],
           [ConnectorProperty.CONFIG]: payload[ConnectorProperty.CONFIG],
+          [ConnectorProperty.TASKS]: payload[ConnectorProperty.TASKS],
+        })
+      }
+
+      return connector
+    })
+
+    return Object.assign({}, state, {
+      [ConnectorListProperty.CONNECTORS]: updatedConnectors,
+    })
+  },
+
+  [ActionType.SET_CONNECTOR_TASKS]: (state, { payload, }) => {
+    const name = payload[ConnectorProperty.NAME]
+    const tasks = payload[ConnectorProperty.TASKS]
+
+    const connectors = state[ConnectorListProperty.CONNECTORS]
+    const updatedConnectors = connectors.map(connector => {
+      if (connector[ConnectorProperty.NAME] === name) {
+        return Object.assign({}, connector, {
           [ConnectorProperty.TASKS]: payload[ConnectorProperty.TASKS],
         })
       }

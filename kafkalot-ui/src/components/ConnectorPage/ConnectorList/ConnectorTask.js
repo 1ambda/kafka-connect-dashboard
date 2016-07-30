@@ -2,6 +2,8 @@ import React, { PropTypes, } from 'react'
 
 import CircularProgress from 'material-ui/CircularProgress'
 import FlatButton from 'material-ui/FlatButton'
+import Popover from 'material-ui/Popover'
+import TextField from 'material-ui/TextField'
 import { grey400, darkBlack, lightBlack, } from 'material-ui/styles/colors'
 import { List, ListItem, } from 'material-ui/List'
 
@@ -10,6 +12,7 @@ import { ListItemColumn, ListItemLastColumn, } from './ListItemColumn'
 import {
   isRunningState, isUnassignedState, isPausedState,
   isFailedState, isRegisteredState,
+  ConnectorProperty, ConnectorTaskProperty,
 } from '../../../reducers/ConnectorReducer/ConnectorListState'
 
 import * as style from './style'
@@ -17,9 +20,13 @@ import * as Theme from '../../../constants/Theme'
 
 export class ConnectorTask extends React.Component {
   static propTypes = {
+    connectorName: PropTypes.string.isRequired,
     id: PropTypes.number.isRequired,
     worker_id: PropTypes.string.isRequired,
     state: PropTypes.string.isRequired,
+    trace: PropTypes.string, /** optional */
+
+    restartTask: PropTypes.func.isRequired,
   }
 
   static createStateIcon(taskState) {
@@ -47,13 +54,44 @@ export class ConnectorTask extends React.Component {
     )
   }
 
+  constructor(props) {
+    super(props)
+
+    this.state = { tracePopoverOpened: false, }
+
+    this.handleRestartButtonClicked = this.handleRestartButtonClicked.bind(this)
+    this.handleTraceButtonClicked = this.handleTraceButtonClicked.bind(this)
+    this.handleTracePopoverClose = this.handleTracePopoverClose.bind(this)
+  }
+
+  handleRestartButtonClicked() {
+    const { connectorName, id, restartTask, } = this.props
+
+    restartTask({
+      [ConnectorProperty.NAME]: connectorName,
+      [ConnectorTaskProperty.ID]: id,
+    })
+  }
+
+  handleTraceButtonClicked(event) {
+    event.preventDefault()
+
+    this.setState({
+      tracePopoverOpened: true,
+      tracePopoverOpenedAnchorEl: event.currentTarget,
+    })
+  }
+
+  handleTracePopoverClose() {
+    this.setState({ tracePopoverOpened: false, })
+  }
+
   render() {
-    const { id, worker_id, state, } = this.props
+    const { id, worker_id, state, trace, } = this.props
+    const { tracePopoverOpened, tracePopoverOpenedAnchorEl, } = this.state
 
     const stateIcon = ConnectorTask.createStateIcon(state)
-    const traceButtonActive = isFailedState(state)
-
-    // TODO button color
+    const traceButtonActive = (trace && trace.length > 0)
 
     return (
       <ListItem key={id} disabled style={style.TaskColumn.container}>
@@ -62,12 +100,24 @@ export class ConnectorTask extends React.Component {
         <ListItemColumn style={style.TaskColumn.stateText}>{state}</ListItemColumn>
         <ListItemColumn style={style.TaskColumn.workerId}>{worker_id}</ListItemColumn>
         <ListItemColumn style={style.TaskColumn.commandButtons}>
-          <FlatButton label="restart"
-                      labelStyle={style.ItemBodyColumn.commandButtonLabel}
+          <FlatButton onClick={this.handleRestartButtonClicked}
+                      label="restart" labelStyle={style.ItemBodyColumn.commandButtonLabel}
                       style={style.ItemBodyColumn.commandButton} secondary />
-          <FlatButton label="trace" disabled={!traceButtonActive}
-                      labelStyle={style.ItemBodyColumn.commandButtonLabel}
+          <FlatButton onClick={this.handleTraceButtonClicked}
+                      disabled={!traceButtonActive}
+                      label="trace" labelStyle={style.ItemBodyColumn.commandButtonLabel}
                       style={style.TaskColumn.traceButton} />
+          <Popover
+            open={tracePopoverOpened}
+            anchorEl={tracePopoverOpenedAnchorEl}
+            anchorOrigin={{horizontal: 'left', vertical: 'bottom',}}
+            targetOrigin={{horizontal: 'left', vertical: 'top',}}
+            onRequestClose={this.handleTracePopoverClose}
+          >
+            <div style={style.TaskTracePopover.contentContainer}>
+              <TextField value={trace} multiLine />
+            </div>
+          </Popover>
         </ListItemColumn>
         <ListItemLastColumn />
       </ListItem>

@@ -124,6 +124,20 @@ export function* getConnector(connectorName) {
   return connector 
 }
 
+export function* getConnectorTasks(connectorName) {
+  const storageName = yield select(Selector.getSelectedStorage)
+  const url = URL.getConnectorTaskUrl(storageName, connectorName)
+
+  const tasks = yield call(getJSON, url)
+
+  if (!tasks && !Array.isArray(tasks)) {
+    Logger.error(`Invalid tasks returned from ${url}`)
+    throw new Error(ErrorCode.INVALID_TASKS)
+  }
+
+  return tasks
+}
+
 export function* putConnectorConfig(connectorName, config) {
   const storageName = yield select(Selector.getSelectedStorage)
   const connectorConfigUrl = URL.getConnectorConfigUrl(storageName, connectorName)
@@ -161,11 +175,22 @@ export const CONNECTOR_COMMAND = {
   DISABLE: { [KEY_OPERATION]: 'disable', },
 }
 
+export const CONNECTOR_TASK_COMMAND = {
+  RESTART: { [KEY_OPERATION]: 'restart', },
+}
+
 export function* postConnectorCommand(connectorName, command) {
   const storageName = yield select(Selector.getSelectedStorage)
-  const connectorCommandUrl = URL.getConnectorCommandUrl(storageName, connectorName)
+  const url = URL.getConnectorCommandUrl(storageName, connectorName)
   
-  return yield call(postJSON, connectorCommandUrl, command)
+  return yield call(postJSON, url, command)
+}
+
+export function* postConnectorTaskCommand(connectorName, taskId, command) {
+  const storageName = yield select(Selector.getSelectedStorage)
+  const url = URL.getConnectorTaskCommandUrl(storageName, connectorName, taskId)
+
+  return yield call(postJSON, url, command)
 }
 
 export function* disableConnector(connectorName) {
@@ -194,6 +219,10 @@ export function* pauseConnector(connectorName) {
 
 export function* resumeConnector(connectorName) {
   return yield call(postConnectorCommand, connectorName, CONNECTOR_COMMAND.RESUME)
+}
+
+export function* restartConnectorTask(connectorName, taskId) {
+  return yield call(postConnectorTaskCommand, connectorName, taskId, CONNECTOR_TASK_COMMAND.RESTART)
 }
 
 /** connector plugins related */

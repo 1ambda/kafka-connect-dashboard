@@ -45,3 +45,7 @@ export const TaskColumn = {
   },
 }
 
+export const TaskTracePopover = {
+  contentContainer: { padding: 30, },
+}
+

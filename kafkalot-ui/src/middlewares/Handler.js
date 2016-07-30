@@ -4,7 +4,7 @@ import {
   Action as ConnectorAction,
   PrivateAction as ConnectorPrivateAction,
   Payload as ConnectorPayload,
-  ConnectorProperty,
+  ConnectorProperty, ConnectorTaskProperty,
   isRunningConnector, isFailedConnector, isPausedConnector,
   isRegisteredConnector, isDisabledConnector,
   isEmptyName,
@@ -524,6 +524,35 @@ export function* handleRestartConnector() {
   } catch (error) {
     yield put(SnackbarAction.openErrorSnackbar({
       [SnackbarPayload.MESSAGE]: 'Failed to restart connectors',
+      [SnackbarPayload.ERROR]: error,
+    }))
+  }
+}
+
+export function* handleRestartConnectorTask(action) {
+  const { payload, } = action
+
+  let connectorName = undefined
+  let taskId = undefined
+
+  try {
+    connectorName = payload[ConnectorProperty.NAME]
+    taskId = payload[ConnectorTaskProperty.ID]
+
+    yield call(API.restartConnectorTask, connectorName, taskId)
+    const tasks = yield call(API.getConnectorTasks, connectorName)
+
+    yield put(ConnectorPrivateAction.setConnectorTasks({
+      [ConnectorProperty.TASKS]: tasks,
+    }))
+
+    yield put(SnackbarAction.openInfoSnackbar({
+      [SnackbarPayload.MESSAGE]: `'${connectorName}/${taskId}' was restarted`,
+    }))
+
+  } catch (error) {
+    yield put(SnackbarAction.openErrorSnackbar({
+      [SnackbarPayload.MESSAGE]: `Failed to restart connector task (${connectorName}/${taskId})`,
       [SnackbarPayload.ERROR]: error,
     }))
   }

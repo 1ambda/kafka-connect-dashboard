@@ -29,6 +29,14 @@ export function _buildConnectorUrl(storageName, connectorName) {
   return `${storageAddress}/${URL_BASE_CONNECTORS}${postfix}`
 }
 
+export function _buildConnectorTaskUrl(storageName, connectorName, taskId) {
+  /** taskId might be undefined to retrieve all tasks */
+  const postfix = (taskId === void 0) ? '' : `/${taskId}`
+  const storageAddress = _getStorageAddress(STORAGES, storageName)
+
+  return `${storageAddress}/${URL_BASE_CONNECTORS}/${connectorName}/tasks${postfix}`
+}
+
 export function _buildConnectorPluginsUrl(storageName, connectorClass) {
   const postfix = (connectorClass === void 0) ? '' : `/${connectorClass}`
   const storageAddress = _getStorageAddress(STORAGES, storageName)
@@ -54,6 +62,14 @@ export default {
     return `${_buildConnectorUrl(storageName, connectorName)}/command`
   },
 
+  getConnectorTaskUrl: (storageName, connectorName, taskId) => {
+    return `${_buildConnectorTaskUrl(storageName, connectorName, taskId)}`
+  },
+
+  getConnectorTaskCommandUrl: (storageName, connectorName, taskId) => {
+    return `${_buildConnectorTaskUrl(storageName, connectorName, taskId)}/command`
+  },
+
   getConnectorPluginsUrl: (storageName) => {
     return `${_buildConnectorPluginsUrl(storageName)}`
   },
@@ -65,5 +81,4 @@ export default {
   getConnectorPluginsValidateUrl: (storageName, connectorClass) => {
     return `${_buildConnectorPluginsUrl(storageName, connectorClass)}/validate`
   },
-
 }

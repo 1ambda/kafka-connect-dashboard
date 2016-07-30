@@ -47,6 +47,20 @@ object StorageApi extends LazyLogging {
         ExportedConnector.get(connectorName) map { ec => Ok(ec.tasks) }
     }
 
+  val handleGetConnectorTask: Endpoint[ConnectorTask] =
+    get(RES_API :: API_VERSION :: RES_CONNECTORS ::
+      string :: RES_TASKS :: int) mapOutputAsync {
+      case connectorName :: taskId :: HNil =>
+        ExportedConnector.get(connectorName) map { ec =>
+          if (taskId >= ec.tasks.length) {
+            logger.error(s"Can't find task ${taskId} for ${ec.name}")
+            throw new NoSuchConnectorTask(s"Can't find task ${taskId} for ${ec.name} (tasks.length: ${ec.tasks.length})")
+          }
+          else Ok(ec.tasks(taskId))
+        }
+    }
+
+
   val handlePutConnectorConfig: Endpoint[ExportedConnector] =
     put(RES_API :: API_VERSION :: RES_CONNECTORS ::
       string :: RES_CONFIG :: body.as[JsonObject]) mapOutputAsync {
@@ -127,6 +141,7 @@ object StorageApi extends LazyLogging {
     (handleGetConnectors
       :+: handleGetConnector
       :+: handleGetConnectorTasks
+      :+: handleGetConnectorTask
       :+: handlePutConnectorConfig
       :+: handlePostConnector
       :+: handleDeleteConnector

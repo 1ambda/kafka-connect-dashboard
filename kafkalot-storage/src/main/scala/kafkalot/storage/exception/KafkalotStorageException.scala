@@ -9,6 +9,8 @@ case class RawConnectorHasNoConnectorClassField(message: String)
 /** client exception: 400 */
 case class NoSuchConnectorInStorage(message: String)
   extends Exception(message) with KafkalotException
+case class NoSuchConnectorTask(message: String)
+  extends Exception(message) with KafkalotException
 case class InvalidStorageConnectorState(message: String)
   extends Exception(message) with KafkalotException
 case class InvalidStorageConnectorCommand(message: String)

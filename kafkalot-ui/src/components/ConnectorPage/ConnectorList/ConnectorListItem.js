@@ -38,6 +38,7 @@ export class ConnectorListItem extends React.Component {
     openConfigEditor: PropTypes.func.isRequired,
     disableConnector: PropTypes.func.isRequired,
     enableConnector: PropTypes.func.isRequired,
+    restartTask: PropTypes.func.isRequired,
   }
 
   static createStateIcon(connectorState) {
@@ -136,11 +137,13 @@ export class ConnectorListItem extends React.Component {
 
 
   render() {
-    const { name, state, checked, tasks, uptime, } = this.props
+    const { name, state, checked, tasks, uptime, restartTask, } = this.props
     const taskElems = (!tasks) ? [] :
       tasks.reduce((elems, task) => {
-        const elem = <ConnectorTask {...task} /> // TODO: key
-        const divider = <Divider /> // TODO: key
+        const elem = (<ConnectorTask connectorName={name}
+                                    restartTask={restartTask}
+                                    {...task} />)
+        const divider = <Divider />
         return elems.concat([ divider, elem, ])
       }, [])
 

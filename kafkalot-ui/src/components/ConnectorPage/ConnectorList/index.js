@@ -67,7 +67,9 @@ export default class ConnectorList extends React.Component {
                            enableConnector={actions.enableConnector}
                            fetchConnector={actions.fetchConnector}
                            openConfigEditor={actions.openConfigEditor}
-                           setConnectorChecked={actions.setConnectorChecked} {...connector} />)
+                           setConnectorChecked={actions.setConnectorChecked}
+                           restartTask={actions.restartConnectorTask}
+                           {...connector} />)
 
       items.push(item)
 
