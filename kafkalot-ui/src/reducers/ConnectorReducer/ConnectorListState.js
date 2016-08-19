@@ -13,7 +13,7 @@ export const Payload = {
 }
 
 export function isEmptyName(name) {
-  return (name === void 0) || (name === null)
+  return (name === void 0) || (name === null) || (name === '')
 }
 
 export const ActionType = {
