@@ -191,7 +191,7 @@ export default class ConnectorConfigEditor extends React.Component {
           {schemaChipLabel}
         </Chip>
         {errorChip}
-        <div style={{clear: 'both', }}></div>
+        <div style={{clear: 'both', }} />
       </div>
     )
   }

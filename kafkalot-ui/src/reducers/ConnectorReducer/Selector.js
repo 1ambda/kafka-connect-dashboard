@@ -19,7 +19,6 @@ export function getCurrentSorter(state) {
   return state[ROOT.CONNECTOR][CONNECTOR.CONNECTOR_LIST][ConnectorListProperty.SORTER]
 }
 
-
 export function getSelectedStorage(state) {
   return state[ROOT.CONNECTOR][CONNECTOR.STORAGE_SELECTOR][StorageSelectorProperty.SELECTED_STORAGE]
 }

@@ -1,8 +1,10 @@
 import { createAction, handleActions, } from 'redux-actions'
 
+import { Property as PaginatorProperty, } from './PaginatorState'
 import { ConnectorState, } from '../../constants/ConnectorState'
-import { PAGINATOR_ITEM_COUNT_PER_PAGE, } from '../../constants/Config'
 import { SorterType, AvailableSorters, } from '../../constants/Sorter'
+import { CommonActionType, } from './ConnectorActionType'
+
 
 export const Payload = {
   CONNECTOR: 'connector',
@@ -17,25 +19,20 @@ export function isEmptyName(name) {
 }
 
 export const ActionType = {
-  ADD_FETCHED_CONNECTOR: 'CONNECTOR/ADD_FETCHED_CONNECTOR',
-  SET_CONNECTOR_PROPERTY: 'CONNECTOR/SET_CONNECTOR_PROPERTY',
-  SET_CONNECTOR_TASKS: 'CONNECTOR/SET_CONNECTOR_TASKS',
-  ADD_CREATED_CONNECTOR: 'CONNECTOR/ADD_CREATED_CONNECTOR',
-  REMOVE_DELETED_CONNECTOR: 'CONNECTOR/REMOVE_DELETED_CONNECTOR',
-  SET_CHECKED: 'CONNECTOR/SET_CHECKED',
-  CHANGE_FILTER_KEYWORD: 'CONNECTOR/CHANGE_FILTER_KEYWORD',
-  CHANGE_PAGE_OFFSET: 'CONNECTOR/CHANGE_PAGE_OFFSET',
-  CHANGE_SORTER: 'CONNECTOR/CHANGE_SORTER',
-  TOGGLE_CURRENT_PAGE_CHECKBOXES: 'CONNECTOR/TOGGLE_CURRENT_PAGE_CHECKBOXES',
+  ADD_FETCHED_CONNECTOR: 'CONNECTOR/LIST/ADD_FETCHED_CONNECTOR',
+  SET_CONNECTOR_PROPERTY: 'CONNECTOR/LIST/SET_CONNECTOR_PROPERTY',
+  SET_CONNECTOR_TASKS: 'CONNECTOR/LIST/SET_CONNECTOR_TASKS',
+  ADD_CREATED_CONNECTOR: 'CONNECTOR/LIST/ADD_CREATED_CONNECTOR',
+  REMOVE_DELETED_CONNECTOR: 'CONNECTOR/LIST/REMOVE_DELETED_CONNECTOR',
+  SET_CHECKED: 'CONNECTOR/LIST/SET_CHECKED',
+  TOGGLE_CURRENT_PAGE_CHECKBOXES: 'CONNECTOR/LIST/TOGGLE_CURRENT_PAGE_CHECKBOXES',
 }
 
 export const Action = {
   setConnectorChecked: createAction(ActionType.SET_CHECKED),
-  changeFilterKeyword: createAction(ActionType.CHANGE_FILTER_KEYWORD),
-  changePageOffset: createAction(ActionType.CHANGE_PAGE_OFFSET),
-  changeSorter: createAction(ActionType.CHANGE_SORTER),
+  changeFilterKeyword: createAction(CommonActionType.CHANGE_FILTER_KEYWORD),
+  changeSorter: createAction(CommonActionType.CHANGE_SORTER),
 
-  // TODO
   toggleCurrentPageCheckboxes: createAction(ActionType.TOGGLE_CURRENT_PAGE_CHECKBOXES),
 }
 
@@ -47,16 +44,9 @@ export const PrivateAction = {
   addFetchedConnector: createAction(ActionType.ADD_FETCHED_CONNECTOR),
 }
 
-export const PaginatorProperty = {
-  CURRENT_PAGE_OFFSET: 'currentPageOffset',
-  CURRENT_ITEM_OFFSET: 'currentItemOffset',
-  ITEM_COUNT_PER_PAGE: 'itemCountPerPage',
-}
-
 export const ConnectorListProperty = {
   CONNECTORS: 'connectors',
   FILTER_KEYWORD: 'filterKeyword',
-  PAGINATOR: 'paginator',
   SORTER: 'sorter',
   TABLE_HEADER_CHECKED: 'tableHeaderChecked',
 }
@@ -97,19 +87,12 @@ export function isRunningTask(task) {
   else return false
 }
 
-const INITIAL_PAGINATOR_STATE = {
-  [PaginatorProperty.CURRENT_PAGE_OFFSET]: 0,
-  [PaginatorProperty.CURRENT_ITEM_OFFSET]: 0,
-  [PaginatorProperty.ITEM_COUNT_PER_PAGE]: PAGINATOR_ITEM_COUNT_PER_PAGE,
-}
-
 const INITIAL_FILTER_STATE = ''
 const INITIAL_SORTER_STATE = AvailableSorters[0]
 
 const INITIAL_CONNECTOR_LIST_STATE = {
   [ConnectorListProperty.CONNECTORS]: [],
   [ConnectorListProperty.FILTER_KEYWORD]: INITIAL_FILTER_STATE,
-  [ConnectorListProperty.PAGINATOR]: INITIAL_PAGINATOR_STATE,
   [ConnectorListProperty.SORTER]: INITIAL_SORTER_STATE,
   [ConnectorListProperty.TABLE_HEADER_CHECKED]: false,
 }
@@ -173,7 +156,7 @@ export const handler = handleActions({
     const updatedConnectors = connectors.map(connector => {
       if (connector[ConnectorProperty.NAME] === name) {
         return Object.assign({}, connector, {
-          [ConnectorProperty.TASKS]: payload[ConnectorProperty.TASKS],
+          [ConnectorProperty.TASKS]: tasks,
         })
       }
 
@@ -226,7 +209,7 @@ export const handler = handleActions({
     })
   },
 
-  [ActionType.CHANGE_SORTER]: (state, { payload, }) => {
+  [CommonActionType.CHANGE_SORTER]: (state, { payload, }) => {
     const requestedSorter = payload[Payload.SORTER]
 
     const connectors = state[ConnectorListProperty.CONNECTORS]
@@ -267,51 +250,32 @@ export const handler = handleActions({
 
     return Object.assign({}, state, {
       [ConnectorListProperty.CONNECTORS]: copiedConnectors,
-      [ConnectorListProperty.PAGINATOR]: INITIAL_PAGINATOR_STATE,
       [ConnectorListProperty.SORTER]: requestedSorter,
-      [ConnectorListProperty.PAGINATOR]: INITIAL_PAGINATOR_STATE,
     })
   },
 
-  [ActionType.CHANGE_FILTER_KEYWORD]: (state, { payload, }) => {
+  [CommonActionType.CHANGE_FILTER_KEYWORD]: (state, { payload, }) => {
     return Object.assign({}, state, {
       [ConnectorListProperty.FILTER_KEYWORD]: payload[Payload.FILTER_KEYWORD],
-      [ConnectorListProperty.PAGINATOR]: INITIAL_PAGINATOR_STATE,
-    })
-  },
-
-  [ActionType.CHANGE_PAGE_OFFSET]: (state, { payload, }) => {
-    const paginator = state[ConnectorListProperty.PAGINATOR]
-    const newPageOffset = payload[Payload.NEW_PAGE_OFFSET]
-    const currentItemOffset = newPageOffset * paginator[PaginatorProperty.ITEM_COUNT_PER_PAGE]
-
-    const newPaginator = Object.assign({}, paginator, {
-      currentPageOffset: newPageOffset, currentItemOffset,
-    })
-
-    return Object.assign({}, state, {
-      [ConnectorListProperty.PAGINATOR]: newPaginator,
     })
   },
 
   [ActionType.TOGGLE_CURRENT_PAGE_CHECKBOXES]: (state, { payload, }) => {
-    const tableHeaderChecked = payload[ConnectorListProperty.TABLE_HEADER_CHECKED]
-    const paginator = state[ConnectorListProperty.PAGINATOR]
     const {
-      [PaginatorProperty.CURRENT_ITEM_OFFSET]: currentItemOffset,
+      [ConnectorListProperty.TABLE_HEADER_CHECKED]: tableHeaderChecked,
+      [PaginatorProperty.ITEM_OFFSET]: itemOffset,
       [PaginatorProperty.ITEM_COUNT_PER_PAGE]: itemCountPerPage,
-    } = paginator
+    } = payload
 
-    const copiedConnectors = state[ConnectorListProperty.CONNECTORS].slice()
+    const copied = state[ConnectorListProperty.CONNECTORS].slice()
 
-    for (let i = currentItemOffset; i < currentItemOffset + itemCountPerPage && i < copiedConnectors.length; i++) {
-      const c = copiedConnectors[i]
-
+    for (let i = itemOffset; i < itemOffset + itemCountPerPage && i < copied.length; i++) {
+      const c = copied[i]
       c[ConnectorProperty.CHECKED] = tableHeaderChecked
     }
 
     return Object.assign({}, state, {
-      [ConnectorListProperty.CONNECTORS]: copiedConnectors,
+      [ConnectorListProperty.CONNECTORS]: copied,
       [ConnectorListProperty.TABLE_HEADER_CHECKED]: tableHeaderChecked,
     })
   },

@@ -8,14 +8,17 @@ import { List, ListItem, } from 'material-ui/List'
 import { ListItemColumn, } from './ListItemColumn'
 import { ConnectorListItem, } from './ConnectorListItem'
 import { ConnectorListProperty, } from '../../../reducers/ConnectorReducer/ConnectorListState'
+import { Property as PaginatorProperty, } from '../../../reducers/ConnectorReducer/PaginatorState'
 
 import * as style from './style'
 
 export default class ConnectorList extends React.Component {
   static propTypes = {
-    actions: PropTypes.object.isRequired,
-    
     connectors: PropTypes.array.isRequired,
+    itemOffset: PropTypes.number.isRequired,
+    itemCountPerPage: PropTypes.number.isRequired,
+
+    actions: PropTypes.object.isRequired,
     tableHeaderChecked: PropTypes.bool.isRequired,
     toggleCurrentPageCheckboxes: PropTypes.func.isRequired,
   }
@@ -27,10 +30,15 @@ export default class ConnectorList extends React.Component {
   }
 
   handleHeaderCheckboxClick() {
-    const { toggleCurrentPageCheckboxes, tableHeaderChecked, } = this.props
+    const {
+      toggleCurrentPageCheckboxes, tableHeaderChecked,
+      itemCountPerPage, itemOffset,
+    } = this.props
 
     toggleCurrentPageCheckboxes({
       [ConnectorListProperty.TABLE_HEADER_CHECKED]: !tableHeaderChecked, /** invert */
+      [PaginatorProperty.ITEM_OFFSET]: itemOffset,
+      [PaginatorProperty.ITEM_COUNT_PER_PAGE]: itemCountPerPage,
     })
   }
 

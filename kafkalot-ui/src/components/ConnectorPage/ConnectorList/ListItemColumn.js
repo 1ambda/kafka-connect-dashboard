@@ -2,14 +2,14 @@ import React, { PropTypes, } from 'react'
 
 export class ListItemLastColumn extends React.Component {
   render() {
-    return(<div style={{clear: 'both',}}></div>)
+    return (<div style={{clear: 'both',}} />)
   }
 }
 
 export class ListItemColumn extends React.Component {
   static propTypes = {
     style: PropTypes.object,
-    children: PropTypes.element,
+    children: PropTypes.node,
   }
 
   static defaultStyle = {

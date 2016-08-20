@@ -4,7 +4,8 @@ import {Popover, PopoverAnimationVertical,} from 'material-ui/Popover'
 import SelectField from 'material-ui/SelectField'
 import MenuItem from 'material-ui/MenuItem'
 
-import { Payload as ConnectorListPayload, } from '../../../reducers/ConnectorReducer/ConnectorListState'
+import { Payload as ConnectorListPayload, ConnectorProperty, } from '../../../reducers/ConnectorReducer/ConnectorListState'
+import { Property as PaginatorProperty, } from '../../../reducers/ConnectorReducer/PaginatorState'
 import { AvailableSorters, } from '../../../constants/Sorter'
 import * as Page from '../../../constants/Page'
 
@@ -17,6 +18,15 @@ import * as style from './style'
 export default class ConnectorHeader extends React.Component {
   static propTypes = {
     connectors: PropTypes.array.isRequired,
+    sorter: PropTypes.string.isRequired,
+    filterKeyword: PropTypes.string.isRequired,
+    itemCountPerPage: PropTypes.number.isRequired,
+    availableItemCountsPerPage: PropTypes.array.isRequired,
+
+    changeSorter: PropTypes.func.isRequired,
+    changeFilterKeyword: PropTypes.func.isRequired,
+    changePageItemCount: PropTypes.func.isRequired,
+
     startConnector: PropTypes.func.isRequired,
     stopConnector: PropTypes.func.isRequired,
     restartConnector: PropTypes.func.isRequired,
@@ -24,39 +34,18 @@ export default class ConnectorHeader extends React.Component {
     resumeConnector: PropTypes.func.isRequired,
     openCreateEditor: PropTypes.func.isRequired,
     openRemoveDialog: PropTypes.func.isRequired,
-
-    sorter: PropTypes.string.isRequired,
-    changeSorter: PropTypes.func.isRequired,
-    changeFilterKeyword: PropTypes.func.isRequired,
-    filterKeyword: PropTypes.string.isRequired,
-  }
-
-  static createSelectorDOM(filterHandler, filterLabel,
-                           sorterHandler, sorter, availableSorters) {
-
-    return (
-      <div>
-        <Filter handler={filterHandler}
-                floatingLabel={filterLabel}
-                style={style.filterInput} />
-        <Selector handler={sorterHandler}
-                  style={style.selector}
-                  labelStyle={style.selectorLabel}
-                  floatingLabel="Sort by"
-                  floatingLabelStyle={style.selectorFloatingLabel}
-                  strategies={availableSorters}
-                  currentStrategy={sorter} />
-      </div>
-    )
   }
 
   constructor(props) {
     super(props)
 
-    this.state = { currentCommand: ConnectorCommand.START, }
+    this.state = {
+      currentCommand: ConnectorCommand.START,
+    }
 
     this.handleFilterChange = this.handleFilterChange.bind(this)
     this.handleSorterChange = this.handleSorterChange.bind(this)
+    this.handlePageItemCountChange = this.handlePageItemCountChange.bind(this)
     this.handleCreate = this.handleCreate.bind(this)
     
     this.handleCommandChange = this.handleCommandChange.bind(this)
@@ -101,9 +90,13 @@ export default class ConnectorHeader extends React.Component {
   handleSorterChange(strategy) {
     const { changeSorter, } = this.props
 
-    changeSorter({
-      [ConnectorListPayload.SORTER]: strategy,
-    })
+    changeSorter({ [ConnectorListPayload.SORTER]: strategy, })
+  }
+
+  handlePageItemCountChange(event, key, payload) {
+    const { changePageItemCount, } = this.props
+
+    changePageItemCount({ [PaginatorProperty.ITEM_COUNT_PER_PAGE]: payload, })
   }
 
   createCommandButtonsDOM() {
@@ -112,7 +105,9 @@ export default class ConnectorHeader extends React.Component {
 
     return (
       <div style={style.CommandButton.Container}>
-        <SelectField value={currentCommand} style={style.CommandButton.Selector}
+        <SelectField style={style.CommandButton.Selector}
+                     floatingLabelText="Command"
+                     value={currentCommand}
                      onChange={this.handleCommandChange}>
           <MenuItem value={ConnectorCommand.START} primaryText={ConnectorCommand.START} />
           <MenuItem value={ConnectorCommand.STOP} primaryText={ConnectorCommand.STOP} />
@@ -134,24 +129,64 @@ export default class ConnectorHeader extends React.Component {
                       labelStyle={style.CommandButton.ButtonLabel} label={"CREATE"}
                       onTouchTap={this.handleCreate} />
 
-        <div style={{clear: 'both',}}></div>
+        <div style={{clear: 'both',}} />
 
       </div>
     )
   }
 
-  render() {
-    const { sorter, filterKeyword, } = this.props
+  createSelectorDOM() {
+    const {
+      sorter, filterKeyword, connectors,
+      itemCountPerPage, availableItemCountsPerPage,
+    } = this.props
 
-    /** 1. command buttons */
-    const commandButtonsDOM = this.createCommandButtonsDOM()
+    const checkedConnectorCount = connectors.filter(c => c[ConnectorProperty.CHECKED]).length
 
-    /** 2. filter, sorter row */
-    const filterLabel = (filterKeyword !== '') ? `filtered by '${filterKeyword}'` : 'Insert Filter'
-    const selectorDOM = ConnectorHeader.createSelectorDOM(
-      this.handleFilterChange, filterLabel,
-      this.handleSorterChange, sorter, AvailableSorters
+    const filterLabel = (filterKeyword !== ``) ?
+      `Filter: ${filterKeyword} (${checkedConnectorCount} selected)` :
+      `Insert filter (${checkedConnectorCount} selected)`
+
+    const itemCountPerPageMenuItems = availableItemCountsPerPage.reduce((acc, i) => {
+      return acc.concat([
+        <MenuItem value={i} primaryText={i} key={i} />,
+      ])
+    }, [])
+
+    return (
+      <div>
+        <Filter handler={this.handleFilterChange}
+                floatingLabel={filterLabel}
+                style={style.Selector.FilterInput} />
+
+        <SelectField style={style.Selector.PageItemCountSelector}
+                     floatingLabelText="Item Count"
+                     floatingLabelStyle={style.Selector.SelectorFloatingLabel}
+                     labelStyle={style.Selector.SelectorLabel}
+                     value={itemCountPerPage}
+                     onChange={this.handlePageItemCountChange}>
+          {itemCountPerPageMenuItems}
+        </SelectField>
+
+        <Selector handler={this.handleSorterChange}
+                  style={style.Selector.ConnectorSelector}
+                  labelStyle={style.Selector.SelectorLabel}
+                  floatingLabel="Sort by"
+                  floatingLabelStyle={style.Selector.SelectorFloatingLabel}
+                  strategies={AvailableSorters}
+                  currentStrategy={sorter} />
+
+        <div style={{clear: 'both',}} />
+      </div>
     )
+  }
+
+  render() {
+    /** filter, paginator count selector, sorter, */
+    const selectorDOM = this.createSelectorDOM()
+
+    /** command buttons */
+    const commandButtonsDOM = this.createCommandButtonsDOM()
 
     return (
       <div>

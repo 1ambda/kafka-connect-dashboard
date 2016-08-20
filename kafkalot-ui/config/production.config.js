@@ -8,9 +8,5 @@ export const STORAGES = (envStorages === void 0) ?
     { name: 'kafkalot-storage', address: '', },
   ]) : envStorages /** envContainer is already stringified */
 
-
 export const TITLE = (envTitle === void 0) ?
   JSON.stringify('Kafkalot') : JSON.stringify(envTitle)
-
-export const PAGINATOR_ITEM_COUNT = (envPaginatorItemCount === void 0) ?
-    10 : parseInt(envPaginatorItemCount)

@@ -7,10 +7,10 @@ import ConnectorList from '../../components/ConnectorPage/ConnectorList'
 import ConnectorHeader from '../../components/ConnectorPage/ConnectorHeader'
 import Paginator from '../../components/Common/Paginator'
 import RemoveDialog from '../../components/ConnectorPage/RemoveDialog'
-import { Payload as ConnectorListPayload, } from '../../reducers/ConnectorReducer/ConnectorListState'
+import { Property as PaginatorProperty, } from '../../reducers/ConnectorReducer/PaginatorState'
 import Snackbar from '../../components/Common/ClosableSnackbar'
 
-import { ConnectorListProperty, } from '../../reducers/ConnectorReducer/ConnectorListState'
+import { ConnectorProperty, ConnectorListProperty, } from '../../reducers/ConnectorReducer/ConnectorListState'
 
 import ConfigEditor from '../../components/ConnectorPage/ConnectorConfigEditor'
 import CreateEditor from '../../components/ConnectorPage/ConnectorCreateEditor'
@@ -38,14 +38,14 @@ class ConnectorPage extends React.Component {
   constructor(props) {
     super(props)
 
-    this.handlePageOffsetChange  = this.handlePageOffsetChange.bind(this)
+    this.handlePageOffsetChange = this.handlePageOffsetChange.bind(this)
   }
 
   handlePageOffsetChange(newPageOffset) {
     const { actions, } = this.props
-    const payload = { [ConnectorListPayload.NEW_PAGE_OFFSET]: newPageOffset, }
+    const { changePageOffset, } = actions
 
-    actions.changePageOffset(payload)
+    changePageOffset({ [PaginatorProperty.PAGE_OFFSET]: newPageOffset, })
   }
 
   createSnackbarAndDialogs() {
@@ -90,42 +90,56 @@ class ConnectorPage extends React.Component {
     } = this.props
 
     const {
-      itemCountPerPage, currentPageOffset, currentItemOffset,
+      itemCountPerPage, pageOffset, itemOffset,
     } = paginator
 
     /** 1. filter connectors */
     const filtered = connectors.filter(connector => {
-      const searchArea = JSON.stringify(connector)
-      return (searchArea.includes(filterKeyword))
+      if (filterKeyword === '') return true
+      else if (connector[ConnectorProperty.CHECKED]) /** do not exclude checked connector to support incremental search */
+        return true
+      else {
+        const searchArea = JSON.stringify(connector)
+        console.log(searchArea, filterKeyword)
+        console.log(searchArea.includes(filterKeyword))
+        return (searchArea.includes(filterKeyword))
+      }
     })
 
     /** 2. select connectors to be curated */
-    const sliced = filtered.slice(currentItemOffset, currentItemOffset + itemCountPerPage)
+    const sliced = filtered.slice(itemOffset, itemOffset + itemCountPerPage)
 
     return (
       <div>
         <ConnectorHeader sorter={sorter}
                          connectors={filtered}
+                         filterKeyword={filterKeyword}
+                         {...paginator}
+
+
+                         changeFilterKeyword={actions.changeFilterKeyword}
+                         changeSorter={actions.changeSorter}
+                         changePageItemCount={actions.changePageItemCount}
+
                          startConnector={actions.startConnector}
                          stopConnector={actions.stopConnector}
                          restartConnector={actions.restartConnector}
                          pauseConnector={actions.pauseConnector}
                          resumeConnector={actions.resumeConnector}
                          openCreateEditor={actions.openCreateEditor}
-                         openRemoveDialog={actions.openRemoveDialog}
-                         changeFilterKeyword={actions.changeFilterKeyword}
-                         filterKeyword={filterKeyword}
-                         changeSorter={actions.changeSorter} />
+                         openRemoveDialog={actions.openRemoveDialog} />
 
         <ConnectorList connectors={sliced}
+                       {...paginator}
+
                        actions={actions}
                        toggleCurrentPageCheckboxes={actions.toggleCurrentPageCheckboxes}
                        tableHeaderChecked={tableHeaderChecked} />
 
         <div className="center" style={style.paginator}>
           <Paginator itemCountPerPage={itemCountPerPage}
-                     currentPageOffset={currentPageOffset}
-                     currentItemOffset={currentItemOffset}
+                     currentPageOffset={pageOffset}
+                     currentItemOffset={itemOffset}
                      totalItemCount={filtered.length}
                      handler={this.handlePageOffsetChange} />
         </div>
@@ -140,14 +154,14 @@ function mapStateToProps(state) {
     connectors: state[ROOT.CONNECTOR][CONNECTOR.CONNECTOR_LIST][ConnectorListProperty.CONNECTORS],
     filterKeyword: state[ROOT.CONNECTOR][CONNECTOR.CONNECTOR_LIST][ConnectorListProperty.FILTER_KEYWORD],
     sorter: state[ROOT.CONNECTOR][CONNECTOR.CONNECTOR_LIST][ConnectorListProperty.SORTER],
-    paginator: state[ROOT.CONNECTOR][CONNECTOR.CONNECTOR_LIST][ConnectorListProperty.PAGINATOR],
     tableHeaderChecked: state[ROOT.CONNECTOR][CONNECTOR.CONNECTOR_LIST][ConnectorListProperty.TABLE_HEADER_CHECKED],
+    paginator: state[ROOT.CONNECTOR][CONNECTOR.PAGINATOR],
 
+    snackbar: state[ROOT.CONNECTOR][CONNECTOR.SNACKBAR],
     configSchema: state[ROOT.CONNECTOR][CONNECTOR.CONFIG_SCHEMA],
     configEditor: state[ROOT.CONNECTOR][CONNECTOR.CONFIG_EDITOR],
     createEditor: state[ROOT.CONNECTOR][CONNECTOR.CREATE_EDITOR],
     removeDialog: state[ROOT.CONNECTOR][CONNECTOR.REMOVE_DIALOG],
-    snackbar: state[ROOT.CONNECTOR][CONNECTOR.SNACKBAR],
   }
 }
 

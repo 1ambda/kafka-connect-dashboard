@@ -9,10 +9,14 @@ export const CommandButton = {
   Selector: { width: 100, top: 5, },
 }
 
+export const Selector = {
+  ConnectorSelector: { float: 'right', width: 100, marginRight: 15, },
+  PageItemCountSelector: { float: 'right', width: 100, marginRight: 25, },
+
+  SelectorLabel: { fontWeight: 300, },
+  SelectorFloatingLabel: { color: 'red', },
+  FilterInput: { fontWeight: 300, fontSize: 14, },
+}
+
 export const title = { fontSize: 30, fontWeight: 100, marginTop: 10, }
-export const selector = { float: 'right', width: 100, marginRight: 15, }
-export const selectorLabel = { fontWeight: 300, fontSize: 14, }
-export const storageSelector = Object.assign({}, selector, { width: 120, })
-export const dropdown = { float: 'right', marginTop: 20, paddingTop: 30, width: 130, }
-export const filterInput= { fontWeight: 300, fontSize: 14, }
-export const selectorFloatingLabel= { color: 'red', }
+

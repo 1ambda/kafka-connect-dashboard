@@ -3,7 +3,7 @@ import { createAction, handleActions, } from 'redux-actions'
 import * as URL from '../../middlewares/Url'
 
 export const ActionType = {
-  SET_STORAGE: 'SET_STORAGE',
+  SET_STORAGE: 'CONNECTOR/STORAGE_SELECTOR/SET_STORAGE',
 }
 
 export const Payload = {
@@ -13,10 +13,6 @@ export const Payload = {
 export const Property = {
   SELECTED_STORAGE: 'selectedStorage',
   AVAILABLE_STORAGES: 'availableStorages',
-}
-
-export const PrivateAction = {
-  setStorage: createAction(ActionType.SET_STORAGE),
 }
 
 export const INITIAL_STATE = {

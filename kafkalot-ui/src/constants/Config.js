@@ -8,6 +8,3 @@ const envStorages = process.env.STORAGES
 export const STORAGES = (envStorages === void 0) ? [] : envStorages
 export const TITLE = process.env.TITLE || ''
 
-const envPaginatorItemCount = process.env.PAGINATOR_ITEM_COUNT
-export const PAGINATOR_ITEM_COUNT_PER_PAGE =
-  (envPaginatorItemCount  === void 0) ? 6 : parseInt(envPaginatorItemCount)

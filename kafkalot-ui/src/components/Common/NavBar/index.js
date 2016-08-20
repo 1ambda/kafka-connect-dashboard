@@ -19,13 +19,13 @@ export default class NavBar extends React.Component {
   render() {
     return (
       <Toolbar style={style.navbar}>
-        <ToolbarGroup firstChild float="left">
+        <ToolbarGroup firstChild>
           <ToolbarTitle text={<Link to={`/${Page.MainPageRouting}`} style={style.text}>{CONFIG.TITLE}</Link>}
                         style={style.title} />
           <FlatButton disabled label={<IndexLink to={`/${Page.ConnectorPageRouting}`} style={style.text}>{Page.ConnectorPageTitle}</IndexLink>}
                       style={style.linkButton} />
         </ToolbarGroup>
-        <ToolbarGroup float="right">
+        <ToolbarGroup>
           <IconMenu
             style={style.iconMenu}
             iconButtonElement={<IconButton iconStyle={style.icon} ><MoreVertIcon /></IconButton>} >

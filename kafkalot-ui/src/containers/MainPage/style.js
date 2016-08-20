@@ -1,8 +1,14 @@
 export const container = {
-  marginTop: '35%',
+  display: 'flex',
+  justifyContent: 'center',
+  alignItems: 'center',
 }
 
 export const subContainer = {
+  position: 'absolute',
+  top: '50%',
+  left: '50%',
+  transform: 'translate(-50%, -50%)',
 }
 
 export const title = {

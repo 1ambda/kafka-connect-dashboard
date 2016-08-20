@@ -5,9 +5,10 @@
 Centralize your [kafka-connect](http://kafka.apache.org/documentation.html#connect) instances 
 
 - supports connect 0.10.0.0+
-- easy connector instance life-cycle management
-- config validation using [JSON Schema](http://json-schema.org/)
-- config management with [JSONEditor](https://github.com/josdejong/jsoneditor)
+- shipped with dockerized images and the docker-compose file 
+- compatibility with confluent platform 3.0.0
+- easy connector instance life-cycle management with fancy UI ([screenshots](https://github.com/1ambda/kafka-connect-dashboard/wiki/Screenshots))
+- easy config validation, management using [JSON Schema](http://json-schema.org/), [JSONEditor](https://github.com/josdejong/jsoneditor)
 
 <br/>
 
@@ -15,7 +16,6 @@ Future Plans
 
 - support [kafka-stream](http://kafka.apache.org/documentation.html#streams)
 - real-time metrics for connect and stream
-- compatibility with confluent platform 3.0.0
 
 <br/>
 
@@ -37,6 +37,8 @@ Kafkalot consist of 2 sub-projects
 ### with Docker
 
 Set these env variables before launching compose
+
+> NOTE that a connect cluster should be in the same network otherwise kafkalot can't access
 
 - `KAFKALOT_STORAGE_CONNECTOR_CLUSTERHOST`: kafka connect cluster host
 - `KAFKALOT_STORAGE_CONNECTOR_CLUSTERPORT`: kafka connect cluster port

@@ -24,7 +24,7 @@ class MainPage extends React.Component {
 
     const subTitle = (
       <div style={style.subTitle}>
-        JSON Configured Stream-like Job Controller
+        Kafka Connect, Stream Dashboard
       </div>
     )
 
