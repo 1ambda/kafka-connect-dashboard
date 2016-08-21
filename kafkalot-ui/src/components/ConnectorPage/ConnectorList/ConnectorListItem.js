@@ -41,30 +41,6 @@ export class ConnectorListItem extends React.Component {
     restartTask: PropTypes.func.isRequired,
   }
 
-  static createStateIcon(connectorState) {
-    const workingOnConnector = (isWorkingState(connectorState))
-    const mode = (workingOnConnector) ? 'indeterminate' : 'determinate'
-    const value = (workingOnConnector) ? 0 : 100
-    let color = Theme.ConnectorStateColor.Disabled
-
-    if (isRunningState(connectorState))
-      color = Theme.ConnectorStateColor.Running
-    else if (isUnassignedState(connectorState))
-      color = Theme.ConnectorStateColor.Unassigned
-    else if (isPausedState(connectorState))
-      color = Theme.ConnectorStateColor.Paused
-    else if (isFailedState(connectorState))
-      color = Theme.ConnectorStateColor.Failed
-    else if (isRegisteredState(connectorState))
-      color = Theme.ConnectorStateColor.Registered
-    else
-      color = Theme.ConnectorStateColor.Disabled
-
-    return (
-      <CircularProgress size={0.50} mode={mode} value={value} color={color} />
-    )
-  }
-
   constructor(props) {
     super(props)
 
@@ -135,6 +111,31 @@ export class ConnectorListItem extends React.Component {
     return enableButtonDOM
   }
 
+  createStateIcon(connectorState) {
+    const { state, } = this.props
+    const workingOnConnector = (isWorkingState(state))
+
+    let color = Theme.ConnectorStateColor.Disabled
+
+    if (isRunningState(connectorState))
+      color = Theme.ConnectorStateColor.Running
+    else if (isUnassignedState(connectorState))
+      color = Theme.ConnectorStateColor.Unassigned
+    else if (isPausedState(connectorState))
+      color = Theme.ConnectorStateColor.Paused
+    else if (isFailedState(connectorState))
+      color = Theme.ConnectorStateColor.Failed
+    else if (isRegisteredState(connectorState))
+      color = Theme.ConnectorStateColor.Registered
+    else
+      color = Theme.ConnectorStateColor.Disabled
+
+    if (workingOnConnector) {
+      return (<CircularProgress size={0.50} mode="indeterminate" color={color} />)
+    } else {
+      return (<CircularProgress size={0.50} mode="determinate" value={100} color={color} />)
+    }
+  }
 
   render() {
     const { name, state, checked, tasks, uptime, restartTask, } = this.props
@@ -147,8 +148,6 @@ export class ConnectorListItem extends React.Component {
         return elems.concat([ divider, elem, ])
       }, [])
 
-    const stateIcon = ConnectorListItem.createStateIcon(state)
-
     return (
       <ListItem disabled
                 style={style.ItemBodyColumn.container}
@@ -156,7 +155,7 @@ export class ConnectorListItem extends React.Component {
         <ListItemColumn style={style.ItemBodyColumn.checkbox}>
           <Checkbox defaultChecked={checked} onCheck={this.handleCheckboxClick} />
         </ListItemColumn>
-        <ListItemColumn style={style.ItemBodyColumn.stateIcon}> {stateIcon} </ListItemColumn>
+        <ListItemColumn style={style.ItemBodyColumn.stateIcon}> {this.createStateIcon(state)} </ListItemColumn>
         <ListItemColumn style={style.ItemBodyColumn.stateText}> {state} </ListItemColumn>
         <ListItemColumn style={style.ItemBodyColumn.taskText}> {this.createTaskText()} </ListItemColumn>
         <ListItemColumn style={style.ItemBodyColumn.name}> {name} </ListItemColumn>

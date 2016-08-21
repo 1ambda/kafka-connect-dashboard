@@ -106,7 +106,6 @@ export default class ConnectorHeader extends React.Component {
     return (
       <div style={style.CommandButton.Container}>
         <SelectField style={style.CommandButton.Selector}
-                     floatingLabelText="Command"
                      value={currentCommand}
                      onChange={this.handleCommandChange}>
           <MenuItem value={ConnectorCommand.START} primaryText={ConnectorCommand.START} />
@@ -118,7 +117,7 @@ export default class ConnectorHeader extends React.Component {
 
         <RaisedButton style={style.CommandButton.ExecuteButton}
                       backgroundColor={style.CommandButton.ExecuteButtonColor}
-                      labelStyle={style.CommandButton.ButtonLabel} label={"EXECUTE"}
+                      labelStyle={style.CommandButton.ButtonLabel} label={"RUN"}
                       onTouchTap={this.handleCommandExecute} />
 
         <RaisedButton style={style.CommandButton.RightButton} secondary

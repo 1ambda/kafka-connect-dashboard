@@ -19,6 +19,9 @@ services:
 
   ui:
     image: 1ambda/kafkalot-ui
+    environment:
+     - KAFKALOT_UI_STORAGE_HOST=storage
+     - KAFKALOT_UI_STORAGE_PORT=3003
     links:
      - storage
     ports:

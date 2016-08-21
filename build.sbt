@@ -54,6 +54,20 @@ lazy val PROJECT_STORAGE = Project("kafkalot-storage", file("kafkalot-storage"))
     )
   )
 
+
+/**
+  * ${'"'} used to escape quote in string interpolation which is not supported currently
+  * '\$' used for specify required a env var set (only '$' did not work)
+  *
+  * 1. substitute env variable `KAFKALOT_UI_STORAGE_HOST` and `KAFKALOT_UI_STORAGE_PORT`
+  * 2. and copy into ${nginxConfgPath}
+  * 3. cat ${nginxConfPath}
+  * 4. run nginx
+  *
+  * ref
+  * - https://github.com/docker-library/docs/issues/496
+  * - https://hub.docker.com/_/nginx/
+  */
 lazy val PROJECT_UI = Project("kafkalot-ui", file("kafkalot-ui"))
   .enablePlugins(sbtdocker.DockerPlugin, NpmPlugin)
   .settings(commonSettings: _*)
@@ -72,16 +86,23 @@ lazy val PROJECT_UI = Project("kafkalot-ui", file("kafkalot-ui"))
       )
     )
     , dockerfile in docker := {
-      val appDir: File = file(baseDirectory.value.getParent + "/dist/ui")
+      val appDir = file(baseDirectory.value.getParent + "/dist/ui")
       val targetAppDir = "/usr/share/nginx/html"
-      val nginxConf: File = baseDirectory.value / "resource" / "nginx" / "default.conf"
+      val templateConfName = "default.template"
+      val nginxConfName = "default.conf"
       val targetConfDir = "/etc/nginx/conf.d/"
+
+      val templateConfPath = s"${targetConfDir}${templateConfName}"
+      val nginxConfPath = s"${targetConfDir}${nginxConfName}"
+
+      val nginxConfTemplate = baseDirectory.value / "resource" / "nginx" / templateConfName
 
       new Dockerfile {
         from("nginx:1.10.1")
         copy(appDir, targetAppDir)
-        copy(nginxConf, targetConfDir)
+        copy(nginxConfTemplate, targetConfDir)
         expose(80)
+        cmdRaw(s"/bin/bash -c ${'"'}envsubst '\\$$KAFKALOT_UI_STORAGE_HOST \\$$KAFKALOT_UI_STORAGE_PORT' < ${templateConfPath} > ${nginxConfPath} && cat ${nginxConfPath} && nginx -g 'daemon off;'${'"'}")
       }
     }
     , imageNames in docker := Seq(

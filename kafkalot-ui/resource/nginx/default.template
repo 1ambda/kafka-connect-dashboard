@@ -1,5 +1,5 @@
 upstream api_storage {
-  server    storage:3003;
+  server    ${KAFKALOT_UI_STORAGE_HOST}:${KAFKALOT_UI_STORAGE_PORT};
 }
 
 server {
