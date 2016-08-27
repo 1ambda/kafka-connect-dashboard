@@ -1,7 +1,4 @@
-import fs from 'fs-extra'
-import colors from 'colors'
-
-import { ENV_DEV, ENV_PROD, ENV_TEST, } from './env'
+import { ENV_DEV, ENV_PROD, ENV_TEST, } from './BuildConfig'
 import * as DEV_CONFIG from '../config/development.config'
 import * as PROD_CONFIG from '../config/production.config'
 

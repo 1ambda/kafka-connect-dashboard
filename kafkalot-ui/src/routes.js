@@ -12,6 +12,7 @@ export default (
     <IndexRoute component={ConnectorPage} />
     <Route path={Page.MainPageRouting} component={MainPage}/>
     <Route path={Page.ConnectorPageRouting} component={ConnectorPage}/>
+    <Route path="index.html" component={ConnectorPage} />
     <Route path="*" component={NotFoundPage} />
   </Route>
 )

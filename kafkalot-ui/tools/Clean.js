@@ -1,4 +1,4 @@
-import { OUTPUT_DIR, } from './buildConfig'
+import { OUTPUT_DIR, } from './BuildConfig'
 
 const mkdirp = require('mkdirp')
 const rimraf = require('rimraf')

@@ -37,17 +37,12 @@ cd $DIST_STORAGE_DIR
 $PROG_UNZIP *.zip       # unzip
 $PROG_RM -rf tmp *.zip  # remove tmp files
 
-# RUN BUILD: kafkalot-ui
-echo -e "${TAG} Building kafkalot-ui\n"
-cd $ROOT_DIR/kafkalot-ui
-$PROG_NPM run build
-
 # ZIP RESULT
 RELEASE_NAME=kafkalot-${VERSION_NO}
 echo -e "${TAG} Creating ${RELEASE_NAME}\n"
 cd $DIST_DIR
 
 $PROG_MKDIR $RELEASE_NAME
-$PROG_MV storage ui $RELEASE_NAME
+$PROG_MV storage $RELEASE_NAME
 $PROG_ZIP -r $RELEASE_NAME.zip $RELEASE_NAME
 

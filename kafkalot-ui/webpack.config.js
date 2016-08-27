@@ -1,21 +1,21 @@
 import webpack from 'webpack'
+import prettyjson from 'prettyjson'
 import path from 'path'
 import ExtractTextPlugin from 'extract-text-webpack-plugin'
 
-import { ENV_DEV, ENV_PROD, ENV_TEST, } from './tools/env'
-import { GLOBAL_VARIABLES, } from './tools/config'
-import { OUTPUT_DIR, } from './tools/buildConfig'
+import { GLOBAL_VARIABLES, } from './tools/Config'
+import { OUTPUT_DIR, ENV_DEV, ENV_PROD, ENV_TEST,  } from './tools/BuildConfig'
+import * as Logger from './tools/BuildLogger'
+
+
+const TAG = 'WebpackConfig'
+Logger.info(TAG, `GLOBAL VARIABLES \n${prettyjson.render(GLOBAL_VARIABLES)}`)
 
 const getPlugins = function (env) {
   const plugins = [
     new webpack.optimize.OccurenceOrderPlugin(),
     new webpack.DefinePlugin(GLOBAL_VARIABLES),
   ]
-
-  /* eslint-disable no-console */
-  console.log('Injecting Global Variable'.green)
-  console.log(GLOBAL_VARIABLES)
-  /* eslint-enable no-console */
 
   switch (env) {
     case ENV_PROD:

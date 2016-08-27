@@ -5,15 +5,15 @@ object Dep {
 
   object V {
     val SCALA_TEST = "2.2.4"
-    val FINCH = "0.10.0"
+    val FINCH = "0.11.0-M2"
     val TWITTER_SERVER = "1.19.0"
     val SHAPELESS = "2.3.0"
-    val CIRCLE = "0.4.1"
+    val CIRCLE = "0.5.0-M2"
     val MONGO_CASBAH = "3.1.1"
     val SALAT = "1.9.9"
 
     val TYPESAFE_CONFIG = "1.3.0"
-    val FICUS = "1.2.6"
+    val FICUS = "1.2.3"
     val TYPESAFE_SCALA_LOGGING = "3.4.0"
     val SLF4j = "1.7.21"
     val LOGBACK = "1.1.7"

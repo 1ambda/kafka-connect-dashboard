@@ -1,6 +1,5 @@
 dist/
-
-reated by https://www.gitignore.io/api/sbt,scala,intellij
+kafkalot-storage/src/main/resources/public/
 
 ### SBT ###
 # Simple Build Tool

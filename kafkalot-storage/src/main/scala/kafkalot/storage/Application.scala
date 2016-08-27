@@ -13,7 +13,7 @@ import io.circe.syntax._
 import io.circe.jawn._
 import shapeless._
 
-import kafkalot.storage.api.StorageApi
+import kafkalot.storage.api._
 import kafkalot.storage.model.MongoUtil
 import kafkalot.storage.security.CorsFilter
 
@@ -28,9 +28,7 @@ object Application extends App with LazyLogging {
   )
 
   val corsFilter = new CorsFilter
-  val service = (StorageApi.api).toService
-
-  logger.info("Starting kafkalot-storage...")
+  val service = (StaticFileApi.api :+: StorageApi.api).toService
 
   sys.addShutdownHook {
     logger.info("Stopping kafkalot-storage...")
