@@ -120,6 +120,7 @@ export default class ConnectorConfigEditor extends React.Component {
   }
 
   handleEditorError(err) {
+    /*eslint no-console: ["error", { allow: ["warn", "error"] }] */
     console.error(`JSONEditor: ${err}`) /** TODO 500 page */
   }
 
@@ -140,7 +141,7 @@ export default class ConnectorConfigEditor extends React.Component {
   handleUpdate() {
     const { update, name, } = this.props
     const { isJSONChanged, } = this.state
-  
+
     if (isJSONChanged) {
       update({
         [ConnectorProperty.NAME]: name,

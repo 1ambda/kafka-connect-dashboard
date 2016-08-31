@@ -100,8 +100,6 @@ class ConnectorPage extends React.Component {
         return true
       else {
         const searchArea = JSON.stringify(connector)
-        console.log(searchArea, filterKeyword)
-        console.log(searchArea.includes(filterKeyword))
         return (searchArea.includes(filterKeyword))
       }
     })

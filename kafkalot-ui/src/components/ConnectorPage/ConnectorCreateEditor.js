@@ -113,6 +113,7 @@ export default class ConnectorCreateEditor extends React.Component {
   }
 
   handleEditorError(err) {
+    /*eslint no-console: ["error", { allow: ["warn", "error"] }] */
     console.error(`JSONEditor: ${err}`) /** TODO 500 page */
   }
 
@@ -127,7 +128,7 @@ export default class ConnectorCreateEditor extends React.Component {
     const { create, } = this.props
     const { editor, connectorName, } = this.state
     const configToBeCreated = editor.get()
-    
+
     create({
       [CreateEditorPayload.CONNECTOR_CONFIG]: configToBeCreated,
       [CreateEditorPayload.CONNECTOR_NAME]: connectorName,

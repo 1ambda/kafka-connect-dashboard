@@ -142,16 +142,6 @@ function getConfig(env) {
     /** suppress error shown in console, so it has to be set to false */
     quiet: false,
     noInfo: true,
-    stats: {
-      /** Config for minimal console.log mess. */
-      assets: false,
-      colors: true,
-      version: false,
-      hash: false,
-      timings: false,
-      chunks: false,
-      chunkModules: false
-    }
   }
 }
 

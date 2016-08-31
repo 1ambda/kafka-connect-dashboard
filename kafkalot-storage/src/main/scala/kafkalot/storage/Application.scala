@@ -1,5 +1,7 @@
 package kafkalot.storage
 
+import java.util.concurrent.atomic.AtomicBoolean
+
 import com.twitter.finagle.Http
 import com.twitter.finagle.http.filter.Cors
 import com.twitter.util.Await
@@ -16,6 +18,7 @@ import kafkalot.storage.api._
 import kafkalot.storage.model.MongoUtil
 
 object Application extends App with LazyLogging {
+  private val shutdown = new AtomicBoolean(false)
 
   /** use `application/json` as Content-Type of error response */
   implicit val encodeException: Encoder[Exception] = Encoder.instance(e =>
@@ -34,18 +37,29 @@ object Application extends App with LazyLogging {
 
   val service = (StaticFileApi.api :+: StorageApi.api).toService
 
-  sys.addShutdownHook {
-    logger.info("Stopping kafkalot-storage...")
+  def shutdownHook: Unit = {
+    val wasShuttingDown = shutdown.getAndSet(true)
 
-    service.close()
-    MongoUtil.mongoClient.close()
+    if (!wasShuttingDown) {
+      logger.info("Stopping kafkalot-storage...")
 
-    logger.info("Stopped kafkalot-storage")
+      service.close()
+      MongoUtil.mongoClient.close()
+
+      logger.info("Stopped kafkalot-storage")
+    }
   }
 
-  Await.ready(
-    Http.server.serve(s":${Configuration.app.port}",
-    corsFilter andThen service)
-  )
+  def start() = {
+    logger.info("Starting kafkalot-storage...")
+    sys.addShutdownHook(shutdownHook)
+
+    Await.ready(
+      Http.server.serve(s":${Configuration.app.port}"
+        , corsFilter andThen service)
+    )
+  }
+
+  start()
 }
 

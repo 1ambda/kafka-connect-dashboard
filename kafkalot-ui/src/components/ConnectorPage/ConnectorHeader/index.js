@@ -47,7 +47,7 @@ export default class ConnectorHeader extends React.Component {
     this.handleSorterChange = this.handleSorterChange.bind(this)
     this.handlePageItemCountChange = this.handlePageItemCountChange.bind(this)
     this.handleCreate = this.handleCreate.bind(this)
-    
+
     this.handleCommandChange = this.handleCommandChange.bind(this)
     this.handleCommandExecute = this.handleCommandExecute.bind(this)
   }
@@ -57,12 +57,12 @@ export default class ConnectorHeader extends React.Component {
   }
 
   handleCommandExecute() {
-    const { 
-      startConnector, 
+    const {
+      startConnector,
       stopConnector,
       restartConnector,
       pauseConnector,
-      resumeConnector, 
+      resumeConnector,
     } = this.props
     const { currentCommand, } = this.state
 
@@ -75,7 +75,7 @@ export default class ConnectorHeader extends React.Component {
       default:
     }
   }
-  
+
   handleCreate() {
     const { openCreateEditor, } = this.props
     openCreateEditor()
@@ -142,7 +142,7 @@ export default class ConnectorHeader extends React.Component {
 
     const checkedConnectorCount = connectors.filter(c => c[ConnectorProperty.CHECKED]).length
 
-    const filterLabel = (filterKeyword !== ``) ?
+    const filterLabel = (filterKeyword !== '') ?
       `Filter: ${filterKeyword} (${checkedConnectorCount} selected)` :
       `Insert filter (${checkedConnectorCount} selected)`
 
