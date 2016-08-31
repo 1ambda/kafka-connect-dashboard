@@ -10,7 +10,7 @@ object StaticFileApi extends LazyLogging {
   val ContentTypeTextHtml = ("Content-Type", "text/html")
   val ContentTypeTextCss = ("Content-Type", "text/css")
 
-  val index: Endpoint[Buf] = get("index.html") {
+  val index: Endpoint[Buf] = get(/) {
     val indexResource = getClass.getResourceAsStream("/public/index.html")
     val indexStream = Reader.fromStream(indexResource)
     Ok(Reader.readAll(indexStream)).withHeader(ContentTypeTextHtml)

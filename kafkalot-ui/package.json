@@ -6,7 +6,7 @@
     "postinstall": "bower cache clean && bower install",
     "open:dev": "babel-node tools/DevServer.js",
     "open:prod": "babel-node tools/ProdServer.js",
-    "start:client": "cross-env NODE_ENV=development npm-run-all --parallel lint:tools test:watch open:dev",
+    "start:client": "cross-env NODE_ENV=development npm-run-all --parallel test:watch open:dev",
     "lint:src": "eslint src",
     "lint": "npm run lint:src",
     "clean": "babel-node tools/Clean.js",
